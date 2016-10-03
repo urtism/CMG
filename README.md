@@ -1,3 +1,3 @@
 # CMG
 Pipeline development for NGS analysis
-#devel version
+#devel version 0.1
