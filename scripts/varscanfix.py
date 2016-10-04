@@ -15,12 +15,11 @@ for line in read:
 	if line.startswith('#'):
 		print line.rstrip()
 	else:
-		ref=parts[3].split('/')
-		alt=parts[4].split('/')
+		ref=parts[3]
+		alt=parts[4]
 		format=parts[8].split(':')
-		normal=parts[9].split(':')
-		tumor=parts[10].split(':')
-		refer=','.join(ref)
+		samples=parts[9:]
+		
 
 		if len(ref)==2:
 			r1=re.compile('\+[ACTG]+')
