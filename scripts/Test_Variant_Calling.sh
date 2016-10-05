@@ -5,7 +5,7 @@ FASTQC=~/NGS_TOOLS/FastQC/fastqc
 BWA=~/NGS_TOOLS/bwa-0.7.12
 PICARD=~/NGS_TOOLS/picard-tools-2.3.0/picard.jar
 GATK=~/NGS_TOOLS/GATK/GenomeAnalysisTK.jar
-VARSCAN=~/NGS_TOOLS/VarScan/VarScan.v2.3.9.jar
+VARSCAN=~/NGS_TOOLS/VarScan/VarScan.v2.4.0.jar
 REF=~/NGS_TOOLS/hg19/ucsc.hg19.fasta
 MILLS=~/NGS_TOOLS/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf
 DBSNP=~/NGS_TOOLS/hg19/dbsnp_135.hg19.vcf
@@ -98,17 +98,17 @@ DataRun=20160930
 #VARSCAN
 
 	cd $INPUT
-	$SAMTOOLS mpileup \
-	-f $REF \
-	-l $TARGETCARDIOBED \
-	-b $INPUT/Bam_list.txt \
-	-B \
-	-q 20 \
-	-Q 10 \
-	> $OUTPUT/$DataRun\_Cardio.mpileup
+#	$SAMTOOLS mpileup \
+#	-f $REF \
+#	-l $TARGETCARDIOBED \
+#	-b $INPUT/Bam_list.txt \
+#	-B \
+#	-q 20 \
+#	-Q 10 \
+#	> $OUTPUT/$DataRun\_Cardio.mpileup
 
-	cp Bam_list.txt Sample_list.txt
-	sed -i -e 's/.bam//g' Sample_list.txt
+#	cp Bam_list.txt Sample_list.txt
+#	sed -i -e 's/.bam//g' Sample_list.txt
 
 	java -jar -Xmx64g $VARSCAN mpileup2snp $OUTPUT/$DataRun\_Cardio.mpileup \
 	--min-coverage 10 \
