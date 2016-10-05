@@ -1,4 +1,4 @@
-
+#!bin/bash
 
 FASTQC=~/NGS_TOOLS/FastQC/fastqc
 BWA=~/NGS_TOOLS/bwa-0.7.12
