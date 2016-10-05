@@ -1,5 +1,6 @@
 #!bin/bash
 
+SAMTOOLS=~/NGS_TOOLS/samtools-1.3.1/samtools
 FASTQC=~/NGS_TOOLS/FastQC/fastqc
 BWA=~/NGS_TOOLS/bwa-0.7.12
 PICARD=~/NGS_TOOLS/picard-tools-2.3.0/picard.jar
@@ -97,7 +98,7 @@ DataRun=20160930
 #VARSCAN
 
 	cd $INPUT
-	samtools mpileup \
+	$SAMTOOLS mpileup \
 	-f $REF \
 	-l $TARGETCARDIOBED \
 	-b $INPUT/Bam_list.txt \
