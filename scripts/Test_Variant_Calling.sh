@@ -128,6 +128,7 @@ DataRun=20160930
 	--min-freq-for-hom 0.75 \
 	--pvalue 0.99 \
 	--output-vcf 1 \
+	--strand-filter 0 \
 	--vcf-sample-list $INPUT/Sample_list.txt > $OUTPUT/$DataRun\_Cardio_VarScan_Indel.vcf
 	
 #	cd $PROCESSING/6_Variant/VarScan/
