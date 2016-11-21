@@ -117,6 +117,7 @@ DataRun=20160930
 	--min-var-freq 0.10 \
 	--min-freq-for-hom 0.75 \
 	--pvalue 0.99 \
+	--strand-filter 0 \
 	--output-vcf 1 \
 	--vcf-sample-list Sample_list.txt > $OUTPUT/$DataRun\_Cardio_VarScan_snp.vcf
 
