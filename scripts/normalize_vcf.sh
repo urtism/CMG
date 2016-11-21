@@ -4,7 +4,7 @@ DIR=~/Scrivania/TEST/VCF
 DIR_OUT=~/Scrivania/TEST/VCF/OUT
 REFERENCE=~/NGS_TOOLS/hg19/ucsc.hg19.fasta
 SCRIPTS_DIR=~/git/CMG/scripts
-TOOLS_DIR=~/tools
+TOOLS_DIR=~/NGS_TOOLS
 
 mkdir -p $DIR_OUT
 
