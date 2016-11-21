@@ -1,10 +1,10 @@
 #!bin/bash
 
-DIR=/home/minime/Scrivania/TEST/VCF
-DIR_OUT=/home/minime/Scrivania/TEST/VCF/OUT
-REFERENCE=/home/minime/reference/ucsc.hg19.fasta
-SCRIPTS_DIR=/home/minime/git/CMG/scripts
-TOOLS_DIR=/home/minime/tools
+DIR=~/Scrivania/TEST/VCF
+DIR_OUT=~/Scrivania/TEST/VCF/OUT
+REFERENCE=~/NGS_TOOLS/hg19/ucsc.hg19.fasta
+SCRIPTS_DIR=~/git/CMG/scripts
+TOOLS_DIR=~/tools
 
 mkdir -p $DIR_OUT
 
