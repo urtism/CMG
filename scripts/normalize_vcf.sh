@@ -19,12 +19,12 @@ do
 	python $SCRIPTS_DIR/header_fix.py \
 	-f $i \
 	-v F \
-	> $DIRFREE/$filename_no_ext.fixed.vcf
+	> $DIRFREE/NORM_FREE/$filename_no_ext.fixed.vcf
 		
 	$BCFTOOLS norm -m -both \
 	-f $REFERENCE \
-	$DIRFREE/$filename_no_ext.fixed.vcf \
-	> $DIRFREE/$filename_no_ext.split.vcf	
+	$DIRFREE/NORM_FREE/$filename_no_ext.fixed.vcf \
+	> $DIRFREE/NORM_FREE/$filename_no_ext.split.vcf	
 
 done
 
@@ -39,12 +39,12 @@ do
 	python $SCRIPTS_DIR/header_fix.py \
 	-f $i \
 	-v V \
-	> $DIRVARSCAN/$filename_no_ext.fixed.vcf
+	> $DIRVARSCAN/NORM_VARSCAN/$filename_no_ext.fixed.vcf
 		
 	$BCFTOOLS norm -m -both \
 	-f $REFERENCE \
-	$DIRVARSCAN/$filename_no_ext.fixed.vcf \
-	> $DIRVARSCAN/$filename_no_ext.split.vcf	
+	$DIRVARSCAN/NORM_VARSCAN/$filename_no_ext.fixed.vcf \
+	> $DIRVARSCAN/NORM_VARSCAN/$filename_no_ext.split.vcf	
 
 done
 
@@ -59,12 +59,12 @@ do
 	python $SCRIPTS_DIR/header_fix.py \
 	-f $i \
 	-v G \
-	> $DIRGATK/$filename_no_ext.fixed.vcf
+	> $DIRGATK/NORM_GATK/$filename_no_ext.fixed.vcf
 		
 	$BCFTOOLS norm -m -both \
 	-f $REFERENCE \
-	$DIRGATK/$filename_no_ext.fixed.vcf \
-	> $DIRGATK/$filename_no_ext.split.vcf	
+	$DIRGATK/NORM_GATK/$filename_no_ext.fixed.vcf \
+	> $DIRGATK/NORM_GATK/$filename_no_ext.split.vcf	
 
 done
 
