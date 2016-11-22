@@ -27,8 +27,31 @@ TARGETCANCER=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.list
 TARGETCANCERBED=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.bed
 OUTVCF=~/NGS_ANALYSIS/OUTPUT_DATA
 STORAGE=~/NGS_ANALYSIS/STORAGE
-VEP=~/NGS_TOOLS/ensembl-tools-release-84/scripts/variant_effect_predictor/
-VEPANN=~/NGS_TOOLS/ensembl-tools-release-84/scripts/variant_effect_predictor/variant_effect_predictor.pl
-VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-84/scripts/variant_effect_predictor/filter_vep.pl
+VEP=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
+VEPANN=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/variant_effect_predictor.pl
+VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/filter_vep.pl
 
+	cd $VEP
+
+	perl $VEPANN -i $PROCESSING/7_Filter/$DataRun\_Cardio_Total_Intersect_Sort.vcf \
+	-o $PROCESSING/8_Annotation/$DataRun\_Cardio_Total_Intersect_ANN.vcf \
+	--stats_file $PROCESSING/8_Annotation/$DataRun\_Cardio_Total_Intersect_ANN.html \
+	--cache \
+	--assembly GRCh37 \
+	--offline \
+	--force_overwrite \
+	-v \
+	--fork 10 \
+	--variant_class \
+	--sift b \
+	--poly b \
+	--vcf_info_field ANN \
+	--hgvs \
+	--protein \
+	--canonical \
+	--check_existing \
+	--gmaf \
+	--pubmed \
+	--species homo_sapiens \
+	--failed 1 \
 
