@@ -33,24 +33,33 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 
 	cd $VEP
 
-	perl $VEPANN -i $PROCESSING/7_Filter/$DataRun\_Cardio_Total_Intersect_Sort.vcf \
-	-o $PROCESSING/8_Annotation/$DataRun\_Cardio_Total_Intersect_ANN.vcf \
-	--stats_file $PROCESSING/8_Annotation/$DataRun\_Cardio_Total_Intersect_ANN.html \
-	--cache \
+	perl $VEPANN -i $PROCESSING/7_Filter/20161103_BRCA_GATK_Filter.vcf \
+	-o $PROCESSING/8_Annotation/20161103_BRCA_GATK_Filter_ANN.vcf \
+	--stats_file $PROCESSING/8_Annotation/20161103_BRCA_GATK_Filter_ANN.html \
+#	--cache \
+	--everything \
+	--dont_skip \
 	--assembly GRCh37 \
-	--offline \
+#	--offline \
 	--force_overwrite \
 	-v \
+	--fasta $REF \
 	--fork 10 \
 	--variant_class \
-	--sift b \
-	--poly b \
+#	--sift b \
+#	--poly b \
+	--allele_number \
+	--total_length \
 	--vcf_info_field ANN \
+	--numbers \
 	--hgvs \
 	--protein \
 	--canonical \
 	--check_existing \
+	--check_alleles \
+	--check_svs \
 	--gmaf \
+	--tsl \
 	--pubmed \
 	--species homo_sapiens \
 	--failed 1 \
