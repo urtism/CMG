@@ -43,12 +43,9 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	--offline \
 	--force_overwrite \
 	-v \
-	--fasta $REF \
 	--fork 10 \
 	--variant_class \
-#	--sift b \
-#	--poly b \
-#	--allele_number \
+	--allele_number \
 	--total_length \
 	--vcf_info_field ANN \
 	--numbers \
