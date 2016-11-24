@@ -36,11 +36,11 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	perl $VEPANN -i $PROCESSING/7_Filter/20161103_BRCA_GATK_Filter.vcf \
 	-o $PROCESSING/8_Annotation/20161103_BRCA_GATK_Filter_ANN.vcf \
 	--stats_file $PROCESSING/8_Annotation/20161103_BRCA_GATK_Filter_ANN.html \
-#	--cache \
+	--cache \
 	--everything \
 	--dont_skip \
 	--assembly GRCh37 \
-#	--offline \
+	--offline \
 	--force_overwrite \
 	-v \
 	--fasta $REF \
@@ -63,4 +63,5 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	--pubmed \
 	--species homo_sapiens \
 	--failed 1 \
+	--vcf
 
