@@ -16,9 +16,7 @@ echo $filename
 extension="${filename##*.}"
 filename_no_ext="${filename%.*}"
 
-echo $filename_no_ext
-
-if [[ $filename =~ .*FreeBayes.* ]]
+if [[ $filename =~ .*FreeBayes.* ]bas]
 	then
 		python $SCRIPTS_DIR/header_fix.py \
 		-f $i \
