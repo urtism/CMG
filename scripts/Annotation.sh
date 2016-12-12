@@ -38,33 +38,33 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	-o $PROCESSING/8_Annotation/20160520_Cardio_GATK_Filter_ANN.vcf \
 	--stats_file $PROCESSING/8_Annotation/20160520_Cardio_GATK_Filter_ANN.html \
 	--cache \
-#	--everything \
 	--dont_skip \
 	--assembly GRCh37 \
-	--offline \
 	--force_overwrite \
 	-v \
 	--fork 10 \
 	--variant_class \
-	--allele_number \
 	--total_length \
 	--vcf_info_field ANN \
 	--numbers \
+	--sift b \
+	--polyphen b \
+	--maf_esp \
+	--symbol \
 	--hgvs \
-	--protein \
 	--canonical \
 	--check_existing \
 	--check_alleles \
 	--check_svs \
 	--gmaf \
+	--maf_1kg \
 	--pubmed \
 	--species homo_sapiens \
 	--failed 1 \
 	--plugin Blosum62 \
+	--plugin Condel,/home/jarvis/.vep/Plugins/condel/config,b \
 	--plugin CADD,/home/jarvis/.vep/Plugins/CADD/HumanExome-12v1-1_A_inclAnno.tsv.gz,/home/jarvis/.vep/Plugins/CADD/InDels.tsv.gz \
 	--plugin Carol \
-	--plugin Condel,/home/jarvis/.vep/Plugins/condel/config,b \
-	--plugin Conservation,GERP_CONSERVATION_SCORE,mammals \
 	--plugin CSN \
 	--plugin dbNSFP,/home/jarvis/.vep/Plugins/dbNSFP/dbNSFP.gz,LRT_score,LRT_pred,MutationTaster_score,MutationTaster_pred,MutationAssessor_score,MutationAssessor_pred,FATHMM_score,FATHMM_pred,PROVEAN_score,PROVEAN_pred,VEST3_score,VEST3_rankscore,MetaSVM_score,MetaSVM_pred,MetaLR_score,MetaLR_pred,DANN_score,DANN_rankscore,fathmm-MKL_coding_score,fathmm-MKL_coding_pred,Eigen-raw,Eigen-phred,Eigen-PC-raw,GenoCanyon_score,integrated_fitCons_score,GM12878_fitCons_score,H1-hESC_fitCons_score,HUVEC_fitCons_score,GERP++_RS,phyloP100way_vertebrate,phyloP20way_mammalian,phastCons100way_vertebrate,phastCons20way_mammalian,SiPhy_29way_pi,clinvar_clnsig,clinvar_trait \
 	--plugin dbscSNV,/home/jarvis/.vep/Plugins/dbscSNV/dbscSNV.txt.gz \
