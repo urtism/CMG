@@ -62,5 +62,32 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	--pubmed \
 	--species homo_sapiens \
 	--failed 1 \
+	--plugin Blosum62 \
+	--plugin CADD,/home/jarvis/.vep/Plugins/CADD/HumanExome-12v1-1_A_inclAnno.tsv.gz,/home/jarvis/.vep/Plugins/CADD/InDels.tsv.gz
+	--plugin Carol
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
+	--plugin
 	--vcf
 
