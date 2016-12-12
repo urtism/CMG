@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#commento
+
 cat ~/Scrivania/SCRIPT_PIPELINE/logo.txt 
 
 FASTQC=~/NGS_TOOLS/FastQC/fastqc
