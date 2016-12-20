@@ -71,5 +71,6 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	--plugin HGVSshift \
 	--plugin MaxEntScan,/home/jarvis/.vep/Plugins/MaxEntScan/fordownload \
 	--plugin SameCodon \
+	--plugin Downstream \
 	--tab
 
