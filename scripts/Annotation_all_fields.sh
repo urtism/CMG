@@ -68,7 +68,7 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	--plugin Conservation,GERP_CONSERVATION_SCORE,mammals \ #NON VA --> RICHIEDE CONN DB
 	--plugin CSN \ #Unione di c. e p. --> Non serve
 	--plugin Condel,/home/jarvis/.vep/Plugins/condel/config,b \ #RICHIEDE CONNESSIONE DB --> NON VA
-	--plugin dbNSFP,/home/jarvis/.vep/Plugins/dbNSFP_2.9/dbNSFP.gz,LRT_score,GERP++_RS,FATHMM_score,CADD_raw,VEST3_score,PROVEAN_score,PROVEAN_pred,LRT_score,LRT_pred,MutationTaster_score,MutationTaster_pred,MutationAssessor_score,MutationAssessor_pred \
+	--plugin dbNSFP,/home/jarvis/.vep/Plugins/dbNSFP_2.9.2/dbNSFP.gz,LRT_score,LRT_pred,MutationTaster_score,MutationTaster_pred,MutationAssessor_score,MutationAssessor_pred,PROVEAN_score,PROVEAN_pred,SiPhy_29way_pi,SiPhy_29way_logOdds \
 	--plugin dbscSNV,/home/jarvis/.vep/Plugins/dbscSNV/dbscSNV.txt.gz \
 	--plugin ExAC,/home/jarvis/.vep/Plugins/ExAC/ExAC.r0.3.1.sites.vep.vcf.gz \
 	--plugin GeneSplicer,/home/jarvis/.vep/Plugins/GeneSplicer/GeneSplicer/bin/alpha/genesplicer,/home/jarvis/.vep/Plugins/GeneSplicer/GeneSplicer/training_data_sets/Human,context=200 \

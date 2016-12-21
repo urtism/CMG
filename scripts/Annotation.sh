@@ -63,12 +63,13 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	--species homo_sapiens \
 	--failed 1 \
 	--plugin Blosum62 \
-	--plugin dbNSFP,/home/jarvis/.vep/Plugins/dbNSFP_2.9/dbNSFP.gz,LRT_score,LRT_pred,MutationTaster_score,MutationTaster_pred,MutationAssessor_score,MutationAssessor_pred,FATHMM_score,FATHMM_pred,VEST3_score, \
+	--plugin dbNSFP,/home/jarvis/.vep/Plugins/dbNSFP_2.9.2/dbNSFP.gz,LRT_score,LRT_pred,MutationTaster_score,MutationTaster_pred,MutationAssessor_score,MutationAssessor_pred,PROVEAN_score,PROVEAN_pred,SiPhy_29way_pi,SiPhy_29way_logOdds \
 	--plugin dbscSNV,/home/jarvis/.vep/Plugins/dbscSNV/dbscSNV.txt.gz \
 	--plugin ExAC,/home/jarvis/.vep/Plugins/ExAC/ExAC.r0.3.1.sites.vep.vcf.gz \
 	--plugin GeneSplicer,/home/jarvis/.vep/Plugins/GeneSplicer/GeneSplicer/bin/alpha/genesplicer,/home/jarvis/.vep/Plugins/GeneSplicer/GeneSplicer/training_data_sets/Human,context=200 \
 	--plugin Gwava,tss,/home/jarvis/.vep/Plugins/Gwava/gwava_scores.bed.gz \
 	--plugin HGVSshift \
+	--plugin FATHMM_MKL,/home/jarvis/.vep/Plugins/FATHMM/fathmm-MKL_Current_zerobased.tab.gz
 	--plugin MaxEntScan,/home/jarvis/.vep/Plugins/MaxEntScan/fordownload \
 	--plugin SameCodon \
 	--plugin Downstream \
