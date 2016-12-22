@@ -874,7 +874,7 @@ def print_var(dictionary,out,sample_name):
 def print_vcf(varianti,out):
 	dataset_varianti_vcf=open(out+ '/TOTAL.vcf','w')
 	dataset_varianti_vcf.write('##fileformat=VCFv4.2\n'+'#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLES\n')
-	for variante in dictionary.keys():
+	for variante in varianti.keys():
 		var_vcf=variante.split('\t')[0]+'\t'+variante.split('\t')[1]+'\t.\t'+variante.split('\t')[2]+'\t'+variante.split('\t')[3]+'\t.\t.\t.\t.\t.'
 		dataset_varianti_vcf.write(var_vcf+ '\n')
 	dataset_varianti_vcf.close()
