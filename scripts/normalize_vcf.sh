@@ -16,22 +16,10 @@ do
 	extension="${filename##*.}"
 	filename_no_ext="${filename%.*}"
 
-<<<<<<< HEAD
-if [[ $filename =~ .*FreeBayes.* ]bas]
-	then
-		python $SCRIPTS_DIR/header_fix.py \
-		-f $i \
-		-v F \
-		> $DIR_OUT/$filename_no_ext.fixed.vcf
-elif [[ $filename =~ .*VarScan.* ]]
-	then 
-		cp $i $DIR_OUT/$filename_no_ext.fixed.vcf
-=======
 	python $SCRIPTS_DIR/header_fix.py \
 	-f $i \
 	-v F \
 	> $DIRFREE/NORM_FREE/$filename_no_ext.fixed.vcf
->>>>>>> branch 'devel' of https://github.com/urtism/CMG.git
 		
 	$BCFTOOLS norm -m -both \
 	-f $REFERENCE \
