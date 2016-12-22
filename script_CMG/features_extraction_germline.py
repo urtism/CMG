@@ -833,7 +833,7 @@ def print_var(dictionary,out,sample_name):
 
 	lista_features=open(opts.listaFeatures,'r')
 	dataset_varianti=open(out + '/' + sample_name + '.tsv','w')
-	dataset_varianti_vcf=open(out+ '/' + sample_name + '.vcf','w')
+	
 
 
 	header=[]
@@ -850,8 +850,7 @@ def print_var(dictionary,out,sample_name):
 
 	#print features_variante
 
-	dataset_varianti.write('CHROM\tPOS\tREF\tALT\t' + '\t'.join(header)+ '\n')
-	dataset_varianti_vcf.write('##fileformat=VCFv4.2\n'+'#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t'+sample_name+'\n')
+	dataset_varianti.write('CHROM\tPOS\tID\tREF\tALT\t' + '\t'.join(header)+ '\n')
 	for variante in dictionary.keys():
 		features = dictionary.get(variante)[-1]
 
@@ -861,15 +860,25 @@ def print_var(dictionary,out,sample_name):
 			#print feat
 		 	feat_eval=str(eval(feat))
 		 	features_variante_eval=features_variante_eval + [feat_eval]
-
+		
 		#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	20151202_01_Cardio
-		var=variante+'\t'+ '\t'.join(features_variante_eval)
-		var_vcf=variante.split('\t')[0]+'\t'+variante.split('\t')[1]+'\t.\t'+variante.split('\t')[2]+'\t'+variante.split('\t')[3]+'\t.\t.\t.\t.\t.'
+		var=variante.split('\t')[0]+'\t'+variante.split('\t')[1]+'\t' +sample_name +'\t'+variante.split('\t')[2]+'\t'+variante.split('\t')[3]+ '\t' + '\t'.join(features_variante_eval)
+		
 		for gt in [features.GT_GATK,features.GT_Varscan,features.GT_Freebayes]:
 			if gt != './.' and gt != '.' and gt != '0/0':
 				dataset_varianti.write(var+ '\n')
-				dataset_varianti_vcf.write(var_vcf+ '\n')
 				break
+	dataset_varianti.close()
+	lista_features.close()
+	
+def print_vcf(varianti,out):
+	dataset_varianti_vcf=open(out+ '/TOTAL.vcf','w')
+	dataset_varianti_vcf.write('##fileformat=VCFv4.2\n'+'#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLES\n')
+	for variante in dictionary.keys():
+		var_vcf=variante.split('\t')[0]+'\t'+variante.split('\t')[1]+'\t.\t'+variante.split('\t')[2]+'\t'+variante.split('\t')[3]+'\t.\t.\t.\t.\t.'
+		dataset_varianti_vcf.write(var_vcf+ '\n')
+	dataset_varianti_vcf.close()
+
 
 def samples_name_extract(vcf):
 	samples = []
@@ -888,6 +897,13 @@ def split_vcf(vcf_dir,samples):
 	header = []
 	header_chrom = []
 	varianti = []
+	
+	if 'Free' in vcf_name:
+			variant_caller = 'FreeBayes'
+	elif 'GATK' in vcf_name:
+			variant_caller = 'GATK'
+	elif 'VarScan' in vcf_name:
+			variant_caller = 'VarScan'
 
 	for line in vcf:
 		line=line.rstrip()
@@ -905,16 +921,12 @@ def split_vcf(vcf_dir,samples):
 		except:
 			pass
 
-		if 'Free' in vcf_name:
-			variant_caller = 'FreeBayes'
-		elif 'GATK' in vcf_name:
-			variant_caller = 'GATK'
-		elif 'VarScan' in vcf_name:
-			variant_caller = 'VarScan'
 		sample_vcf = open(vcf_path +'/' + sample +'/' + sample + '_'+variant_caller +'.vcf','w')
+		print 'Riscrivo le varianti in ' +vcf_path +'/'+ sample + '_'+variant_caller +'.vcf'
 
 		sample_vcf.write('\n'.join(header) + '\n')
 		sample_vcf.write('\t'.join(header_chrom[0:9] + [sample])  +'\n')
+		
 		for variante in varianti:
 			variante_split = variante.split('\t')
 			variante_common = variante_split[0:9]
@@ -924,6 +936,7 @@ def split_vcf(vcf_dir,samples):
 			#	continue
 			#else:
 			#	sample_vcf.write('\t'.join(variante_common + [format_sample]) + '\n')
+		sample_vcf.close()
 
 def main():
 
@@ -942,50 +955,13 @@ def main():
 	samples = samples_name_extract(open(opts.freebayes,'r'))
 	
 	if opts.split:
+		print 'Splittando le varianti per campione...'
 		for vcf_dir in callers:
+			print 'Splitto ' + vcf_dir
 			split_vcf(vcf_dir,samples)
 
 	#vcf_path =  os.path.dirname('/home/minime/Scrivania/VCF_TEST/20151202_01_Cardio/20151202_01_Cardio_FreeBayes.vcf')
-<<<<<<< HEAD
-	
-	for dir_sample in os.listdir(os.path.dirname(opts.freebayes)):
-	 	varianti = dict() 
-	 	index=0;
-	 	if dir_sample.endswith(".vcf"):
-	 		continue
-	 	else:
-	 		vcf_path = os.path.dirname(opts.freebayes) +'/' + dir_sample
-	# 		
-			for vcf_name in os.listdir(vcf_path) :
-			 	print vcf_name
-			 	if 'Free' in vcf_name:
-			 		index = 1
-			 	elif 'GATK' in vcf_name:
-			 		index = 3
-			 	elif 'VarScan' in vcf_name:
-			 		index = 2
- 			
-			 	in_file = open(vcf_path + '/' + vcf_name)
-			 	vcfreader = read(in_file,index,varianti)
-	
-	varianti = dict() 			
-	for vcf_name in os.listdir(vcf_path) :
-		#print vcf_name
-		if 'Free' in vcf_name:
-			index = 0
-		elif 'GATK' in vcf_name:
-			index = 2
-		elif 'VarScan' in vcf_name:
-			index = 1
-		
-		in_file = open(vcf_path + '/' + vcf_name)
-		vcfreader = read(in_file,index,varianti)
-	
-	set_features(varianti)
-	
-	print_var_complete(varianti)
-	
-=======
+
 	#dir_sample = '20151202_01_Cardio'
 	out=os.path.dirname(opts.freebayes)+'/out'
 	try:
@@ -1011,5 +987,6 @@ def main():
 			
 			set_features(varianti)
 			print_var(varianti,out,dir_sample)
->>>>>>> branch 'devel' of https://github.com/urtism/CMG.git
+	
+	print_vcf(varianti,out)
 main()
