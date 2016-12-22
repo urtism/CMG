@@ -34,9 +34,9 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 
 	cd $VEP
 
-	perl $VEPANN -i /home/jarvis/NGS_ANALYSIS/PROCESSING/7_Filter/20160520_Cardio_GATK_Filter.vcf \
-	-o $PROCESSING/8_Annotation/20160520_Cardio_GATK_Filter_ANN_TABBBBB.tsv \
-	--stats_file $PROCESSING/8_Annotation/20160520_Cardio_GATK_Filter_ANN.html \
+	perl $VEPANN -i /home/jarvis/NGS_ANALYSIS/PROCESSING/7_Filter/20161219_Cardio_GATK_Filter.vcf \
+	-o $PROCESSING/8_Annotation/20161219_Cardio_GATK_Filter_ANN_TABBBBB.tsv \
+	--stats_file $PROCESSING/8_Annotation/20161219_Cardio_GATK_Filter_ANN.html \
 	--cache \
 	--dont_skip \
 	--assembly GRCh37 \
