@@ -134,12 +134,15 @@ def extract_paz_name(pazienti):
 			continue
 		else:
 			#print paz
-			nome = paz.split('\t')[0]
-			num_paz = paz.split('\t')[1]
-			num_run = paz.split('\t')[2]
-			data_run = paz.split('\t')[3]
-			id = paz.split('\t')[4]
-			id_info[id]=[nome,num_paz,num_run,data_run]
+			try:
+				nome = paz.split('\t')[0]
+				num_paz = paz.split('\t')[1]
+				num_run = paz.split('\t')[2]
+				data_run = paz.split('\t')[3]
+				id = paz.split('\t')[4]
+				id_info[id]=[nome,num_paz,num_run,data_run]
+			except:
+				print "il paziente",paz.split('\t')[0],"ha un formato non valido"
 	return id_info		
 
 def main():
@@ -153,6 +156,11 @@ def main():
 	opts = parser.parse_args()
 	global pazienti
 	pazienti = extract_paz_name(open(opts.paz_list,'r'))
+	
+	try:
+		os.mkdir(opts.out)
+	except:
+		print opts.out,"directory esistente"
 
 	hash_var = {}
 	num_paz = 0

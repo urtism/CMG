@@ -20,11 +20,13 @@ class Caller():
 	DP=''
 	QB=''
 	GQ=''
-	Call=''
+	Call='0'
 	AF=''
 	STRBIAS=''
 	FILTER=''
 	AC=''
+	AN=''
+	STRBIAS_TOT=''
 
 class Freebayes(Caller):
 	
@@ -35,7 +37,6 @@ class Freebayes(Caller):
 	RO_r_TOT=''
 	DP_f_TOT=''
 	DP_r_TOT=''
-	STRBIAS_TOT=''
 	AB=''
 	ABP=''
 	AN=''
@@ -83,7 +84,6 @@ class GATK(Caller):
 	
 	#PROVENIENTI DALLE INFO
 	AF_TOT=''
-	AN_TOT=''
 	BaseQRankSum=''
 	ClippingRankSum=''
 	DP_TOT=''
@@ -246,10 +246,11 @@ class Features():
 
 def get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes):
 	'''estrae le informazioni dal vcf di freebayes'''
-	#print chrom,pos,ref,alt
+	
 	freebayes.GT=sample[format.index('GT')]
 	if freebayes.GT=='.' :
-		freebayes.GT=='./.'
+		freebayes.GT='./.'
+		#print chrom,pos,ref,alt,freebayes.GT
 	else:
 		freebayes.GQ=sample[format.index('GQ')]
 		freebayes.AO=float(sample[format.index('AO')])
@@ -384,13 +385,16 @@ def get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes):
 				freebayes.STRBIAS_TOT='.'
 
 		freebayes.FILTER=filter
+		#print chrom,pos,ref,alt,freebayes.GT
+	
 	freebayes.Call=1
 
 def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 	'''estrae le informazioni dal vcf di GATK'''
-
+	
 	GATK.GT=sample[format.index('GT')]
 	if GATK.GT=='./.':
+		#print chrom,pos,ref,alt,GATK.GT
 		pass
 	else:
 		GATK.AO=float((sample[format.index('AD')]).split(',')[1])
@@ -448,13 +452,15 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 			GATK.GQ='.'
 		
 		GATK.FILTER=filter
+		#print chrom,pos,ref,alt,GATK.GT
 	GATK.Call=1
 	
 def get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan):
 	'''estrae le informazioni dal vcf di varscan'''
-	#print chrom,pos,ref,alt
+	
 	varscan.GT=sample[format.index('GT')]
 	if varscan.GT== './.':
+		#print chrom,pos,ref,alt,varscan.GT
 		pass
 	else:
 		varscan.AO=float(sample[format.index('AD')])
@@ -502,7 +508,8 @@ def get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan):
 				varscan.STRBIAS='.'
 
 		Varscan.FILTER=filter
-		Varscan.call=1
+		#print chrom,pos,ref,alt,varscan.GT
+	Varscan.Call=1
 
 def set_features(dictionary):
 	'''setta i valori delle features in base alle info estratte dai vcf'''
@@ -516,7 +523,8 @@ def set_features(dictionary):
 		vett_RO=[]
 		vett_AC=[]
 		index=0
-
+		#print variante
+		#print varc_array
 		for varcall in varc_array:
 			if varcall is not "":
 				vett_MBQ=vett_MBQ+[varcall.QB]
@@ -552,8 +560,8 @@ def set_features(dictionary):
 					features.RO_r_TOT_Freebayes=varc_array[0].RO_r_TOT
 					features.DP_f_TOT_Freebayes=varc_array[0].DP_f_TOT
 					features.DP_r_TOT_Freebayes=varc_array[0].DP_r_TOT
-					features.AB_Freebayes=varc_array[0].AB_Freebayes
-					features.ABP_Freebayes=varc_array[0].ABP_Freebayes
+					features.AB_Freebayes=varc_array[0].AB
+					features.ABP_Freebayes=varc_array[0].ABP
 					features.AF_TOT_Freebayes=varc_array[0].AF_TOT
 					features.AO_TOT_Freebayes=varc_array[0].AO_TOT
 					features.CIGAR_Freebayes=varc_array[0].CIGAR
@@ -562,7 +570,7 @@ def set_features(dictionary):
 					features.DPRA_TOT_Freebayes=varc_array[0].DPRA_TOT
 					features.END_TOT_Freebayes=varc_array[0].END_TOT
 					features.EPP_TOT_Freebayes=varc_array[0].EPP_TOT
-					features.EPPR_TOT_Freebayes=varc_array[0].EPPR_TOT_
+					features.EPPR_TOT_Freebayes=varc_array[0].EPPR_TOT
 					features.GTI_TOT_Freebayes=varc_array[0].GTI_TOT
 					features.LEN_Freebayes=varc_array[0].LEN
 					features.MEANALT_Freebayes=varc_array[0].MEANALT
@@ -632,7 +640,7 @@ def set_features(dictionary):
 
 
 				elif index == 1:
-
+					
 					features.GT_Varscan=varc_array[1].GT
 					features.AO_Varscan=varc_array[1].AO
 					features.RO_Varscan=varc_array[1].RO
@@ -643,7 +651,7 @@ def set_features(dictionary):
 					features.DP_Varscan=varc_array[1].DP
 					features.QB_Varscan=varc_array[1].QB
 					features.GQ_Varscan=varc_array[1].GQ
-					features.Call_Varscan=varc_array[1].Call
+					features.CallVarscan=varc_array[1].Call
 					features.AF_Varscan=varc_array[1].AF
 					features.STRBIAS_Varscan=varc_array[1].STRBIAS
 					features.FILTER_Varscan=varc_array[1].FILTER
@@ -685,7 +693,7 @@ def set_features(dictionary):
 
 		v=[]
 		for ao in vett_AO:
-			if ao is not '':
+			if ao and ao is not '':
 				v=v+[int(ao)]
 		try:
 			features.AO_media=statistics.mean(v)
@@ -698,7 +706,7 @@ def set_features(dictionary):
 
 		v=[]
 		for ro in vett_RO:
-			if ro is not '.':
+			if ro and ro is not '.' :
 				v=v+[int(ro)]
 		try:
 			features.RO_media=statistics.mean(v)
@@ -737,7 +745,7 @@ def set_features(dictionary):
 
 		v=[]
 		for strb in vett_STRB_media:
-			if strb is not '.':
+			if strb and strb is not '.':
 				v=v+[float(strb)]
 		try:
 			features.STRBIAS_media= statistics.mean(v)
@@ -750,7 +758,7 @@ def set_features(dictionary):
 
 		v=[]
 		for ac in vett_AC:
-			if ac is not '.':
+			if ac and ac is not '.':
 				v=v+[int(ac)]
 		try:
 			features.AC_media=statistics.mean(v)
@@ -761,7 +769,6 @@ def set_features(dictionary):
 		except:
 			features.AC_mediana='.'
 
-		print features.DP_media
 		dictionary[variante]= varc_array + [features]
 
 def switch(dictionary,ID,index,chrom,pos,ref,alt,filter,info,format,sample):
@@ -770,20 +777,23 @@ def switch(dictionary,ID,index,chrom,pos,ref,alt,filter,info,format,sample):
 		vettore=dictionary[ID]
 	else:
 		vettore=['','','']
+
 	if index==0:
 		# print 'Freebayes'
 		freebayes=Freebayes()
 		get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes)
+		vettore[0]=freebayes
 
 	elif index==2:
 		# print 'gatk'
 		gatk=GATK()
 		get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,gatk)
-	
+		vettore[2]=gatk
 	elif index==1 :
 		# print 'varscan'
 		varscan=Varscan()
 		get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan)
+		vettore[1]=varscan
 	dictionary[ID]=vettore
 
 def read(iterable,index,dictionary):
@@ -808,8 +818,10 @@ def read(iterable,index,dictionary):
 			format=FORMAT.split(":")
 			SAMPLE = var[-1]
 			sample = SAMPLE.split(':')
-			switch(dictionary,ID,index,chrom,pos,ref,alt,filter,info,format,sample)
-
+			if alt != '*':
+				#print index,chrom,pos,ref,alt
+				switch(dictionary,ID,index,chrom,pos,ref,alt,filter,info,format,sample)
+				
 def control(dictionary):
 	''' esegue un controllo sulle varianti, se non hanno variant caller che le chiama vengono eliminate'''
 	for variante in dictionary.keys():
@@ -817,14 +829,16 @@ def control(dictionary):
 			#print "sto cancellando:",variante
 			del dictionary[variante]
 				
-def print_var_complete(dictionary):
+def print_var(dictionary,out,sample_name):
 
 	lista_features=open(opts.listaFeatures,'r')
-	dataset_varianti=open(opts.out,'w')
+	dataset_varianti=open(out + '/' + sample_name + '.tsv','w')
+	dataset_varianti_vcf=open(out+ '/' + sample_name + '.vcf','w')
+
 
 	header=[]
 	features_variante=[]
-	features_variante_eval=[]
+	
 	
 	for line in lista_features:
 		line = line.rstrip()
@@ -834,68 +848,28 @@ def print_var_complete(dictionary):
 			header=header+[line]
 			features_variante=features_variante+['features.'+line]
 
-	dataset_varianti.write('\t'.join(header)+ '\n')
-	
+	#print features_variante
+
+	dataset_varianti.write('CHROM\tPOS\tREF\tALT\t' + '\t'.join(header)+ '\n')
+	dataset_varianti_vcf.write('##fileformat=VCFv4.2\n'+'#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t'+sample_name+'\n')
 	for variante in dictionary.keys():
 		features = dictionary.get(variante)[-1]
 
 		#print features_variante
-	
+		features_variante_eval=[]
 		for feat in features_variante:
 			#print feat
 		 	feat_eval=str(eval(feat))
 		 	features_variante_eval=features_variante_eval + [feat_eval]
 
+		#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	20151202_01_Cardio
 		var=variante+'\t'+ '\t'.join(features_variante_eval)
-		dataset_varianti.write(var+ '\n')
-
-		#print variante,str(features.CallGATK),str(features.CallVarscan),str(features.CallFreebayes)
-		# print '\t'.join([opts.normal,opts.sample,variante,str(features.CallGATK),str(features.CallVarscan),str(features.CallFreebayes),
-		# 	str(features.SomaticGATK),str(features.SomaticVarscan),str(features.SomaticFreebayes),
-		# 	str(features.GT_GATK),str(features.GT_Varscan),str(features.GT_Freebayes),
-		# 	str(features.DP_median),str(features.QB_GATK),str(features.QB_Freebayes),str(features.MBQT),str(features.MBQT_median),
-		# 	str(features.AF_t_GATK),str(features.AF_t_Varscan),str(features.AF_t_Freebayes),str(features.AF_media),str(features.AF_median),
-		# 	str(features.Delta_GATK),str(features.Delta_Varscan),str(features.Delta_Freebayes),str(features.delta_media),str(features.delta_median),
-		# 	str(features.Delta_perc_GATK),str(features.Delta_perc_Varscan),str(features.Delta_perc_Freebayes),str(features.Delta_perc_media),str(features.Delta_perc_median),
-		# 	str(features.DP_n_t_GATK),str(features.DP_n_t_Varscan),str(features.DP_n_t_Freebayes),str(features.DPn_t_media),str(features.DPn_t_median),
-		# 	str(features.sample_lod_GATK),str(features.normal_lod_GATK),str(features.delta_lod_GATK),str(features.t_n_lod_GATK),
-		# 	str(features.FOXOG_GATK),str(features.GQ_GATK),str(features.PGT_GATK),str(features.PID_GATK),str(features.PL_GATK),str(features.HCNT_GATK),
-		# 	str(features.MAX_ED_GATK),str(features.MIN_ED_GATK),str(features.PON_GATK),str(features.RPA_GATK),str(features.RU_GATK),str(features.STR_GATK),
-		# 	str(features.STRBIAS_GATK),str(features.STRBIAS_Varscan),str(features.STRBIAS_Freebayes),str(features.STRBIAS_media),str(features.STRBIAS_median),
-		# 	str(features.ODDRATIO_Freebayes),str(features.SBF_Freebayes),str(features.SHIFT3_Freebayes),str(features.MSI_Freebayes),str(features.MSILEN_Freebayes),str(features.SOR_Freebayes),
-		# 	str(features.LSEQ_Freebayes),str(features.RSEQ_Freebayes),str(features.STATUS_Freebayes),str(features.PMEAN_Freebayes),str(features.PSTD_Freebayes),str(features.QSTD_Freebayes),
-		# 	str(features.MQ_Freebayes),str(features.SN_Freebayes),str(features.HIAF_Freebayes),str(features.NM_Freebayes),
-		# 	str(features.LOH_Varscan),str(features.LOH_Freebayes)]).rstrip()
-
-# def print_var_reduced(dictionary):
-	
-# 	print '\t'.join(["CHROM","POS","REF","ALT","CallGATK","CallVarscan","CallFreebayes",
-# 			"FILTER_GATK","STATUS_Freebayes",
-# 			"GT_GATK","GT_Varscan","GT_Freebayes",
-# 			"DP_TUM","AF_TUM","AO_TUM","RO_TUM","MBQ_TUM",
-# 			"DP_NORM","AF_NORM","AO_NORM","RO_NORM","MBQ_NORM",
-# 			"Delta_mediana","Delta_perc_median",
-# 			"STRBIAS_mediana","HCNT_GATK","MAX_ED_GATK","MIN_ED_GATK","STR_GATK",
-# 			"SHIFT3_Freebayes","MSI_Freebayes","MSILEN_Freebayes","SOR_Freebayes",
-# 			"LSEQ_Freebayes","RSEQ_Freebayes","PMEAN_Freebayes",
-# 			"MQ_Freebayes","SN_Freebayes","NM_Freebayes",
-# 			"LOH_Varscan","LOH_Freebayes"])
-
-# 	for variante in dictionary.keys():
-# 		features = dictionary.get(variante)[-1]
-
-# 		print '\t'.join([variante,str(features.CallGATK),str(features.CallVarscan),str(features.CallFreebayes),
-			
-# 			str(features.FILTER_GATK),str(features.STATUS_Freebayes),
-# 			str(features.GT_GATK),str(features.GT_Varscan),str(features.GT_Freebayes),
-# 			str(features.DP_median),str(features.AF_median),str(features.AO_tum_media),str(features.RO_tum_media),str(features.MBQT_median),
-# 			str(features.DP_norm_median),str(features.AF_norm_median),str(features.AO_norm_media),str(features.RO_norm_media),str(features.MBQN_median),
-# 			str(features.delta_median),str(features.Delta_perc_median),
-# 			str(features.STRBIAS_median),str(features.HCNT_GATK),str(features.MAX_ED_GATK),str(features.MIN_ED_GATK),str(features.STR_GATK),
-# 			str(features.SHIFT3_Freebayes),str(features.MSI_Freebayes),str(features.MSILEN_Freebayes),str(features.SOR_Freebayes),
-# 			str(features.LSEQ_Freebayes),str(features.RSEQ_Freebayes),str(features.PMEAN_Freebayes),
-# 			str(features.MQ_Freebayes),str(features.SN_Freebayes),str(features.NM_Freebayes),
-# 			str(features.LOH_Varscan),str(features.LOH_Freebayes)]).rstrip()
+		var_vcf=variante.split('\t')[0]+'\t'+variante.split('\t')[1]+'\t.\t'+variante.split('\t')[2]+'\t'+variante.split('\t')[3]+'\t.\t.\t.\t.\t.'
+		for gt in [features.GT_GATK,features.GT_Varscan,features.GT_Freebayes]:
+			if gt != './.' and gt != '.' and gt != '0/0':
+				dataset_varianti.write(var+ '\n')
+				dataset_varianti_vcf.write(var_vcf+ '\n')
+				break
 
 def samples_name_extract(vcf):
 	samples = []
@@ -959,20 +933,20 @@ def main():
 	parser.add_argument('-g', '--gatk', help="gatk vcf output file name")
 	parser.add_argument('-v', '--varscan', help="Varscan vcf output file name")
 	parser.add_argument('-l', '--listaFeatures', help="Lista di features da stampare")
-	parser.add_argument('-o', '--out', help="Dataset di varianti in output")
 	parser.add_argument('-s', '--split', help="Split vcf per samples", action='store_true')
 	parser.add_argument('-a','--amplicon',help="Amplicon design", action='store_true')
-	parser.add_argument('-c','--complete',help="Print complete info", action='store_true')
 
 	global opts 
 	opts = parser.parse_args()
 	callers = [opts.gatk,opts.varscan,opts.freebayes]
 	samples = samples_name_extract(open(opts.freebayes,'r'))
+	
 	if opts.split:
 		for vcf_dir in callers:
 			split_vcf(vcf_dir,samples)
 
 	#vcf_path =  os.path.dirname('/home/minime/Scrivania/VCF_TEST/20151202_01_Cardio/20151202_01_Cardio_FreeBayes.vcf')
+<<<<<<< HEAD
 	
 	for dir_sample in os.listdir(os.path.dirname(opts.freebayes)):
 	 	varianti = dict() 
@@ -1011,4 +985,31 @@ def main():
 	
 	print_var_complete(varianti)
 	
+=======
+	#dir_sample = '20151202_01_Cardio'
+	out=os.path.dirname(opts.freebayes)+'/out'
+	try:
+		os.mkdir(out)
+	except:
+		pass
+
+	for dir_sample in os.listdir(os.path.dirname(opts.freebayes)):
+		varianti = dict()
+		vcf_path = os.path.dirname(opts.freebayes) +'/' + dir_sample
+		if os.path.isdir(vcf_path) and vcf_path != out:
+			for vcf_name in os.listdir(vcf_path) :
+				print vcf_name
+				if 'Free' in vcf_name:
+					index = 0
+				elif 'GATK' in vcf_name:
+					index = 2
+				elif 'VarScan' in vcf_name:
+					index = 1
+				
+				in_file = open(vcf_path + '/' + vcf_name)
+				vcfreader = read(in_file,index,varianti)
+			
+			set_features(varianti)
+			print_var(varianti,out,dir_sample)
+>>>>>>> branch 'devel' of https://github.com/urtism/CMG.git
 main()
