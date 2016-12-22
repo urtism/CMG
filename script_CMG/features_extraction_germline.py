@@ -972,28 +972,28 @@ def main():
 		for vcf_dir in callers:
 			split_vcf(vcf_dir,samples)
 
-	vcf_path =  os.path.dirname('/home/minime/Scrivania/VCF_TEST/20151202_01_Cardio/20151202_01_Cardio_FreeBayes.vcf')
+	#vcf_path =  os.path.dirname('/home/minime/Scrivania/VCF_TEST/20151202_01_Cardio/20151202_01_Cardio_FreeBayes.vcf')
 	
-	
-	# for dir_sample in os.listdir(os.path.dirname(opts.freebayes)):
-	# 	varianti = dict() 
-	# 	index=0;
-	# 	if dir_sample.endswith(".vcf"):
-	# 		continue
-	# 	else:
-	# 		vcf_path = os.path.dirname(opts.freebayes) +'/' + dir_sample
+	for dir_sample in os.listdir(os.path.dirname(opts.freebayes)):
+	 	varianti = dict() 
+	 	index=0;
+	 	if dir_sample.endswith(".vcf"):
+	 		continue
+	 	else:
+	 		vcf_path = os.path.dirname(opts.freebayes) +'/' + dir_sample
 	# 		
-			# for vcf_name in os.listdir(vcf_path) :
-			# 	print vcf_name
-			# 	if 'Free' in vcf_name:
-			# 		index = 1
-			# 	elif 'GATK' in vcf_name:
-			# 		index = 3
-			# 	elif 'VarScan' in vcf_name:
-			# 		index = 2
-				
-			# 	in_file = open(vcf_path + '/' + vcf_name)
-			# 	vcfreader = read(in_file,index,varianti)
+			for vcf_name in os.listdir(vcf_path) :
+			 	print vcf_name
+			 	if 'Free' in vcf_name:
+			 		index = 1
+			 	elif 'GATK' in vcf_name:
+			 		index = 3
+			 	elif 'VarScan' in vcf_name:
+			 		index = 2
+ 			
+			 	in_file = open(vcf_path + '/' + vcf_name)
+			 	vcfreader = read(in_file,index,varianti)
+	
 	varianti = dict() 			
 	for vcf_name in os.listdir(vcf_path) :
 		#print vcf_name
@@ -1008,9 +1008,7 @@ def main():
 		vcfreader = read(in_file,index,varianti)
 	
 	set_features(varianti)
-	if opts.complete:
-		print_var_complete(varianti)
-	else:
-		print_var_reduced(varianti)
+	
+	print_var_complete(varianti)
 	
 main()
