@@ -35,8 +35,8 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	cd $VEP
 
 	perl $VEPANN -i /home/jarvis/NGS_ANALYSIS/PROCESSING/7_Filter/20161219_Cardio_GATK_Filter.vcf \
-	-o $PROCESSING/8_Annotation/20161219_Cardio_GATK_Filter_ANN_TABBBBB.tsv \
-	--stats_file $PROCESSING/8_Annotation/20161219_Cardio_GATK_Filter_ANN.html \
+	-o $PROCESSING/8_Annotation/20161219_Cardio_GATK_Filter_ANN_.vcf \
+	--stats_file $PROCESSING/8_Annotation/20161219_Cardio_GATK_Filter_ANN_vcf.html \
 	--cache \
 	--dont_skip \
 	--assembly GRCh37 \
@@ -69,9 +69,9 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	--plugin GeneSplicer,/home/jarvis/.vep/Plugins/GeneSplicer/GeneSplicer/bin/alpha/genesplicer,/home/jarvis/.vep/Plugins/GeneSplicer/GeneSplicer/training_data_sets/Human,context=200 \
 	--plugin Gwava,tss,/home/jarvis/.vep/Plugins/Gwava/gwava_scores.bed.gz \
 	--plugin HGVSshift \
-	--plugin FATHMM_MKL,/home/jarvis/.vep/Plugins/FATHMM/fathmm-MKL_Current_zerobased.tab.gz
+	--plugin FATHMM_MKL,/home/jarvis/.vep/Plugins/FATHMM/fathmm-MKL_Current_zerobased.tab.gz \
 	--plugin MaxEntScan,/home/jarvis/.vep/Plugins/MaxEntScan/fordownload \
 	--plugin SameCodon \
 	--plugin Downstream \
-	--tab
+	--vcf
 
