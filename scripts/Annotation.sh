@@ -35,7 +35,7 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	cd $VEP
 
 	perl $VEPANN -i /home/jarvis/NGS_ANALYSIS/PROCESSING/7_Filter/20161219_01_Cardio.vcf \
-	-o $PROCESSING/8_Annotation/20161219_01_Cardio.vcf \
+	-o $PROCESSING/8_Annotation/20161219_01_Cardio.json \
 	--stats_file $PROCESSING/8_Annotation/20161219_01_Cardio.html \
 	--cache \
 	--dont_skip \
@@ -71,5 +71,5 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	--plugin MaxEntScan,/home/jarvis/.vep/Plugins/MaxEntScan/fordownload \
 	--plugin SameCodon \
 	--plugin Downstream \
-	--vcf
+	--json
 
