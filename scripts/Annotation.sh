@@ -58,7 +58,6 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	--check_alleles \
 	--check_svs \
 	--gmaf \
-	--maf_1kg \
 	--pubmed \
 	--species homo_sapiens \
 	--failed 1 \
@@ -68,7 +67,6 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	--plugin ExAC,/home/jarvis/.vep/Plugins/ExAC/ExAC.r0.3.1.sites.vep.vcf.gz \
 	--plugin GeneSplicer,/home/jarvis/.vep/Plugins/GeneSplicer/GeneSplicer/bin/alpha/genesplicer,/home/jarvis/.vep/Plugins/GeneSplicer/GeneSplicer/training_data_sets/Human,context=200 \
 	--plugin Gwava,tss,/home/jarvis/.vep/Plugins/Gwava/gwava_scores.bed.gz \
-	--plugin HGVSshift \
 	--plugin FATHMM_MKL,/home/jarvis/.vep/Plugins/FATHMM/fathmm-MKL_Current_zerobased.tab.gz \
 	--plugin MaxEntScan,/home/jarvis/.vep/Plugins/MaxEntScan/fordownload \
 	--plugin SameCodon \

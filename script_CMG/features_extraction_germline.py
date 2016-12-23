@@ -917,12 +917,12 @@ def split_vcf(vcf_dir,samples):
 	
 	for sample in samples:
 		try: 
-			os.mkdir(vcf_path +'/' + sample)
+			os.mkdir(opts.out_path +'/' + sample)
 		except:
 			pass
-
-		sample_vcf = open(vcf_path +'/' + sample +'/' + sample + '_'+variant_caller +'.vcf','w')
-		print 'Riscrivo le varianti in ' +vcf_path +'/'+ sample + '_'+variant_caller +'.vcf'
+		
+		sample_vcf = open(opts.out_path +'/' + sample +'/' + sample + '_'+variant_caller +'.vcf','w')
+		#print 'Riscrivo le varianti in ' +vcf_path +'/'+ sample + '_'+variant_caller +'.vcf'
 
 		sample_vcf.write('\n'.join(header) + '\n')
 		sample_vcf.write('\t'.join(header_chrom[0:9] + [sample])  +'\n')
@@ -948,31 +948,35 @@ def main():
 	parser.add_argument('-l', '--listaFeatures', help="Lista di features da stampare")
 	parser.add_argument('-s', '--split', help="Split vcf per samples", action='store_true')
 	parser.add_argument('-a','--amplicon',help="Amplicon design", action='store_true')
+	parser.add_argument('-o','--out_path',help="path di output")
 
 	global opts 
 	opts = parser.parse_args()
 	callers = [opts.gatk,opts.varscan,opts.freebayes]
 	samples = samples_name_extract(open(opts.freebayes,'r'))
 	
+	try:
+		os.mkdir(opts.out_path)
+	except:
+		pass
+	
 	if opts.split:
-		print 'Splittando le varianti per campione...'
+		print 'Splitto le varianti per campione...'
 		for vcf_dir in callers:
-			print 'Splitto ' + vcf_dir
+			#print 'Splitto ' + vcf_dir
 			split_vcf(vcf_dir,samples)
+		print'Done'
 
 	#vcf_path =  os.path.dirname('/home/minime/Scrivania/VCF_TEST/20151202_01_Cardio/20151202_01_Cardio_FreeBayes.vcf')
 
 	#dir_sample = '20151202_01_Cardio'
-	out=os.path.dirname(opts.freebayes)+'/out'
-	try:
-		os.mkdir(out)
-	except:
-		pass
-
-	for dir_sample in os.listdir(os.path.dirname(opts.freebayes)):
+# 	out=os.path.dirname(opts.freebayes)+'/out'
+	
+	for dir_sample in os.listdir(opts.out_path):
 		varianti = dict()
-		vcf_path = os.path.dirname(opts.freebayes) +'/' + dir_sample
-		if os.path.isdir(vcf_path) and vcf_path != out:
+		vcf_path = opts.out_path +'/' + dir_sample
+		print "Analizzo le varianti da: " + vcf_path
+		if os.path.isdir(vcf_path):
 			for vcf_name in os.listdir(vcf_path) :
 				print vcf_name
 				if 'Free' in vcf_name:
@@ -986,7 +990,7 @@ def main():
 				vcfreader = read(in_file,index,varianti)
 			
 			set_features(varianti)
-			print_var(varianti,out,dir_sample)
+			print_var(varianti,opts.out_path,dir_sample)
 	
-	print_vcf(varianti,out)
+	print_vcf(varianti,opts.out_path)
 main()
