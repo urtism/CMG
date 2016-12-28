@@ -34,9 +34,9 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 
 	cd $VEP
 
-	perl $VEPANN -i /home/jarvis/NGS_ANALYSIS/PROCESSING/7_Filter/20161219_01_Cardio.vcf \
-	-o $PROCESSING/8_Annotation/20161219_01_Cardio.json \
-	--stats_file $PROCESSING/8_Annotation/20161219_01_Cardio.html \
+	perl $VEPANN -i /home/jarvis/NGS_ANALYSIS/PROCESSING/7_Filter/20160520_Cardio_GATK_Filter.vcf \
+	-o $PROCESSING/8_Annotation/20160520_Cardio_GATK_Filter_ANN_TABBBBB.tsv \
+	--stats_file $PROCESSING/8_Annotation/20160520_Cardio_GATK_Filter_ANN.html \
 	--cache \
 	--dont_skip \
 	--assembly GRCh37 \
@@ -58,18 +58,22 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 	--check_alleles \
 	--check_svs \
 	--gmaf \
+	--maf_1kg \
 	--pubmed \
 	--species homo_sapiens \
 	--failed 1 \
-	--plugin Blosum62 \
+	--plugin Blosum62 \ #OK
+	--plugin CADD,/home/jarvis/.vep/Plugins/CADD/HumanExome-12v1-1_A_inclAnno.tsv.gz,/home/jarvis/.vep/Plugins/CADD/InDels.tsv.gz \ #OK (combinazione scores tra cui sift e polyphen ed altri di conservazione come GERP e PhastCons)
+	--plugin Carol \ #OK (combina SIFT e Polyphen)
+	--plugin Conservation,GERP_CONSERVATION_SCORE,mammals \ #NON VA --> RICHIEDE CONN DB
+	--plugin CSN \ #Unione di c. e p. --> Non serve
+	--plugin Condel,/home/jarvis/.vep/Plugins/condel/config,b \ #RICHIEDE CONNESSIONE DB --> NON VA
 	--plugin dbNSFP,/home/jarvis/.vep/Plugins/dbNSFP_2.9.2/dbNSFP.gz,LRT_score,LRT_pred,MutationTaster_score,MutationTaster_pred,MutationAssessor_score,MutationAssessor_pred,PROVEAN_score,PROVEAN_pred,SiPhy_29way_pi,SiPhy_29way_logOdds \
 	--plugin dbscSNV,/home/jarvis/.vep/Plugins/dbscSNV/dbscSNV.txt.gz \
 	--plugin ExAC,/home/jarvis/.vep/Plugins/ExAC/ExAC.r0.3.1.sites.vep.vcf.gz \
 	--plugin GeneSplicer,/home/jarvis/.vep/Plugins/GeneSplicer/GeneSplicer/bin/alpha/genesplicer,/home/jarvis/.vep/Plugins/GeneSplicer/GeneSplicer/training_data_sets/Human,context=200 \
 	--plugin Gwava,tss,/home/jarvis/.vep/Plugins/Gwava/gwava_scores.bed.gz \
-	--plugin FATHMM_MKL,/home/jarvis/.vep/Plugins/FATHMM/fathmm-MKL_Current_zerobased.tab.gz \
+	--plugin HGVSshift \
 	--plugin MaxEntScan,/home/jarvis/.vep/Plugins/MaxEntScan/fordownload \
 	--plugin SameCodon \
-	--plugin Downstream \
-	--json
-
+	--tab
