@@ -1160,8 +1160,6 @@ def main():
 	parser.add_argument('-c','--complete',help="Print complete info", action='store_true')
 	parser.add_argument('-o', '--out', help="file name in output. It returns file_name.features.tsv and file_name.vcf ")
 	
-
-	
 	global opts 
 	opts = parser.parse_args()
 	
