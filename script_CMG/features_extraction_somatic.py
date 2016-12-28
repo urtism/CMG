@@ -258,10 +258,8 @@ def get_info_Mutect(chrom,pos,ref,alt,filter,info,format,tumor,normal,Mutect):
 	Mutect.RO_t=float((tumor[format.index('AD')]).split(',')[0])
 	Mutect.DP_t=Mutect.AO_t+Mutect.RO_t
 	Mutect.DP=Mutect.AO_t+Mutect.RO_t	
-	try:
-		Mutect.DP_n=float((normal[format.index('AD')]).split(',')[0]) + float((normal[format.index('AD')]).split(',')[1])
-	except:
-		Mutect.DP_n='0'
+	Mutect.DP_n=float((normal[format.index('AD')]).split(',')[0]) + float((normal[format.index('AD')]).split(',')[1])
+	
 
 	if normal is not 'null' and Mutect.DP_n is not '0':
 		try:
@@ -313,13 +311,13 @@ def get_info_Mutect(chrom,pos,ref,alt,filter,info,format,tumor,normal,Mutect):
 
 	#print str((float((tumor[format.index('QSS')]).split(',')[0]) + float((tumor[format.index('QSS')]).split(',')[1]))/Mutect.DP),str(Mutect.DP)
 	try:
-		Mutect.QB=(float((tumor[format.index('QSS')]).split(',')[0]) + float((tumor[format.index('QSS')]).split(',')[1]))/Mutect.DP_n
+		Mutect.QB=(float((tumor[format.index('QSS')]).split(',')[0]) + float((tumor[format.index('QSS')]).split(',')[1]))/Mutect.DP_t
 	except:
 		Mutect.QB='.'
 	try:
-		Mutect.QB=(float((normal[format.index('QSS')]).split(',')[0]) + float((normal[format.index('QSS')]).split(',')[1]))/Mutect.DP_n
+		Mutect.QB_n=(float((normal[format.index('QSS')]).split(',')[0]) + float((normal[format.index('QSS')]).split(',')[1]))/Mutect.DP_n
 	except:
-		Mutect.QB='.'
+		Mutect.QB_n='.'
 	
 	Mutect.Call=1
 
@@ -806,7 +804,7 @@ def set_features_snp(dictionary):
 		except:
 			features.MBQT='.'
 		try:
-			features.MBQT_median=statistics.median(v)
+			features.MBQT_median=round(statistics.median(v))
 		except:
 			features.MBQT_median='.'	
 
@@ -815,8 +813,11 @@ def set_features_snp(dictionary):
 		v=[]
 		for bq in vett_MBQ_n:
 			#print variante,vett_MBQ,bq
-			if bq and bq is not '.':
-				nMBQN= float(nMBQN)+float(bq)
+			if bq is not '.':
+				try:
+					nMBQN= float(nMBQN)+float(bq)
+				except:
+					print variante,vett_MBQ_n,bq
 				if bq is not '0':
 					v=v+[float(bq)]
 				i=i+1
@@ -825,7 +826,7 @@ def set_features_snp(dictionary):
 		except:
 			features.MBQN_media='.'
 		try:
-			features.MBQN_median=statistics.median(v)
+			features.MBQN_median=round(statistics.median(v))
 		except:
 			features.MBQN_median='.'
 
@@ -1063,8 +1064,8 @@ def control(dictionary):
 			del dictionary[variante]
 				
 def print_var_snp_complete(dictionary):
-	
-	print '\t'.join(["SAMPLE_NORMAL_ID","SAMPLE_TUMOR_ID","CHROM","POS","REF","ALT","CallMutect","CallVarscan","CallVardict",
+	varianti_tsv=open(opts.out+ '.features.tsv','w')
+	varianti_tsv.write('\t'.join(["SAMPLE_NORMAL_ID","SAMPLE_TUMOR_ID","CHROM","POS","REF","ALT","CallMutect","CallVarscan","CallVardict",
 			"SomaticMutect","SomaticVarscan","SomaticVardict",
 			"GT_Mutect","GT_Varscan","GT_Vardict","DP_median","BQ_Mutect","BQ_Vardict","MBQT_media","MBQT_mediana",
 			"AF_Mutect","AF_Varscan","AF_Vardict","AF_media","AF_median",
@@ -1078,13 +1079,13 @@ def print_var_snp_complete(dictionary):
 			"ODDRATIO_Vardict","SBF_Vardict","SHIFT3_Vardict","MSI_Vardict","MSILEN_Vardict","SOR_Vardict",
 			"LSEQ_Vardict","RSEQ_Vardict","STATUS_Vardict","PMEAN_Vardict","PSTD_Vardict","QSTD_Vardict",
 			"MQ_Vardict","SN_Vardict","HIAF_Vardict","NM_Vardict",
-			"LOH_Varscan","LOH_Vardict"])
+			"LOH_Varscan","LOH_Vardict"]) +'\n')
 
 
 	for variante in dictionary.keys():
 		features = dictionary.get(variante)[-1]
 
-		print '\t'.join([opts.normal,opts.tumor,variante,str(features.CallMutect),str(features.CallVarscan),str(features.CallVardict),
+		varianti_tsv.write('\t'.join([opts.normal,opts.tumor,variante,str(features.CallMutect),str(features.CallVarscan),str(features.CallVardict),
 			str(features.SomaticMutect),str(features.SomaticVarscan),str(features.SomaticVardict),
 			str(features.GT_Mutect),str(features.GT_Varscan),str(features.GT_Vardict),
 			str(features.DP_median),str(features.QB_Mutect),str(features.QB_Vardict),str(features.MBQT),str(features.MBQT_median),
@@ -1099,11 +1100,13 @@ def print_var_snp_complete(dictionary):
 			str(features.ODDRATIO_Vardict),str(features.SBF_Vardict),str(features.SHIFT3_Vardict),str(features.MSI_Vardict),str(features.MSILEN_Vardict),str(features.SOR_Vardict),
 			str(features.LSEQ_Vardict),str(features.RSEQ_Vardict),str(features.STATUS_Vardict),str(features.PMEAN_Vardict),str(features.PSTD_Vardict),str(features.QSTD_Vardict),
 			str(features.MQ_Vardict),str(features.SN_Vardict),str(features.HIAF_Vardict),str(features.NM_Vardict),
-			str(features.LOH_Varscan),str(features.LOH_Vardict)]).rstrip()
+			str(features.LOH_Varscan),str(features.LOH_Vardict)]).rstrip() +'\n')
 
 def print_var_snp_reduced(dictionary):
 	
-	print '\t'.join(["CHROM","POS","REF","ALT","CallMutect","CallVarscan","CallVardict",
+	varianti_tsv=open(opts.out+ '.features.tsv','w')
+	
+	varianti_tsv.write('\t'.join(["CHROM","POS","REF","ALT","CallMutect","CallVarscan","CallVardict",
 			"SomaticMutect","SomaticVarscan","SomaticVardict",
 			"FILTER_Mutect","STATUS_Vardict",
 			"GT_Mutect","GT_Varscan","GT_Vardict",
@@ -1114,23 +1117,34 @@ def print_var_snp_reduced(dictionary):
 			"SHIFT3_Vardict","MSI_Vardict","MSILEN_Vardict","SOR_Vardict",
 			"LSEQ_Vardict","RSEQ_Vardict","PMEAN_Vardict",
 			"MQ_Vardict","SN_Vardict","NM_Vardict",
-			"LOH_Varscan","LOH_Vardict"])
+			"LOH_Varscan","LOH_Vardict"]) + '\n')
 
 	for variante in dictionary.keys():
 		features = dictionary.get(variante)[-1]
 
-		print '\t'.join([variante,str(features.CallMutect),str(features.CallVarscan),str(features.CallVardict),
+		varianti_tsv.write('\t'.join([variante,str(features.CallMutect),str(features.CallVarscan),str(features.CallVardict),
 			str(features.SomaticMutect),str(features.SomaticVarscan),str(features.SomaticVardict),
 			str(features.FILTER_Mutect),str(features.STATUS_Vardict),
 			str(features.GT_Mutect),str(features.GT_Varscan),str(features.GT_Vardict),
-			str(features.DP_median),str(features.AF_median),str(features.AO_tum_media),str(features.RO_tum_media),str(features.MBQT_median),
-			str(features.DP_norm_median),str(features.AF_norm_median),str(features.AO_norm_media),str(features.RO_norm_media),str(features.MBQN_median),
-			str(features.delta_median),str(features.Delta_perc_median),
+			str(features.DP_median),str(round(features.AF_median,4)),str(features.AO_tum_media),str(features.RO_tum_media),str(features.MBQT_median),
+			str(features.DP_norm_median),str(round(features.AF_norm_median,4)),str(features.AO_norm_media),str(features.RO_norm_media),str(features.MBQN_median),
+			str(round(features.delta_median,4)),str(round(features.Delta_perc_median,4)),
 			str(features.STRBIAS_median),str(features.HCNT_Mutect),str(features.MAX_ED_Mutect),str(features.MIN_ED_Mutect),str(features.STR_Mutect),
 			str(features.SHIFT3_Vardict),str(features.MSI_Vardict),str(features.MSILEN_Vardict),str(features.SOR_Vardict),
 			str(features.LSEQ_Vardict),str(features.RSEQ_Vardict),str(features.PMEAN_Vardict),
 			str(features.MQ_Vardict),str(features.SN_Vardict),str(features.NM_Vardict),
-			str(features.LOH_Varscan),str(features.LOH_Vardict)]).rstrip()
+			str(features.LOH_Varscan),str(features.LOH_Vardict)]).rstrip() + '\n')
+	
+	varianti_tsv.close()
+
+def print_vcf(varianti):
+	varianti_vcf=open(opts.out+ '.vcf','w')
+	varianti_vcf.write('##fileformat=VCFv4.2\n'+'#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLES\n')
+	for variante in varianti.keys():
+		var_vcf=variante.split('\t')[0]+'\t'+variante.split('\t')[1]+'\t.\t'+variante.split('\t')[2]+'\t'+variante.split('\t')[3]+'\t.\t.\t.\t.\t.'
+		varianti_vcf.write(var_vcf+ '\n')
+	varianti_vcf.close()
+
 		
 def main():
 
@@ -1144,6 +1158,8 @@ def main():
 	parser.add_argument('-t','--tumor',help="Name of tumor sample")
 	parser.add_argument('-a','--amplicon',help="Amplicon design", action='store_true')
 	parser.add_argument('-c','--complete',help="Print complete info", action='store_true')
+	parser.add_argument('-o', '--out', help="file name in output. It returns file_name.features.tsv and file_name.vcf ")
+	
 
 	
 	global opts 
@@ -1154,7 +1170,7 @@ def main():
 	index=0;
 	for vcf in callers:
 		#print vcf
-		in_file = open(vcf)
+		in_file = open(vcf,'r')
 		vcfreader = read(in_file,index,varianti)
 		index = index + 1
 	set_features_snp(varianti)
@@ -1164,5 +1180,5 @@ def main():
 		print_var_snp_complete(varianti)
 	else:
 		print_var_snp_reduced(varianti)
-	
+	print_vcf(varianti)
 main()

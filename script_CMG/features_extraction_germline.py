@@ -833,12 +833,8 @@ def print_var(dictionary,out,sample_name):
 
 	lista_features=open(opts.listaFeatures,'r')
 	dataset_varianti=open(out + '/' + sample_name + '.tsv','w')
-	
-
-
 	header=[]
 	features_variante=[]
-	
 	
 	for line in lista_features:
 		line = line.rstrip()
@@ -849,18 +845,15 @@ def print_var(dictionary,out,sample_name):
 			features_variante=features_variante+['features.'+line]
 
 	#print features_variante
-
 	dataset_varianti.write('CHROM\tPOS\tID\tREF\tALT\t' + '\t'.join(header)+ '\n')
 	for variante in dictionary.keys():
 		features = dictionary.get(variante)[-1]
-
 		#print features_variante
 		features_variante_eval=[]
 		for feat in features_variante:
 			#print feat
 		 	feat_eval=str(eval(feat))
 		 	features_variante_eval=features_variante_eval + [feat_eval]
-		
 		#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	20151202_01_Cardio
 		var=variante.split('\t')[0]+'\t'+variante.split('\t')[1]+'\t' +sample_name +'\t'+variante.split('\t')[2]+'\t'+variante.split('\t')[3]+ '\t' + '\t'.join(features_variante_eval)
 		
@@ -890,7 +883,6 @@ def samples_name_extract(vcf):
 	return samples
 		
 def split_vcf(vcf_dir,samples):
-
 	vcf_name = os.path.basename(vcf_dir)
 	vcf_path = os.path.dirname(vcf_dir)
 	vcf = open(vcf_dir,'r')
@@ -922,25 +914,17 @@ def split_vcf(vcf_dir,samples):
 			pass
 		
 		sample_vcf = open(opts.out_path +'/' + sample +'/' + sample + '_'+variant_caller +'.vcf','w')
-		#print 'Riscrivo le varianti in ' +vcf_path +'/'+ sample + '_'+variant_caller +'.vcf'
-
 		sample_vcf.write('\n'.join(header) + '\n')
 		sample_vcf.write('\t'.join(header_chrom[0:9] + [sample])  +'\n')
-		
 		for variante in varianti:
 			variante_split = variante.split('\t')
 			variante_common = variante_split[0:9]
 			format_sample = variante_split[8 + samples.index(sample) +1  ]
 			sample_vcf.write('\t'.join(variante_common + [format_sample]) + '\n')
-			#if format_sample.startswith('0/0:') or format_sample.startswith('./.'):
-			#	continue
-			#else:
-			#	sample_vcf.write('\t'.join(variante_common + [format_sample]) + '\n')
 		sample_vcf.close()
 
 def main():
 
-	
 	parser = argparse.ArgumentParser('Parse VCF output from Variant callers to output a variant_dataset.txt.  Output is to stdout.')
 	parser.add_argument('-f', '--freebayes', help="Freebayes vcf output file name")
 	parser.add_argument('-g', '--gatk', help="gatk vcf output file name")
@@ -968,15 +952,14 @@ def main():
 		print'Done'
 
 	#vcf_path =  os.path.dirname('/home/minime/Scrivania/VCF_TEST/20151202_01_Cardio/20151202_01_Cardio_FreeBayes.vcf')
-
 	#dir_sample = '20151202_01_Cardio'
 # 	out=os.path.dirname(opts.freebayes)+'/out'
-	
+	varianti_total = dict()
 	for dir_sample in os.listdir(opts.out_path):
 		varianti = dict()
 		vcf_path = opts.out_path +'/' + dir_sample
-		print "Analizzo le varianti da: " + vcf_path
 		if os.path.isdir(vcf_path):
+			print "Analizzo le varianti da: " + vcf_path
 			for vcf_name in os.listdir(vcf_path) :
 				print vcf_name
 				if 'Free' in vcf_name:
@@ -991,6 +974,8 @@ def main():
 			
 			set_features(varianti)
 			print_var(varianti,opts.out_path,dir_sample)
-	
-	print_vcf(varianti,opts.out_path)
+		for var in varianti.keys():
+			#varianti_total[var] = var.split('\t')[0]+'\t'+var.split('\t')[1]+'\t.\t'+var.split('\t')[2]+'\t'+var.split('\t')[3]+'\t.\t.\t.\t.\t.'
+			varianti_total[var] = ''
+	print_vcf(varianti_total,opts.out_path)
 main()
