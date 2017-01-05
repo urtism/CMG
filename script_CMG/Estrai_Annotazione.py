@@ -7,27 +7,22 @@ def add_ann(vcf,file_list,file_coor):
 	file_coor = open(opts.file,'r')
 	#Con questo leggo il file delle annotazioni da prendere e assegno ad ogni elemento del vettore uan riga letta
 	ann_list = file_list.readlines()
-
 	vettore = []
-
-
+	
 	for line in vcf:
-
 		line = line.rstrip()
-
 		if line.startswith('##INFO=<ID=ANN') or line.startswith('##INFO=<ID=CSQ'):
 			
 			#Con questo estraggo la header contenente INFO dell'annotazione, del tipo Allele|Consequence|IMPACT etc...
 			#Con start e end definisco la parola da pescare in mezzo all'header
-			
 			start = line.find('Allele')
 			end = line.find('">')
-			
 			#Con questo assegno ad header la stringa trovata da start a stop
 			
 			header_ann = line[start:end]
 			header_ann = header_ann.split('|')
 			#Se non metto continue mi salva in vettore[] anche la header che inizia con ##INFO=<ID=ANN
+			
 			continue
 
 		elif line.startswith('##'):
@@ -41,7 +36,7 @@ def add_ann(vcf,file_list,file_coor):
 			continue
 
 		else:
-			line = re.split('\||;ANN=|;\t|\t', line)
+			line = re.split('\||ANN=|;\t|\t|,', line)
 			for i in line:
 				if i == '':
 					#qui sostituisco al valore vuoto il simbolo -
@@ -54,7 +49,7 @@ def add_ann(vcf,file_list,file_coor):
 	# 2) il secondo processa tutte le varianti nel vettore contenente in ogni elemento le righe del vcf precedentemente modificate
 	# 3) verifico che CHROM POS REF ALT siano uguali tra i due file elem[0].lstrip('#') == var[0] and elem[1] ecc..
 	# 4) Se nella lista annotazioni leggi # prima della parola, allora salta quell'annotazione, altrimenti annota
-
+	print vettore[1],len(vettore[1]),len(header)
 	for var in file_coor:
 
 		var = var.rstrip()
