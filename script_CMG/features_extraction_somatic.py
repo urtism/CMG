@@ -944,19 +944,19 @@ def switch_snp(dictionary,ID,index,chrom,pos,ref,alt,filter,info,format,tumor,no
 		# print 'Mutect'
 		mutect=Mutect()
 		get_info_Mutect(chrom,pos,ref,alt,filter,info,format,tumor,normal,mutect)
-		if Mutect.AF_t != 0.0: 
+		if Mutect.AF_t != 0.0 or Mutect.AF_t != '.': 
 			vettore[0]=mutect
 	elif index==3:
 		# print 'vardict'
 		vardict=Vardict()
 		get_info_vardict(chrom,pos,ref,alt,filter,info,format,tumor,normal,vardict)
-		if vardict.AF_t != 0.0: 
+		if vardict.AF_t != 0.0 or vardict.AF_t != '.': 
 			vettore[2]=vardict
 	elif index==1 or index==2:
 		# print 'varscan'
 		varscan=Varscan()
 		get_info_varscan(chrom,pos,ref,alt,filter,info,format,tumor,normal,varscan)
-		if varscan.AF_t != 0.0: 
+		if varscan.AF_t != 0.0 or varscan.AF_t != '.': 
 			vettore[1]=varscan
 	dictionary[ID]=vettore
 
@@ -1106,7 +1106,7 @@ def print_var_snp_reduced(dictionary):
 	
 	varianti_tsv=open(opts.out+ '.features.tsv','w')
 	
-	varianti_tsv.write('\t'.join(["CHROM","POS","REF","ALT","CallMutect","CallVarscan","CallVardict",
+	varianti_tsv.write('\t'.join(["CHROM","POS","ID","REF","ALT","CallMutect","CallVarscan","CallVardict",
 			"SomaticMutect","SomaticVarscan","SomaticVardict",
 			"FILTER_Mutect","STATUS_Vardict",
 			"GT_Mutect","GT_Varscan","GT_Vardict",
@@ -1122,13 +1122,14 @@ def print_var_snp_reduced(dictionary):
 	for variante in dictionary.keys():
 		features = dictionary.get(variante)[-1]
 
-		varianti_tsv.write('\t'.join([variante,str(features.CallMutect),str(features.CallVarscan),str(features.CallVardict),
+		varianti_tsv.write('\t'.join([variante.split('\t')[0],variante.split('\t')[1],opts.tumor,variante.split('\t')[2],variante.split('\t')[3],
+			str(features.CallMutect),str(features.CallVarscan),str(features.CallVardict),
 			str(features.SomaticMutect),str(features.SomaticVarscan),str(features.SomaticVardict),
 			str(features.FILTER_Mutect),str(features.STATUS_Vardict),
 			str(features.GT_Mutect),str(features.GT_Varscan),str(features.GT_Vardict),
-			str(features.DP_median),str(round(features.AF_median,4)),str(features.AO_tum_media),str(features.RO_tum_media),str(features.MBQT_median),
-			str(features.DP_norm_median),str(round(features.AF_norm_median,4)),str(features.AO_norm_media),str(features.RO_norm_media),str(features.MBQN_median),
-			str(round(features.delta_median,4)),str(round(features.Delta_perc_median,4)),
+			str(features.DP_median),str(features.AF_median),str(features.AO_tum_media),str(features.RO_tum_media),str(features.MBQT_median),
+			str(features.DP_norm_median),str(features.AF_norm_median),str(features.AO_norm_media),str(features.RO_norm_media),str(features.MBQN_median),
+			str(features.delta_median),str(features.Delta_perc_median),
 			str(features.STRBIAS_median),str(features.HCNT_Mutect),str(features.MAX_ED_Mutect),str(features.MIN_ED_Mutect),str(features.STR_Mutect),
 			str(features.SHIFT3_Vardict),str(features.MSI_Vardict),str(features.MSILEN_Vardict),str(features.SOR_Vardict),
 			str(features.LSEQ_Vardict),str(features.RSEQ_Vardict),str(features.PMEAN_Vardict),
@@ -1145,8 +1146,38 @@ def print_vcf(varianti):
 		varianti_vcf.write(var_vcf+ '\n')
 	varianti_vcf.close()
 
+def print_var(dictionary):
+
+	lista_features=open(opts.listaFeatures,'r')
+	varianti_tsv=open(opts.out+ '.features.tsv','w')
+	
+	header=[]
+	features_variante=[]
+	
+	for line in lista_features:
+		line = line.rstrip()
+		if line.startswith('#'):
+			continue
+		else:
+			header=header+[line]
+			features_variante=features_variante+['features.'+line]
+
+	dataset_varianti.write('CHROM\tPOS\tID\tREF\tALT\t' + '\t'.join(header)+ '\n')
+	for variante in dictionary.keys():
+		features = dictionary.get(variante)[-1]
+		features_variante_eval=[]
+		for feat in features_variante:
+		 	feat_eval=str(eval(feat))
+		 	features_variante_eval=features_variante_eval + [feat_eval]
+		var=variante.split('\t')[0]+'\t'+variante.split('\t')[1]+'\t' +sample_name +'\t'+variante.split('\t')[2]+'\t'+variante.split('\t')[3]+ '\t' + '\t'.join(features_variante_eval)
+		if features.AF_media != '.':
+				dataset_varianti.write(var+ '\n')
+				break
+	dataset_varianti.close()
+	lista_features.close()
 		
 def main():
+
 
 	
 	parser = argparse.ArgumentParser('Parse VCF output from Variant callers to output a variant_dataset.txt.  Output is to stdout.')

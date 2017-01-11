@@ -906,21 +906,69 @@ def split_vcf(vcf_dir,samples):
 		else:
 		 	varianti = varianti + [line]
 	i=0
-	
 	for sample in samples:
+		print sample
 		try: 
 			os.mkdir(opts.out_path +'/' + sample)
 		except:
 			pass
 		
 		sample_vcf = open(opts.out_path +'/' + sample +'/' + sample + '_'+variant_caller +'.vcf','w')
+		
 		sample_vcf.write('\n'.join(header) + '\n')
 		sample_vcf.write('\t'.join(header_chrom[0:9] + [sample])  +'\n')
+		gvcf = open(opts.gvcf_path +'/' + sample +'.g.vcf','r')
+		all_gvcf=gvcf.readlines()
+		gvcf.close()
+
+		sample_gvcf = []
+
+		for riga in all_gvcf:
+			riga = riga.rstrip()
+			if riga.startswith('#'):
+				continue
+			else:
+				riga_split = riga.split('\t')
+				if riga_split[4] != '<NON_REF>':
+					sample_gvcf += [riga]
+
 		for variante in varianti:
+			
 			variante_split = variante.split('\t')
-			variante_common = variante_split[0:9]
-			format_sample = variante_split[8 + samples.index(sample) +1  ]
+			chrom = variante_split[0]
+			pos = variante_split[1]
+			id = variante_split[2]
+			ref = variante_split[3]
+			alt = variante_split[4]
+			if variant_caller == 'GATK':
+				sSB = '.'
+				sQD = '.'
+				for line in sample_gvcf:
+					line = line.rstrip()
+					if line.startswith(chrom+'\t'+pos) and line.split('\t')[4]:
+						format = line.split('\t')[-2]
+						sformat = line.split('\t')[-1]
+						format_qual = line.split('\t')[5]
+						info = line.split('\t')[7].split(';')
+						for elem in info:
+							if elem.startswith('DP='):
+								DP = elem.split('=')[1]
+								break
+						try:
+							sSB = sformat.split(':')[format.split(':').index('SB')]
+							sQD = round(float(format_qual)/float(DP) ,2)
+							break
+						except:
+							print 'ci sono problemi',sample,chrom,pos,format,sformat
+		
+				variante_common = variante_split[0:8] + [variante_split[8]+':SB:SQD']
+				format_sample = variante_split[9 + samples.index(sample)]  +':'+ sSB + ':' + str(sQD)
+			else:
+				variante_common = variante_split[0:9]
+				format_sample = variante_split[9 + samples.index(sample)   ]
+				
 			sample_vcf.write('\t'.join(variante_common + [format_sample]) + '\n')
+			
 		sample_vcf.close()
 
 def main():
@@ -929,10 +977,12 @@ def main():
 	parser.add_argument('-f', '--freebayes', help="Freebayes vcf output file name")
 	parser.add_argument('-g', '--gatk', help="gatk vcf output file name")
 	parser.add_argument('-v', '--varscan', help="Varscan vcf output file name")
-	parser.add_argument('-l', '--listaFeatures', help="Lista di features da stampare")
+	parser.add_argument('-l', '--listaFeatures', help="Lista di features da stampare",default=None)
 	parser.add_argument('-s', '--split', help="Split vcf per samples", action='store_true')
-	parser.add_argument('-a','--amplicon',help="Amplicon design", action='store_true')
-	parser.add_argument('-o','--out_path',help="path di output")
+	parser.add_argument('-F', '--feat_extraction', help="Enable features extraction", action='store_true')
+	parser.add_argument('-a', '--amplicon',help="Amplicon design", action='store_true')
+	parser.add_argument('-o', '--out_path',help="path di output")
+	parser.add_argument('-G', '--gvcf_path',help="gvcf path")
 
 	global opts 
 	opts = parser.parse_args()
@@ -951,31 +1001,29 @@ def main():
 			split_vcf(vcf_dir,samples)
 		print'Done'
 
-	#vcf_path =  os.path.dirname('/home/minime/Scrivania/VCF_TEST/20151202_01_Cardio/20151202_01_Cardio_FreeBayes.vcf')
-	#dir_sample = '20151202_01_Cardio'
-# 	out=os.path.dirname(opts.freebayes)+'/out'
-	varianti_total = dict()
-	for dir_sample in os.listdir(opts.out_path):
-		varianti = dict()
-		vcf_path = opts.out_path +'/' + dir_sample
-		if os.path.isdir(vcf_path):
-			print "Analizzo le varianti da: " + vcf_path
-			for vcf_name in os.listdir(vcf_path) :
-				print vcf_name
-				if 'Free' in vcf_name:
-					index = 0
-				elif 'GATK' in vcf_name:
-					index = 2
-				elif 'VarScan' in vcf_name:
-					index = 1
+	if opts.feat_extraction:
+		varianti_total = dict()
+		for dir_sample in os.listdir(opts.out_path):
+			varianti = dict()
+			vcf_path = opts.out_path +'/' + dir_sample
+			if os.path.isdir(vcf_path):
+				print "Analizzo le varianti da: " + vcf_path
+				for vcf_name in os.listdir(vcf_path) :
+					print vcf_name
+					if 'Free' in vcf_name:
+						index = 0
+					elif 'GATK' in vcf_name:
+						index = 2
+					elif 'VarScan' in vcf_name:
+						index = 1
+					
+					in_file = open(vcf_path + '/' + vcf_name)
+					vcfreader = read(in_file,index,varianti)
 				
-				in_file = open(vcf_path + '/' + vcf_name)
-				vcfreader = read(in_file,index,varianti)
-			
-			set_features(varianti)
-			print_var(varianti,opts.out_path,dir_sample)
-		for var in varianti.keys():
-			#varianti_total[var] = var.split('\t')[0]+'\t'+var.split('\t')[1]+'\t.\t'+var.split('\t')[2]+'\t'+var.split('\t')[3]+'\t.\t.\t.\t.\t.'
-			varianti_total[var] = ''
-	print_vcf(varianti_total,opts.out_path)
+				set_features(varianti)
+				print_var(varianti,opts.out_path,dir_sample)
+			for var in varianti.keys():
+				#varianti_total[var] = var.split('\t')[0]+'\t'+var.split('\t')[1]+'\t.\t'+var.split('\t')[2]+'\t'+var.split('\t')[3]+'\t.\t.\t.\t.\t.'
+				varianti_total[var] = ''
+		print_vcf(varianti_total,opts.out_path)
 main()
