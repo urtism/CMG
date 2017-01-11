@@ -399,8 +399,8 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 	else:
 		GATK.AO=float((sample[format.index('AD')]).split(',')[1])
 		GATK.RO=float((sample[format.index('AD')]).split(',')[0])
-		GATK.DP=GATK.AO+GATK.RO	
-		
+		#GATK.DP=GATK.AO+GATK.RO	
+		GATK.DP=float(sample[format.index('DP')])
 		GATK.STR='0'
 		for ind in info:
 			if ind.startswith("AC="):
