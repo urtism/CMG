@@ -1,31 +1,35 @@
-#::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#::::::::::::::::::::::::::::::::::::::::::::::::::::     FUNZIONE ALLINEAMENTO     :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#!/bin/bash
 
+cat ~/Scrivania/SCRIPT_PIPELINE/logo.txt 
 
-
-CARDIO_ALL () {
-
-}
-
-
-#::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#:::::::::::::::::::::::::::::::::::::::::::::::::::     FUNZIONE PRE-PROCESSING     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-
-CARDIO_PREPROCESSING () {
-
-}
-
-
-
-#::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#:::::::::::::::::::::::::::::::::::::::::::     FUNZIONE VARIANT CALLING E ANNOTAZIONE     :::::::::::::::::::::::::::::::::::::::::::::::::
-#::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-
-CARDIO_VARIANT_CALLING_AND_ANNOTATION () {
+FASTQC=~/NGS_TOOLS/FastQC/fastqc
+BWA=~/NGS_TOOLS/bwa-0.7.15
+PICARD=~/NGS_TOOLS/picard-tools-2.7.1/picard.jar
+GATK=~/NGS_TOOLS/GATK/GenomeAnalysisTK.jar
+VARSCAN=~/NGS_TOOLS/VarScan/VarScan.v2.3.9.jar
+REF=~/NGS_TOOLS/hg19/ucsc.hg19.fasta
+MILLS=~/NGS_TOOLS/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf
+DBSNP=~/NGS_TOOLS/hg19/dbsnp_138.hg19.vcf
+INPUT=~/Scrivania/NGS_ANALYSIS_TEST/INPUT_DATA/CARDIO
+INPUTBRCA=~/Scrivania/NGS_ANALYSIS_TEST/INPUT_DATA/BRCA
+INPUTCANCER=~/Scrivania/NGS_ANALYSIS_TEST/INPUT_DATA/CANCER
+INPUTEXOME=~/Scrivania/NGS_ANALYSIS_TEST/INPUT_DATA/EXOME
+PROCESSING=~/Scrivania/NGS_ANALYSIS_TEST/PROCESSING
+TARGET=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a_ESTESO+-1000.list
+TARGETCARDIOBED=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a_ESTESO+-1000.bed
+TARGETMETRICS=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a.list
+TARGETBRCA=~/NGS_ANALYSIS/TARGET/AFP2_manifest_v1.list
+TARGETBRCABED=~/NGS_ANALYSIS/TARGET/AFP2_manifest_v1.bed
+TARGBRCAFREE=~/NGS_ANALYSIS/TARGET/BRCA_FreeBayes_amplicon.bed
+TARGETEXOME=~/NGS_ANALYSIS/TARGET/TruSight_One_v1.1_ESTESO+-1000.list
+TARGETEXOMEBED=~/NGS_ANALYSIS/TARGET/TruSight_One_v1.1_ESTESO+-1000.bed
+TARGETCANCER=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.list
+TARGETCANCERBED=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.bed
+OUTVCF=~/Scrivania/NGS_ANALYSIS_TEST/OUTPUT_DATA
+STORAGE=~/Scrivania/NGS_ANALYSIS_TEST/STORAGE
+VEP=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
+VEPANN=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/variant_effect_predictor.pl
+VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/filter_vep.pl
 
 
 	for filename in $PROCESSING/5_BQSR/*.bam
@@ -40,6 +44,13 @@ CARDIO_VARIANT_CALLING_AND_ANNOTATION () {
 		-o $PROCESSING/6_Variant/GATK/${filename%.*}.g.vcf \
 		-ERC GVCF \
 		--doNotRunPhysicalPhasing \
+		--doNotRunPhysicalPhasing \
+		--heterozygosity 0.001 \
+		--indel_heterozygosity 1.25E-4 \
+		--maxReadsInRegionPerSample 50000 \
+		--min_base_quality_score 10 \
+		--minReadsPerAlignmentStart 5 \
+		--max_alternate_alleles 6 \
 		#-bamout $PROCESSING/6_Variant/GATK/${filename%.*}.g.vcf.bam \
 		-L $TARGET
 
@@ -65,6 +76,8 @@ CARDIO_VARIANT_CALLING_AND_ANNOTATION () {
 		java -jar -Xmx64g $GATK -T GenotypeGVCFs \
 		-R $REF \
 		-V:VCF samples.list \
+		-A HomopolymerRun \
+#		-newQual \
 		-o $PROCESSING/6_Variant/GATK/$DataRun\_Cardio_GATK.vcf
 
 	# Salvo nella cartella storage
@@ -72,13 +85,6 @@ CARDIO_VARIANT_CALLING_AND_ANNOTATION () {
 
 	echo $'\n\n =========>	Variant Calling: Genotype GVCF & Multi-sample variant calling: DONE\n'
 
-	#Salvo i .g.vcf in google genomics
-
-	#for file in *.g.vcf
-	#do
-	#	mv $file $STORAGE/$Name_Dir
-	#	rm $file.idx
-	#done
 
 
 
@@ -86,32 +92,7 @@ CARDIO_VARIANT_CALLING_AND_ANNOTATION () {
 
 
 
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_filtering.txt
-	echo $'\n =========>	Hard Filtering \n\n'
-
-		java -jar $GATK -T VariantFiltration \
-		-R $REF \
-		-V $PROCESSING/6_Variant/GATK/$DataRun\_Cardio_GATK.vcf \
-		--filterExpression "QD < 2.0 || FS > 100.0 || ReadPosRankSum < -16.0 || DP < 15" \
-		--filterName "FILTER" \
-		-o $PROCESSING/6_Variant/GATK/$DataRun\_Cardio_GATK_Filter.vcf
-
-	echo $'\n =========>	Hard Filtering: DONE\n'
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
-	echo $'\n =========>	GATK vcf manipulation for intersection\n\n'
-
-	# Salvo nella cartella storage
-	#cp $PROCESSING/6_Variant/GATK/$DataRun\_Cardio_GATK_Filter.vcf $STORAGE/$Name_Dir
-
-	cp $PROCESSING/6_Variant/GATK/$DataRun\_Cardio_GATK_Filter.vcf $PROCESSING/6_Variant/Intersect/
-	bgzip $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_GATK_Filter.vcf
-	tabix $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_GATK_Filter.vcf.gz
-
-	echo $'\n =========>	GATK vcf manipulation for intersection: DONE\n'
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
-	echo $'\n =========>	Variant Calling with FreeBayes\n\n'
-
-
+	
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     FREEBAYES     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
@@ -125,9 +106,16 @@ CARDIO_VARIANT_CALLING_AND_ANNOTATION () {
 	-K \
 	-J \
 	-s $PROCESSING/5_BQSR/Sample_list.txt \
+	--pooled-continuous \
+	--pooled-discrete \
 	--genotype-qualities \
 	--report-genotype-likelihood-max \
 	--allele-balance-priors-off \
+	--min-mapping-quality 20 \
+	--min-base-quality 10 \
+	--min-alternate-fraction 0.1 \
+	--min-alternate-count 2 \
+	--min-coverage 10 \
 	-t $TARGETCARDIOBED > $PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes.vcf
 
 	echo $'\n =========>	Variant Calling with FreeBayes: DONE\n'
@@ -135,10 +123,10 @@ CARDIO_VARIANT_CALLING_AND_ANNOTATION () {
 	echo $'\n =========>	FreeBayes vcf manipulation for intersection\n\n'
 
 	#Rimuovo le righe duplicate:
-	awk '!a[$0]++' $PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes.vcf > $PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes_RD.vcf
+	#awk '!a[$0]++' $PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes.vcf > $PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes_RD.vcf
 	
 	#Converto il vcf alla versione 4.2
-	sed -i -e 's/fileformat=VCFv4.1/fileformat=VCFv4.2/g' $PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes_RD.vcf
+	#sed -i -e 's/fileformat=VCFv4.1/fileformat=VCFv4.2/g' $PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes_RD.vcf
 
 	java -Xmx64g -jar $PICARD SortVcf \
 	I=$PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes_RD.vcf \
@@ -230,117 +218,6 @@ CARDIO_VARIANT_CALLING_AND_ANNOTATION () {
 	echo $'\n =========>	GATK + FreeBayes + VarScan2 INTERSECTION\n\n'
 
 
-#------------------------------------------------SALVO I BAM DEL PRE-PROCESSING IN STORAGE---------------------------------------------------
-
-
-#	cd $PROCESSING/5_BQSR/
-
-#	for file in *.bam
-#	do
-#		mv $file $STORAGE/$Name_Dir
-#	done
-
-#	for file in *.bai
-#	do
-#		mv $file $STORAGE/$Name_Dir
-#	done
-
-
-
-#::::::::::::::::::::::::::::::::::::::::::::::::::::::::     INTERSECTION     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-
-
-	vcf-isec -p $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect. \
-	$PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_GATK_Filter.vcf.gz \
-	$PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_VarScan_Merge_Sort.vcf.gz \
-	$PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_FreeBayes_Sort.vcf.gz	
-
-	tabix $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.1.vcf.gz
-	tabix $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.2.vcf.gz
-	tabix $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.1_2.vcf.gz
-
-	#Copio le intersezioni in google genomics:
-	cp $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.0.vcf.gz $STORAGE/$Name_Dir
-	printf "\n${DataRun}_Cardio_Intersect.0.vcf.gz : Intersezione contenente le varianti chiamate da solo GATK\n" >> $STORAGE/$Name_Dir/README.txt
-	cp $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.1.vcf.gz $STORAGE/$Name_Dir
-	printf "\n${DataRun}_Cardio_Intersect.1.vcf.gz : Intersezione contenente le varianti chiamate da solo VarScan\n" >> $STORAGE/$Name_Dir/README.txt
-	cp $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.2.vcf.gz $STORAGE/$Name_Dir
-	printf "\n${DataRun}_Cardio_Intersect.2.vcf.gz : Intersezione contenente le varianti chiamate da solo FreeBayes\n" >> $STORAGE/$Name_Dir/README.txt
-	cp $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.0_1.vcf.gz $STORAGE/$Name_Dir
-	printf "\n${DataRun}_Cardio_Intersect.0_1.vcf.gz : Intersezione contenente le varianti chiamate da GATK + VarScan\n" >> $STORAGE/$Name_Dir/README.txt
-	cp $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.0_2.vcf.gz $STORAGE/$Name_Dir
-	printf "\n${DataRun}_Cardio_Intersect.0_2.vcf.gz : Intersezione contenente le varianti chiamate GATK + FreeBayes\n" >> $STORAGE/$Name_Dir/README.txt
-	cp $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.1_2.vcf.gz $STORAGE/$Name_Dir
-	printf "\n${DataRun}_Cardio_Intersect.1_2.vcf.gz : Intersezione contenente le varianti chiamate VarScan + FreeBayes\n" >> $STORAGE/$Name_Dir/README.txt
-	cp $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.0_1_2.vcf.gz $STORAGE/$Name_Dir
-	printf "\n${DataRun}_Cardio_Intersect.0_1_2.vcf.gz : Intersezione contenente le varianti chiamate da GATK + VarScan + FreeBayes\n" >> $STORAGE/$Name_Dir/README.txt
-
-	cd $PROCESSING/6_Variant/Intersect/
-
-	#Controllo sull'esistenza dei file:
-	if [ ! -f $DataRun\_Cardio_Intersect.1.vcf.gz ] && [ ! -f $DataRun\_Cardio_Intersect.2.vcf.gz ] && [ ! -f $DataRun\_Cardio_Intersect.1_2.vcf.gz ]; then
-	printf "\nNON ESISTE NESSUN FILE DI INTERSEZIONE!\n"
-
-	elif [ -f $DataRun\_Cardio_Intersect.1.vcf.gz ] && [ -f $DataRun\_Cardio_Intersect.2.vcf.gz ] && [ -f $DataRun\_Cardio_Intersect.1_2.vcf.gz ]; then
-	vcf-concat $DataRun\_Cardio_Intersect.1.vcf.gz $DataRun\_Cardio_Intersect.2.vcf.gz \
-	$DataRun\_Cardio_Intersect.1_2.vcf.gz > $DataRun\_Cardio_Total_Intersect.vcf
-	vcf-sort -c $DataRun\_Cardio_Total_Intersect.vcf > $PROCESSING/7_Filter/$DataRun\_Cardio_Total_Intersect_Sort.vcf
-
-	elif [ -f $DataRun\_Cardio_Intersect.1.vcf.gz ] && [ -f $DataRun\_Cardio_Intersect.1_2.vcf.gz ] && [ ! -f $DataRun\_Cardio_Intersect.2.vcf.gz ]; then
-	vcf-concat $DataRun\_Cardio_Intersect.1.vcf.gz $DataRun\_Cardio_Intersect.1_2.vcf.gz > $DataRun\_Cardio_Total_Intersect.vcf
-	vcf-sort -c $DataRun\_Cardio_Total_Intersect.vcf > $PROCESSING/7_Filter/$DataRun\_Cardio_Total_Intersect_Sort.vcf
-
-	elif [ -f $DataRun\_Cardio_Intersect.2.vcf.gz ] && [ -f $DataRun\_Cardio_Intersect.1_2.vcf.gz ] && [ ! -f $DataRun\_Cardio_Intersect.1.vcf.gz ]; then
-	vcf-concat $DataRun\_Cardio_Intersect.2.vcf.gz $DataRun\_Cardio_Intersect.1_2.vcf.gz > $DataRun\_Cardio_Total_Intersect.vcf
-	vcf-sort -c $DataRun\_Cardio_Total_Intersect.vcf > $PROCESSING/7_Filter/$DataRun\_Cardio_Total_Intersect_Sort.vcf
-
-	elif [ -f $DataRun\_Cardio_Intersect.1.vcf.gz ] && [ -f $DataRun\_Cardio_Intersect.2.vcf.gz ] && [ ! -f $DataRun\_Cardio_Intersect.1_2.vcf.gz ]; then
-	vcf-concat $DataRun\_Cardio_Intersect.1.vcf.gz $DataRun\_Cardio_Intersect.2.vcf.gz > $DataRun\_Cardio_Total_Intersect.vcf
-	vcf-sort -c $DataRun\_Cardio_Total_Intersect.vcf > $PROCESSING/7_Filter/$DataRun\_Cardio_Total_Intersect_Sort.vcf
-
-	elif [ -f $DataRun\_Cardio_Intersect.1.vcf.gz ] && [ ! -f $DataRun\_Cardio_Intersect.2.vcf.gz ] && [ ! -f $DataRun\_Cardio_Intersect.1_2.vcf.gz ]; then
-	gunzip $DataRun\_Cardio_Intersect.1.vcf.gz
-	cp $DataRun\_Cardio_Intersect.1.vcf > $PROCESSING/7_Filter/$DataRun\_Cardio_Total_Intersect_Sort.vcf
-	rm $DataRun\_Cardio_Intersect.1.vcf
-
-	elif [ -f $DataRun\_Cardio_Intersect.1_2.vcf.gz ] && [ ! -f $DataRun\_Cardio_Intersect.1.vcf.gz ] && [ ! -f $DataRun\_Cardio_Intersect.2.vcf.gz ]; then
-	gunzip $DataRun\_Cardio_Intersect.1_2.vcf.gz
-	cp $DataRun\_Cardio_Intersect.1_2.vcf > $PROCESSING/7_Filter/$DataRun\_Cardio_Total_Intersect_Sort.vcf
-	rm $DataRun\_Cardio_Intersect.1_2.vcf
-
-	elif [ -f $DataRun\_Cardio_Intersect.2.vcf.gz ] && [ ! -f $DataRun\_Cardio_Intersect.1_2.vcf.gz ] && [ ! -f $DataRun\_Cardio_Intersect.1.vcf.gz ]; then
-	gunzip $DataRun\_Cardio_Intersect.1.vcf.gz
-	cp $DataRun\_Cardio_Intersect.2.vcf > $PROCESSING/7_Filter/$DataRun\_Cardio_Total_Intersect_Sort.vcf
-	rm $DataRun\_Cardio_Intersect.2.vcf
-
-	fi
-
-	rm $DataRun\_Cardio_Total_Intersect.vcf
-
-	# Salvo nella cartella storage
-	cp $PROCESSING/7_Filter/$DataRun\_Cardio_Total_Intersect_Sort.vcf $STORAGE/$Name_Dir/$DataRun\_Cardio_Intersect.vcf
-	printf "\n${DataRun}_Cardio_Intersect.vcf : contiene il vcf con le varianti chiamate da VarScan e/o FreeBayes ma non in GATK in data $DataRun\n" >> $STORAGE/$Name_Dir/README.txt
-
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.0.vcf.gz
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.1.vcf.gz
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.1.vcf.gz.tbi
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.2.vcf.gz
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.2.vcf.gz.tbi
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.0_1.vcf.gz
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.0_2.vcf.gz
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.1_2.vcf.gz
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.1_2.vcf.gz.tbi
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect.0_1_2.vcf.gz
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_FreeBayes_Sort.vcf.gz
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_FreeBayes_Sort.vcf.gz.tbi
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_GATK_Filter.vcf.gz
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_GATK_Filter.vcf.gz.tbi
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_Intersect._README
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_VarScan_Merge_Sort.vcf.gz
-	rm $PROCESSING/6_Variant/Intersect/$DataRun\_Cardio_VarScan_Merge_Sort.vcf.gz.tbi
-
-
 
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::    GATK ANNOTATION     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -428,269 +305,3 @@ CARDIO_VARIANT_CALLING_AND_ANNOTATION () {
 	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
 	echo $'\n =========>	FILE MODIFICATION FOR CSV FORMAT \n\n'
 
-
-
-#:::::::::::::::::::::::::::::::::::::::::::::::::::    VCF MODIFICATION FOR EXCEL     ::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-
-
-#Estraggo la HEADER a cui poi andrò a concatenare le varianti
-sed -n -e '/#/p' $PROCESSING/8_Annotation/$DataRun\_Cardio_GATK_ANN.vcf > \
-$PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN_SPLIT.vcf
-sed -n -e '/#/p' $PROCESSING/8_Annotation/$DataRun\_Cardio_Total_Intersect_ANN.vcf > \
-$PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_Total_Intersect_ANN_SPLIT.vcf
-
-#Splitto le annotazioni per trascritti
-perl -e'while(<>) { chomp; if(m/(.+?)(CSQ|ANN)\=([^;^\s]+)(.*)/) { foreach my $s(split ",", $3) { print "$1$2\=$s\;$4\n"}}}' \
-$PROCESSING/8_Annotation/$DataRun\_Cardio_GATK_ANN.vcf >> $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN_SPLIT.vcf
-perl -e'while(<>) { chomp; if(m/(.+?)(CSQ|ANN)\=([^;^\s]+)(.*)/) { foreach my $s(split ",", $3) { print "$1$2\=$s\;$4\n"}}}' \
-$PROCESSING/8_Annotation/$DataRun\_Cardio_Total_Intersect_ANN.vcf >> \
-$PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_Total_Intersect_ANN_SPLIT.vcf
-
-#Copio i file splittati nella cartella $VEP ed in quella dello STORAGE
-cp $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN_SPLIT.vcf $STORAGE/$Name_Dir
-printf "\n${DataRun}_Cardio_GATK_ANN_SPLIT.vcf : vcf GATK splittato per trascritti\n" >> $STORAGE/$Name_Dir/README.txt
-cp $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_Total_Intersect_ANN_SPLIT.vcf $STORAGE/$Name_Dir/$DataRun\_Cardio_Intersect_ANN_SPLIT.vcf 
-printf "\n${DataRun}_Cardio_Intersect_ANN_SPLIT.vcf : vcf Intersect splittato per trascritti\n" >> $STORAGE/$Name_Dir/README.txt
-mv $PROCESSING/8_Annotation/$DataRun\_Cardio_GATK_ANN.vcf $PROCESSING/8_Annotation/FILE_PROCESSING/
-rm $PROCESSING/8_Annotation/$DataRun\_Cardio_Total_Intersect_ANN.vcf
-
-#Eseguo il filtraggio sui trascritti
-
-cd $PROCESSING/8_Annotation/FILE_PROCESSING/
-
-grep -e "#" -f ~/NGS_ANALYSIS/TARGET/Lista_trascritti_cardio.txt $DataRun\_Cardio_GATK_ANN_SPLIT.vcf > $PROCESSING/8_Annotation/$DataRun\_Cardio_GATK_Filter_Transcripts.vcf
-
-grep -e "#" -f ~/NGS_ANALYSIS/TARGET/Lista_trascritti_cardio.txt $DataRun\_Cardio_Total_Intersect_ANN_SPLIT.vcf > $PROCESSING/8_Annotation/$DataRun\_Cardio_Intersect_Filter_Transcripts.vcf
-
-#Copio il file gatk filtrato sui trascritti in file processing per fare il bgzip e poi intersecare i file!
-cp $PROCESSING/8_Annotation/$DataRun\_Cardio_GATK_Filter_Transcripts.vcf $PROCESSING/8_Annotation/FILE_PROCESSING
-
-#Aggiungi la copia in google genomics
-cp $PROCESSING/8_Annotation/$DataRun\_Cardio_GATK_Filter_Transcripts.vcf $STORAGE/$Name_Dir
-printf "\n${DataRun}_Cardio_GATK_Filter_Transcripts.vcf : vcf GATK filtrato per trascritti\n" >> $STORAGE/$Name_Dir/README.txt
-cp $PROCESSING/8_Annotation/$DataRun\_Cardio_Intersect_Filter_Transcripts.vcf $STORAGE/$Name_Dir
-printf "\n${DataRun}_Cardio_Intersect_Filter_Transcripts.vcf : vcf Intersect filtrato per trascritti\n" >> $STORAGE/$Name_Dir/README.txt
-rm $DataRun\_Cardio_GATK_ANN_SPLIT.vcf
-rm $DataRun\_Cardio_Total_Intersect_ANN_SPLIT.vcf
-
-
-
-#::::::::::::::::::::::::::::::::::::::::::    VCF MODIFICATION FOR EXCEL OTHER TRANSCRIPTS     :::::::::::::::::::::::::::::::::::::::::::::
-
-
-
-#Ripeto le operazioni di prima intersecando i file per avere gli altri trascritti. Prima interseco i file e poi li splitto.
-
-bgzip $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN.vcf
-tabix $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN.vcf.gz
-bgzip $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_Filter_Transcripts.vcf
-tabix $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_Filter_Transcripts.vcf.gz
-
-vcf-isec -p $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN_Intersect. $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN.vcf.gz $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_Filter_Transcripts.vcf.gz
-
-rm $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN.vcf.gz
-rm $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN.vcf.gz.tbi
-rm $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_Filter_Transcripts.vcf.gz
-rm $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_Filter_Transcripts.vcf.gz.tbi
-rm $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN_Intersect.0_1.vcf.gz
-rm $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN_Intersect._README
-
-gunzip $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN_Intersect.0.vcf.gz
-
-sed -n -e '/#/p' $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN_Intersect.0.vcf > \
-$PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_Other_Transcripts.vcf
-
-perl -e'while(<>) { chomp; if(m/(.+?)(CSQ|ANN)\=([^;^\s]+)(.*)/) { foreach my $s(split ",", $3) { print "$1$2\=$s\;$4\n"}}}' \
-$PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN_Intersect.0.vcf >> $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_Other_Transcripts.vcf
-
-mv $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_ANN_Intersect.0.vcf  $STORAGE/$Name_Dir/$DataRun\_Cardio_GATK_ANN_Other_Transcripts.vcf
-printf "\n${DataRun}\_Cardio_GATK_ANN_Other_Transcripts.vcf : vcf GATK annotato per altri trascritti non in studio\n" >> $STORAGE/$Name_Dir/README.txt
-
-cp $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_Other_Transcripts.vcf $STORAGE/$Name_Dir/$DataRun\_Cardio_GATK_SPLIT_Other_Transcripts.vcf
-printf "\n${DataRun}\_Cardio_GATK_SPLIT_Other_Transcripts.vcf : vcf GATK splittato per altri trascritti non in studio\n" >> $STORAGE/$Name_Dir/README.txt
-
-mv $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_Other_Transcripts.vcf $PROCESSING/8_Annotation
-
-
-
-#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::   VCF MODIFICATION     :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-
-
-sed -n -e '/#CHROM/p' $PROCESSING/8_Annotation/$DataRun\_Cardio_GATK_Filter_Transcripts.vcf > $PROCESSING/8_Annotation/FILE_PROCESSING/List_samples_for_split.txt
-sed -i "s/#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t//g" $PROCESSING/8_Annotation/FILE_PROCESSING/List_samples_for_split.txt
-COUNT=$(awk '{print NF}' $PROCESSING/8_Annotation/FILE_PROCESSING/List_samples_for_split.txt | sort -nu | tail -n 1)
-
-egrep "CIGAR|##|#" $PROCESSING/8_Annotation/$DataRun\_Cardio_Intersect_Filter_Transcripts.vcf \
-> $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_Intersect_Transcripts_FREEBAYES.vcf
-egrep "FREQ|##|#" $PROCESSING/8_Annotation/$DataRun\_Cardio_Intersect_Filter_Transcripts.vcf \
-> $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_Intersect_Transcripts_VarScan.vcf
-rm $PROCESSING/8_Annotation/$DataRun\_Cardio_Intersect_Filter_Transcripts.vcf
-
-#Copio in Genomics
-cp $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_Intersect_Transcripts_FREEBAYES.vcf $STORAGE/$Name_Dir/$DataRun\_Cardio_Transcripts_FREEBAYES.vcf
-printf "\n${DataRun}_Cardio_Transcripts_FREEBAYES.vcf : vcf di sole varianti FreeBayes filtrato per trascritti\n" >> $STORAGE/$Name_Dir/README.txt
-cp $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_Intersect_Transcripts_VarScan.vcf $STORAGE/$Name_Dir/$DataRun\_Cardio_Transcripts_VarScan.vcf
-printf "\n${DataRun}_Cardio_Transcripts_VarScan.vcf : vcf di sole varianti VarScan filtrato per trascritti\n" >> $STORAGE/$Name_Dir/README.txt
-
-cd $PROCESSING/8_Annotation/
-#Modifico i file per splittare i campi in seguito. Aggiungo i ;
-for vcf in *GATK_Filter_Transcripts.vcf
-	do
-	sed -i -e "s/\(AN=[[:digit:]]*\);\(DP=[[:digit:]]*\)/\1;;;\2/g" -e "s/FS=\([[:digit:]]*\|[[:digit:]]*.[[:digit:]]*\);MLEAC=\([[:digit:]]*\|[[:digit:]]*.[[:digit:]]\)/FS=\1;;MLEAC=\2/g" -e "s/MQ=\([[:digit:]]*\|[0-9]*\|[0-9]*.[0-9]*\);QD=\([[:digit:]]*\|[0-9]*\|[0-9]*.[0-9]*\)/MQ=\1;;QD=\2/g" -e "s/QD=\([[:digit:]]*\|[0-9]*\|[0-9]*.[0-9]*\);SOR=\([[:digit:]]*\|[0-9]*\|[0-9]*.[0-9]*\)/QD=\1;;SOR=\2/g" $PROCESSING/8_Annotation/$vcf
-mv $PROCESSING/8_Annotation/$vcf $PROCESSING/8_Annotation/FILE_PROCESSING/
-done
-
-for vcf in *Other_Transcripts.vcf
-	do
-	sed -i -e "s/\(AN=[[:digit:]]*\);\(DP=[[:digit:]]*\)/\1;;;\2/g" -e "s/FS=\([[:digit:]]*\|[[:digit:]]*.[[:digit:]]*\);MLEAC=\([[:digit:]]*\|[[:digit:]]*.[[:digit:]]\)/FS=\1;;MLEAC=\2/g" -e "s/MQ=\([[:digit:]]*\|[0-9]*\|[0-9]*.[0-9]*\);QD=\([[:digit:]]*\|[0-9]*\|[0-9]*.[0-9]*\)/MQ=\1;;QD=\2/g" -e "s/QD=\([[:digit:]]*\|[0-9]*\|[0-9]*.[0-9]*\);SOR=\([[:digit:]]*\|[0-9]*\|[0-9]*.[0-9]*\)/QD=\1;;SOR=\2/g" $PROCESSING/8_Annotation/$vcf
-mv $PROCESSING/8_Annotation/$vcf $PROCESSING/8_Annotation/FILE_PROCESSING/
-done	
-
-
-
-#---------------------------------------------------SPLITTO I VCF DI GATK IN FORMATO CSV-----------------------------------------------------
-
-
-
-cd $PROCESSING/8_Annotation/FILE_PROCESSING/
-for file in *GATK_Filter_Transcripts.vcf
-do
-	for (( a=1; a<$COUNT+1; a++ ))
-	do
-	NAME=$(cut -f $a List_samples_for_split.txt)
-	b=$((9+$a))
-	cut -f1-9,$b $file > $PROCESSING/8_Annotation/GATK/$NAME\_GATK.vcf
-	sed -i -e '/0\/0/d' -e '/\.\/\./d' -e 's/|;/|-;/g' -e 's/;\t/\t/g' $PROCESSING/8_Annotation/GATK/$NAME\_GATK.vcf
-	cp $PROCESSING/8_Annotation/GATK/$NAME\_GATK.vcf $STORAGE/$Name_Dir
-	printf "\n${NAME}_GATK.vcf : vcf GATK splittato e annotato per il sample $NAME\n" >> $STORAGE/$Name_Dir/README.txt
-	sed -i -e '/^##/d' $PROCESSING/8_Annotation/GATK/$NAME\_GATK.vcf
-	# Aggiungo le intestazioni delle annotazioni:
-	#Splitto in corrispondenza dei ; e di | e dei : poi aggiungo - in corrispondenza dei valori mancanti e rimuovo le stringhe in INFO, aggiungo il 	nome paziente nella colonna ID ecc...
-	sed -i -e "s/#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t$NAME/CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tAC\tAF\tAN\tBaseQRankSum\tClippingRankSum\tDP\tExcessHet\tFS\tInbreedingCoeff\tMLEAC\tMLEAF\tMQ\tMQRankSum\tQD\tReadPosRankSum\tSOR\tAllele\tConsequence\tIMPACT\tSYMBOL\tGene\tFeature_type\tFeature\tBIOTYPE\tEXON\tINTRON\tHGVSc\tHGVSp\tcDNA_position\tCDS_position\tProtein_position\tAmino_acids\tCodons\tExisting_variation\tDISTANCE\tSTRAND\tFLAGS\tVARIANT_CLASS\tSYMBOL_SOURCE\tHGNC_ID\tCANONICAL\tENSP\tSIFT\tPolyPhen\tHGVS_OFFSET\tGMAF\tCLIN_SIG\tSOMATIC\tPHENO\tPUBMED\tGT\tAD\tDP\tGQ\tPL/g" -e "s/;\tGT/\tGT/g" -e "s/GT:AD:DP:GQ:PL\t//g" $PROCESSING/8_Annotation/GATK/$NAME\_GATK.vcf
-	sed -i -e "s/\(^chr[[:alnum:]]*\t[[:digit:]]*\t\)\.\t/\1$NAME\t/g" -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/:/\t/g' -e 's/\[\]/:/g' -e 's/;/\t/g' -e 's/||/|-|/g' -e 's/||/|-|/g' -e 's/||/|-|/g' -e 's/|/\t/g' -e "s/AC=\|AF=\|AN=\|BaseQRankSum=\|ClippingRankSum=\|DP=\|ExcessHet=\|FS=\|InbreedingCoeff=\|MLEAC=\|MLEAF=\|MQ=\|MQRankSum=\|QD=\|ReadPosRankSum=\|SOR=\|ANN=//g" -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' $PROCESSING/8_Annotation/GATK/$NAME\_GATK.vcf
-	cut --complement -f26,28,29,31,42-44,46,47,52,55,56 $PROCESSING/8_Annotation/GATK/$NAME\_GATK.vcf > $STORAGE/$Name_Dir/$NAME\_GATK_Conferme.tsv
-	mv $PROCESSING/8_Annotation/GATK/$NAME\_GATK.vcf $STORAGE/$Name_Dir/$NAME\_GATK_All_Tags.txt
-	printf "\n${NAME}_GATK_All_Tags.txt : file txt GATK contenente sole varianti per il sample $NAME ma con tutte le tag del vcf\n" >> $STORAGE/$Name_Dir/README.txt
-	printf "\n${NAME}_GATK_Conferme.tsv : file .tsv GATK definitivo contenente sole varianti per il sample $NAME\n" >> $STORAGE/$Name_Dir/README.txt
-	cp $STORAGE/$Name_Dir/$NAME\_GATK_Conferme.tsv $OUTVCF/$Name_OUT
-	done
-done
-
-rm $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_Filter_Transcripts.vcf
-
-
-
-#--------------------------------------------------RIPETO OPERAZIONE SU FILE OTHER TRANSCRIPTS-----------------------------------------------
-
-
-
-cd $PROCESSING/8_Annotation/FILE_PROCESSING/
-for file in *Other_Transcripts.vcf
-do
-	for (( a=1; a<$COUNT+1; a++ ))
-	do
-	NAME=$(cut -f $a List_samples_for_split.txt)
-	b=$((9+$a))
-	cut -f1-9,$b $file > $PROCESSING/8_Annotation/GATK/$NAME\_GATK_Other_Transcripts.vcf
-	sed -i -e '/0\/0/d' -e '/\.\/\./d' -e 's/|;/|-;/g' -e 's/;\t/\t/g' $PROCESSING/8_Annotation/GATK/$NAME\_GATK_Other_Transcripts.vcf
-	cp $PROCESSING/8_Annotation/GATK/$NAME\_GATK_Other_Transcripts.vcf $STORAGE/$Name_Dir
-	printf "\n${NAME}_GATK_Other_Transcripts.vcf : vcf GATK splittato e annotato per il sample $NAME contenente altri trascritti\n" >> $STORAGE/$Name_Dir/README.txt
-	sed -i -e '/^##/d' $PROCESSING/8_Annotation/GATK/$NAME\_GATK_Other_Transcripts.vcf
-	# Aggiungo le intestazioni delle annotazioni:
-	#Splitto in corrispondenza dei ; e di | e dei : poi aggiungo - in corrispondenza dei valori mancanti e rimuovo le stringhe in INFO, aggiungo il 	nome paziente nella colonna ID ecc...
-	sed -i -e "s/#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t$NAME/CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tAC\tAF\tAN\tBaseQRankSum\tClippingRankSum\tDP\tExcessHet\tFS\tInbreedingCoeff\tMLEAC\tMLEAF\tMQ\tMQRankSum\tQD\tReadPosRankSum\tSOR\tAllele\tConsequence\tIMPACT\tSYMBOL\tGene\tFeature_type\tFeature\tBIOTYPE\tEXON\tINTRON\tHGVSc\tHGVSp\tcDNA_position\tCDS_position\tProtein_position\tAmino_acids\tCodons\tExisting_variation\tDISTANCE\tSTRAND\tFLAGS\tVARIANT_CLASS\tSYMBOL_SOURCE\tHGNC_ID\tCANONICAL\tENSP\tSIFT\tPolyPhen\tHGVS_OFFSET\tGMAF\tCLIN_SIG\tSOMATIC\tPHENO\tPUBMED\tGT\tAD\tDP\tGQ\tPL/g" -e "s/;\tGT/\tGT/g" -e "s/GT:AD:DP:GQ:PL\t//g" $PROCESSING/8_Annotation/GATK/$NAME\_GATK_Other_Transcripts.vcf
-	sed -i -e "s/\(^chr[[:alnum:]]*\t[[:digit:]]*\t\)\.\t/\1$NAME\t/g" -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/:/\t/g' -e 's/\[\]/:/g' -e 's/;/\t/g' -e 's/||/|-|/g' -e 's/||/|-|/g' -e 's/||/|-|/g' -e 's/|/\t/g' -e "s/AC=\|AF=\|AN=\|BaseQRankSum=\|ClippingRankSum=\|DP=\|ExcessHet=\|FS=\|InbreedingCoeff=\|MLEAC=\|MLEAF=\|MQ=\|MQRankSum=\|QD=\|ReadPosRankSum=\|SOR=\|ANN=//g" -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' $PROCESSING/8_Annotation/GATK/$NAME\_GATK_Other_Transcripts.vcf
-	cut --complement -f26,28,29,31,42-44,46,47,52,55,56 $PROCESSING/8_Annotation/GATK/$NAME\_GATK_Other_Transcripts.vcf > $STORAGE/$Name_Dir/$NAME\_GATK_Other_Transcripts_Conferme.tsv
-	mv $PROCESSING/8_Annotation/GATK/$NAME\_GATK_Other_Transcripts.vcf $STORAGE/$Name_Dir/$NAME\_GATK_Other_Transcripts_All_Tags.txt
-	printf "\n${NAME}_GATK_Other_Transcripts_All_Tags.txt : file txt GATK contenente sole varianti per il sample $NAME del file other transcripts ma con tutte le tag del vcf\n" >> $STORAGE/$Name_Dir/README.txt
-	printf "\n${NAME}_GATK_Other_Transcripts_Conferme.tsv : file .tsv GATK definitivo contenente sole varianti per il sample $NAME\n" >> $STORAGE/$Name_Dir/README.txt
-	cp $STORAGE/$Name_Dir/$NAME\_GATK_Other_Transcripts_Conferme.tsv $OUTVCF/$Name_OUT
-	done
-done
-
-rm $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_GATK_Other_Transcripts.vcf
-
-
-
-#-------------------------------------------------SPLITTO I VCF DI VARSCAN IN FORMATO CSV----------------------------------------------------
-
-
-
-cd $PROCESSING/8_Annotation/FILE_PROCESSING
-for file in *\_VarScan.vcf
-do
-	for (( a=1; a<$COUNT+1; a++ ))
-	do
-	NAME=$(cut -f $a List_samples_for_split.txt)
-	b=$((9+$a))
-	cut -f1-9,$b $file > $PROCESSING/8_Annotation/VARSCAN/$NAME\_VarScan.vcf
-	sed -i -e '/0\/0/d' -e '/\.\/\./d' -e 's/|;/|-;/g' -e 's/;\t/\t/g' $PROCESSING/8_Annotation/VARSCAN/$NAME\_VarScan.vcf
-	cp $PROCESSING/8_Annotation/VARSCAN/$NAME\_VarScan.vcf $STORAGE/$Name_Dir
-	printf "\n${NAME}_VarScan.vcf : vcf VarScan splittato e annotato per il sample $NAME\n" >> $STORAGE/$Name_Dir/README.txt
-	sed -i -e '/^##/d'  $PROCESSING/8_Annotation/VARSCAN/$NAME\_VarScan.vcf
-	# Aggiungo le intestazioni delle annotazioni:
-	#Splitto in corrispondenza dei ; e di | e dei : poi aggiungo - in corrispondenza dei valori mancanti e rimuovo le stringhe in INFO, aggiungo il 	nome paziente nella colonna ID ecc...
-	sed -i -e "s/#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t$NAME/CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tADP\tWT\tHET\tHOM\tNC\tAllele\tConsequence\tIMPACT\tSYMBOL\tGene\tFeature_type\tFeature\tBIOTYPE\tEXON\tINTRON\tHGVSc\tHGVSp\tcDNA_position\tCDS_position\tProtein_position\tAmino_acids\tCodons\tExisting_variation\tDISTANCE\tSTRAND\tFLAGS\tVARIANT_CLASS\tSYMBOL_SOURCE\tHGNC_ID\tCANONICAL\tENSP\tSIFT\tPolyPhen\tHGVS_OFFSET\tGMAF\tCLIN_SIG\tSOMATIC\tPHENO\tPUBMED\tGT\tGQ\tSDP\tDP\tRD\tAD\tFREQ\tPVAL\tRBQ\tABQ\tRDF\tRDR\tADF\tADR/g" -e "s/;\tGT/\tGT/g" -e "s/GT:GQ:SDP:DP:RD:AD:FREQ:PVAL:RBQ:ABQ:RDF:RDR:ADF:ADR\t//g" $PROCESSING/8_Annotation/VARSCAN/$NAME\_VarScan.vcf
-	sed -i -e "s/GT:GQ:SDP:DP:RD:AD:FREQ:PVAL:RBQ:ABQ:RDF:RDR:ADF:ADR\t//g" -e "s/\(^chr[[:alnum:]]*\t[[:digit:]]*\t\)\.\t/\1$NAME\t/g" -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/:/\t/g' -e 's/\[\]/:/g' -e 's/;/\t/g' -e 's/||/|-|/g' -e 's/||/|-|/g' -e 's/||/|-|/g' -e 's/|/\t/g' -e "s/ADP=\|WT=\|HET=\|HOM=\|NC=\|ANN=//g" -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' $PROCESSING/8_Annotation/VARSCAN/$NAME\_VarScan.vcf
-	cut --complement -f15,17,18,20,31-33,35-36,41,44,45 $PROCESSING/8_Annotation/VARSCAN/$NAME\_VarScan.vcf > $STORAGE/$Name_Dir/$NAME\_VarScan_Conferme.tsv
-	mv $PROCESSING/8_Annotation/VARSCAN/$NAME\_VarScan.vcf $STORAGE/$Name_Dir/$NAME\_VarScan_All_Tags.txt
-	printf "\n${NAME}_VarScan_All_Tags.txt : file txt VarScan contenente sole varianti per il sample $NAME ma con tutte le tag del vcf\n" >> $STORAGE/$Name_Dir/README.txt
-	printf "\n${NAME}_VarScan_Conferme.tsv : file .tsv VarScan definitivo contenente sole varianti per il sample $NAME\n" >> $STORAGE/$Name_Dir/README.txt
-	cp $STORAGE/$Name_Dir/$NAME\_VarScan_Conferme.tsv $OUTVCF/$Name_OUT
-	done
-done
-
-rm $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_Intersect_Transcripts_VarScan.vcf
-
-
-
-#-----------------------------------------------SPLITTO I VCF DI FREEBAYES IN FORMATO CSV----------------------------------------------------
-
-
-
-cd $PROCESSING/8_Annotation/FILE_PROCESSING
-for file in *\_FREEBAYES.vcf
-do
-	for (( a=1; a<$COUNT+1; a++ ))
-	do
-	NAME=$(cut -f $a List_samples_for_split.txt)
-	b=$((9+$a))
-	cut -f1-9,$b $file > $PROCESSING/8_Annotation/FREEBAYES/$NAME\_FREEBAYES.vcf
-	#Elimino i non varianti
-	sed -i -e '/0\/0/d' -e '/\.\/\./d' -e '/GL\t\./d' -e 's/|;/|-;/g' -e 's/;\t/\t/g' $PROCESSING/8_Annotation/FREEBAYES/$NAME\_FREEBAYES.vcf
-	cp $PROCESSING/8_Annotation/FREEBAYES/$NAME\_FREEBAYES.vcf $STORAGE/$Name_Dir
-	printf "\n${NAME}_FREEBAYES.vcf : vcf FREEBAYES splittato e annotato per il sample $NAME\n" >> $STORAGE/$Name_Dir/README.txt
-	# Elimino le righe con ##
-	sed -i -e '/^##/d' $PROCESSING/8_Annotation/FREEBAYES/$NAME\_FREEBAYES.vcf
-	# Aggiungo le intestazioni delle annotazioni:
-	#Splitto in corrispondenza dei ; e di | e dei : poi aggiungo - in corrispondenza dei valori mancanti e rimuovo le stringhe in INFO, aggiungo il nome paziente nella colonna ID ecc...
-	sed -i -e "s/#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t$NAME/CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tAB\tABP\tAC\tAF\tAN\tAO\tCIGAR\tDP\tDPB\tDPRA\tEPP\tEPPR\tGTI\tLEN\tMEANALT\tMQM\tMQMR\tNS\tNUMALT\tODDS\tPAIRED\tPAIREDR\tPAO\tPQA\tPQR\tPRO\tQA\tQR\tRO\tRPL\tRPP\tRPPR\tRPR\tRUN\tSAF\tSAP\tSAR\tSRF\tSRP\tSRR\tTYPE\ttechnology.ILLUMINA\tAllele\tConsequence\tIMPACT\tSYMBOL\tGene\tFeature_type\tFeature\tBIOTYPE\tEXON\tINTRON\tHGVSc\tHGVSp\tcDNA_position\tCDS_position\tProtein_position\tAmino_acids\tCodons\tExisting_variation\tDISTANCE\tSTRAND\tFLAGS\tVARIANT_CLASS\tSYMBOL_SOURCE\tHGNC_ID\tCANONICAL\tENSP\tSIFT\tPolyPhen\tHGVS_OFFSET\tGMAF\tCLIN_SIG\tSOMATIC\tPHENO\tPUBMED\tGT\tGQ\tDP\tAD\tRO\tQR\tAO\tQA\tGL/g" -e "s/GT:GQ:DP:AD:RO:QR:AO:QA:GL\t//g" $PROCESSING/8_Annotation/FREEBAYES/$NAME\_FREEBAYES.vcf	
-	sed -i -e "s/\(^chr[[:alnum:]]*\t[[:digit:]]*\t\)\.\t/\1$NAME\t/g" -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/:/\t/g' -e 's/\[\]/:/g' -e 's/;/\t/g' -e 's/||/|-|/g' -e 's/||/|-|/g' -e 's/||/|-|/g' -e 's/||/|-|/g' -e 's/||/|-|/g' -e 's/|/\t/g' -e "s/AB=\|ABP=\|AC=\|AF=\|AN=\|AO=\|CIGAR=\|DP=\|DPB=\|DPRA=\|EPP=\|EPPR=\|GTI=\|LEN=\|MEANALT=\|MQM=\|MQMR=\|NS=\|NUMALT=\|ODDS=\|PAIRED=\|PAIREDR=\|PAO=\|PQA=\|PQR=\|PRO=\|QA=\|QR=\|RO=\|RPL=\|RPP=\|RPPR=\|RPR=\|RUN=\|SAF=\|SAP=\|SAR=\|SRF=\|SRP=\|SRR=\|TYPE=\|technology.ILLUMINA=\|ANN=//g" -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' $PROCESSING/8_Annotation/FREEBAYES/$NAME\_FREEBAYES.vcf
-	cut --complement -f9,14,17-22,27-33,37-41,43,46,49,52,54,55,57,68-70,72,73,78,81,82 $PROCESSING/8_Annotation/FREEBAYES/$NAME\_FREEBAYES.vcf > $STORAGE/$Name_Dir/$NAME\_FREEBAYES_Conferme.tsv
-	mv $PROCESSING/8_Annotation/FREEBAYES/$NAME\_FREEBAYES.vcf $STORAGE/$Name_Dir/$NAME\_FREEBAYES_All_Tags.txt
-	printf "\n${NAME}_FREEBAYES_All_Tags.txt : file txt FREEBAYES contenente sole varianti per il sample $NAME ma con tutte le tag del vcf\n" >> $STORAGE/$Name_Dir/README.txt
-	printf "\n${NAME}_FREEBAYES_Conferme.tsv : file .tsv FREEBAYES definitivo contenente sole varianti per il sample $NAME\n" >> $STORAGE/$Name_Dir/README.txt
-	cp $STORAGE/$Name_Dir/$NAME\_FREEBAYES_Conferme.tsv $OUTVCF/$Name_OUT
-	done
-done
-
-
-	echo $'\n =========>	FILE MODIFICATION FOR CSV FORMAT: DONE \n\n'
-
-cp $STORAGE/$Name_Dir/$DataRun\_Cardio_GATK_Filter.vcf $OUTVCF/$Name_OUT
-cp $STORAGE/$Name_Dir/$DataRun\_Cardio_VarScan.vcf $OUTVCF/$Name_OUT
-cp $STORAGE/$Name_Dir/$DataRun\_Cardio_FreeBayes.vcf $OUTVCF/$Name_OUT
-cp $STORAGE/$Name_Dir/$DataRun\_Cardio_Intersect.vcf $OUTVCF/$Name_OUT
-
-
-rm $PROCESSING/8_Annotation/FILE_PROCESSING/$DataRun\_Cardio_Intersect_Transcripts_FREEBAYES.vcf
-
-#Rimuovo i file rimanenti inutili
-rm $PROCESSING/5_BQSR/Bam_list.txt
-rm $PROCESSING/5_BQSR/Sample_list.txt
-rm $PROCESSING/6_Variant/GATK/samples.list
-rm $PROCESSING/8_Annotation/FILE_PROCESSING/List_samples_for_split.txt
-
-}
