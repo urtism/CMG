@@ -26,6 +26,7 @@ TARGETEXOME=~/NGS_ANALYSIS/TARGET/TruSight_One_v1.1_ESTESO+-1000.list
 TARGETEXOMEBED=~/NGS_ANALYSIS/TARGET/TruSight_One_v1.1_ESTESO+-1000.bed
 TARGETCANCER=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.list
 TARGETCANCERBED=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.bed
+TARGETCARDIOPARALLEL=/home/jarvis/NGS_ANALYSIS/TARGET/Parallel_regions_Cardio+-1000.regions
 OUTVCF=~/Scrivania/NGS_ANALYSIS_TEST/OUTPUT_DATA
 STORAGE=~/Scrivania/NGS_ANALYSIS_TEST/STORAGE
 VEP=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
