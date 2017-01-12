@@ -81,7 +81,8 @@ class Freebayes(Caller):
 	R_QB=''
 
 class GATK(Caller):
-	
+	#PROVENIENTI DAL FORMAT
+	sQD=''
 	#PROVENIENTI DALLE INFO
 	AF_TOT=''
 	BaseQRankSum=''
@@ -394,7 +395,6 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 	
 	GATK.GT=sample[format.index('GT')]
 	if GATK.GT=='./.':
-		#print chrom,pos,ref,alt,GATK.GT
 		pass
 	else:
 		GATK.AO=float((sample[format.index('AD')]).split(',')[1])
@@ -402,6 +402,21 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 		#GATK.DP=GATK.AO+GATK.RO	
 		GATK.DP=float(sample[format.index('DP')])
 		GATK.STR='0'
+		
+		try:
+			GATK.AO_r=float((sample[format.index('SB')]).split(',')[3])
+			GATK.AO_f=float((sample[format.index('SB')]).split(',')[2])
+			GATK.RO_r=float((sample[format.index('SB')]).split(',')[1])
+			GATK.RO_f=float((sample[format.index('SB')]).split(',')[0])
+		except:
+			GATK.AO_r='.'
+			GATK.AO_f='.'
+			GATK.RO_r='.'
+			GATK.RO_f='.'
+
+		GATK.sQD=sample[format.index('sQD')]
+
+
 		for ind in info:
 			if ind.startswith("AC="):
 				GATK.AC=ind.split('=')[1]
@@ -444,8 +459,21 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 			if ind.startswith("SOR="):
 				GATK.SOR=ind.split('=')[1]
 
-	
 		
+		if opts.amplicon:
+			if min(GATK.DP_r,GATK.DP_f)/(GATK.DP_r+GATK.DP_f) >= 0.05:
+				GATK.STRBIAS=1-stats.fisher_exact([[GATK.RO_f, GATK.RO_r], [GATK.AO_f, GATK.AO_r]])[1]
+			else:
+				GATK.STRBIAS='.'
+		else:
+			if min(GATK.DP_r,GATK.DP_f)/(GATK.DP_r+GATK.DP_f) > 0:
+				GATK.STRBIAS=1-stats.fisher_exact([[GATK.RO_f, GATK.RO_r], [GATK.AO_f, GATK.AO_r]])[1]
+
+			else:
+				freebayes.STRBIAS='.'
+		
+		
+
 		try:
 			GATK.GQ=float(sample[format.index('GQ')])
 		except:
@@ -617,6 +645,7 @@ def set_features(dictionary):
 					features.FILTER_GATK=varc_array[2].FILTER
 					features.AC_GATK=varc_array[2].AC
 					features.AN_GATK=varc_array[2].AN
+					features.sQD_GATK=varc_array[2].sQD
 					features.STRBIAS_TOT_GATK=varc_array[2].STRBIAS_TOT
 
 					features.AF_TOT_GATK=varc_array[2].AF_TOT
