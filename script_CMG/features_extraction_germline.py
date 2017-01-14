@@ -414,7 +414,7 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 			GATK.RO_r='.'
 			GATK.RO_f='.'
 
-		GATK.sQD=sample[format.index('sQD')]
+		GATK.sQD=sample[format.index('SQD')]
 
 
 		for ind in info:

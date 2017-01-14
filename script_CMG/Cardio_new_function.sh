@@ -35,6 +35,19 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 
 DataRun=20151115
 
+
+cd $PROCESSING/5_BQSR/
+
+		ls $PROCESSING/5_BQSR/*.bam > $PROCESSING/5_BQSR/Path_bam.list
+
+		java -jar -Xmx64g $GATK -T DiagnoseTargets \
+		-R ~/NGS_TOOLS/hg19/ucsc.hg19.fasta \
+		-I ~/Scrivania/NGS_ANALYSIS_TEST/PROCESSING/5_BQSR/Path_bam.list \
+		-L ~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a.list \
+		-o ~/Scrivania/NGS_ANALYSIS_TEST/PROCESSING/Target_dig.vcf \
+		--missing_intervals ~/Scrivania/NGS_ANALYSIS_TEST/PROCESSING/Missing.tsv
+
+
 cd $PROCESSING/5_BQSR/
 
 	for filename in *.bam
@@ -46,9 +59,8 @@ cd $PROCESSING/5_BQSR/
  		java -Xmx64g -jar $GATK -T HaplotypeCaller \
  		-R $REF \
  		-I ${filename%.*}.bam \
- 		-o ${filename%.*}.g.vcf \
+ 		-o $PROCESSING/6_Variant/GATK/${filename%.*}.g.vcf \
  		-ERC GVCF \
- 		--doNotRunPhysicalPhasing \
  		--doNotRunPhysicalPhasing \
  		--heterozygosity 0.001 \
  		--indel_heterozygosity 1.25E-4 \
@@ -125,7 +137,7 @@ cd $PROCESSING/5_BQSR/
 	ls *.bam > Sample_list.txt
 	sed -i -e "s/.bam//g" Sample_list.txt
 
-	/home/jarvis/NGS_TOOLS/freebayes/bin/freebayes -f $REF \
+	~/NGS_TOOLS/freebayes/scripts/freebayes-parallel $TARGETCARDIOPARALLEL 10 -f $REF \
 	-L $PROCESSING/5_BQSR/Bam_list.txt \
 	-K \
 	-J \
@@ -148,7 +160,7 @@ cd $PROCESSING/5_BQSR/
 
 	python ~/git/CMG/scripts/header_fix.py \
 	-f $PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes.vcf \
-	-v G \
+	-v F \
 	> $PROCESSING/6_Variant/FreeBayes/NORM_FREE/$DataRun\_Cardio_FreeBayes.fixed.vcf
 		
 	bcftools norm -m -both \
@@ -213,7 +225,7 @@ cd $PROCESSING/5_BQSR/
 
 	python ~/git/CMG/scripts/header_fix.py \
 	-f $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan.vcf \
-	-v G \
+	-v V \
 	> $PROCESSING/6_Variant/VarScan/NORM_VARSCAN/$DataRun\_Cardio_VarScan.fixed.vcf
 		
 	bcftools norm -m -both \
