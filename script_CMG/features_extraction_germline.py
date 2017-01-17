@@ -127,9 +127,9 @@ class Features():
 	DP_media='.'
 	DP_mediana='.'
 
-	MQB_GATK='.'
-	MQB_Varscan='.'
-	MQB_Freebayes='.'
+	QB_GATK='.'
+	QB_Varscan='.'
+	QB_Freebayes='.'
 	MQB_media='.'
 	MQB_mediana='.'
 	
@@ -171,73 +171,73 @@ class Features():
 
 
 	#features solo di GATK
-
-	AF_TOT_GATK=''
-	BaseQRankSum_GATK=''
-	ClippingRankSum_GATK=''
-	DP_TOT_GATK=''
-	DS_GATK=''
-	END_GATK=''
-	ExcessHet_GATK=''
-	FS_GATK=''
-	HaplotypeScore_GATK=''
-	InbreedingCoeff_GATK=''
-	MLEAC_GATK=''
-	MLEAF_GATK=''
-	MQ_GATK=''
-	MQRankSum_GATK=''
-	QD_GATK=''
-	RAW_MQ_GATK=''
-	ReadPosRankSum_GATK=''
-	SOR_GATK=''
+	sQD_GATK='.'
+	AF_TOT_GATK='.'
+	BaseQRankSum_GATK='.'
+	ClippingRankSum_GATK='.'
+	DP_TOT_GATK='.'
+	DS_GATK='.'
+	END_GATK='.'
+	ExcessHet_GATK='.'
+	FS_GATK='.'
+	HaplotypeScore_GATK='.'
+	InbreedingCoeff_GATK='.'
+	MLEAC_GATK='.'
+	MLEAF_GATK='.'
+	MQ_GATK='.'
+	MQRankSum_GATK='.'
+	QD_GATK='.'
+	RAW_MQ_GATK='.'
+	ReadPosRankSum_GATK='.'
+	SOR_GATK='.'
 
 	#features solo di Freebayes
-	lod_Freebayes=''
-	AO_f_TOT_Freebayes=''
-	AO_r_TOT_Freebayes=''
-	RO_f_TOT_Freebayes=''
-	RO_r_TOT_Freebayes=''
-	DP_f_TOT_Freebayes=''
-	DP_r_TOT_Freebayes=''
-	AB_Freebayes=''
-	ABP_Freebayes=''
-	AF_TOT_Freebayes=''
-	AO_TOT_Freebayes=''
-	CIGAR_Freebayes=''
-	DP_TOT_Freebayes=''
-	DPB_TOT_Freebayes=''
-	DPRA_TOT_Freebayes=''
-	END_TOT_Freebayes=''
-	EPP_TOT_Freebayes=''
-	EPPR_TOT_Freebayes=''
-	GTI_TOT_Freebayes=''
-	LEN_Freebayes=''
-	MEANALT_Freebayes=''
-	MIN_Freebayes=''
-	MQ_A_Freebayes=''
-	MQ_R_Freebayes=''
-	NS_Freebayes=''
-	NUMALT_Freebayes=''
-	ODDS_Freebayes=''
-	PAIRED_Freebayes=''
-	PAIREDR_Freebayes=''
-	PAO_Freebayes=''
-	PQA_Freebayes=''
-	PQR_Freebayes=''
-	PRO_Freebayes=''
-	QA_Freebayes=''
-	QR_Freebayes=''
-	RO_TOT_Freebayes=''
-	RPL_Freebayes=''
-	RPP_Freebayes=''
-	RPPR_Freebayes=''
-	RPR_Freebayes=''
-	RUN_Freebayes=''
-	SAP_Freebayes=''
-	SRP_Freebayes=''
+	lod_Freebayes='.'
+	AO_f_TOT_Freebayes='.'
+	AO_r_TOT_Freebayes='.'
+	RO_f_TOT_Freebayes='.'
+	RO_r_TOT_Freebayes='.'
+	DP_f_TOT_Freebayes='.'
+	DP_r_TOT_Freebayes='.'
+	AB_Freebayes='.'
+	ABP_Freebayes='.'
+	AF_TOT_Freebayes='.'
+	AO_TOT_Freebayes='.'
+	CIGAR_Freebayes='.'
+	DP_TOT_Freebayes='.'
+	DPB_TOT_Freebayes='.'
+	DPRA_TOT_Freebayes='.'
+	END_TOT_Freebayes='.'
+	EPP_TOT_Freebayes='.'
+	EPPR_TOT_Freebayes='.'
+	GTI_TOT_Freebayes='.'
+	LEN_Freebayes='.'
+	MEANALT_Freebayes='.'
+	MIN_Freebayes='.'
+	MQ_A_Freebayes='.'
+	MQ_R_Freebayes='.'
+	NS_Freebayes='.'
+	NUMALT_Freebayes='.'
+	ODDS_Freebayes='.'
+	PAIRED_Freebayes='.'
+	PAIREDR_Freebayes='.'
+	PAO_Freebayes='.'
+	PQA_Freebayes='.'
+	PQR_Freebayes='.'
+	PRO_Freebayes='.'
+	QA_Freebayes='.'
+	QR_Freebayes='.'
+	RO_TOT_Freebayes='.'
+	RPL_Freebayes='.'
+	RPP_Freebayes='.'
+	RPPR_Freebayes='.'
+	RPR_Freebayes='.'
+	RUN_Freebayes='.'
+	SAP_Freebayes='.'
+	SRP_Freebayes='.'
 
-	A_QB_Freebayes=''
-	R_QB_Freebayes=''
+	A_QB_Freebayes='.'
+	R_QB_Freebayes='.'
 
 	#features solo di Varscan
 	SDP_Varscan=''
@@ -355,14 +355,9 @@ def get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes):
 		except:
 			freebayes.R_QB='.'
 		try:	
-			freebayes.QB=(float(sample[format.index('QA')]) + float(sample[format.index('QR')]))/freebayes.DP
+			freebayes.QB=float(sample[format.index('QA')])/freebayes.AO
 		except:
-			if sample[format.index('QA')] == '0':
-				freebayes.QB=freebayes.R_QB
-			elif sample[format.index('QR')] == '0':
-				freebayes.QB=freebayes.R_QA
-		
-	
+			freebayes.QB='.'
 
 
 		try:
@@ -408,13 +403,17 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 			GATK.AO_f=float((sample[format.index('SB')]).split(',')[2])
 			GATK.RO_r=float((sample[format.index('SB')]).split(',')[1])
 			GATK.RO_f=float((sample[format.index('SB')]).split(',')[0])
+			GATK.DP_r=GATK.AO_r+GATK.RO_r
+			GATK.DP_f=GATK.AO_f+GATK.RO_f
 		except:
 			GATK.AO_r='.'
 			GATK.AO_f='.'
 			GATK.RO_r='.'
 			GATK.RO_f='.'
+			GATK.DP_r='.'
+			GATK.DP_f='.'
 
-		GATK.sQD=sample[format.index('sQD')]
+		GATK.QB=sample[format.index('SQD')]
 
 
 		for ind in info:
@@ -459,19 +458,20 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 			if ind.startswith("SOR="):
 				GATK.SOR=ind.split('=')[1]
 
-		
-		if opts.amplicon:
-			if min(GATK.DP_r,GATK.DP_f)/(GATK.DP_r+GATK.DP_f) >= 0.05:
-				GATK.STRBIAS=1-stats.fisher_exact([[GATK.RO_f, GATK.RO_r], [GATK.AO_f, GATK.AO_r]])[1]
+		try:
+			if opts.amplicon:
+				if min(GATK.DP_r,GATK.DP_f)/(GATK.DP_r+GATK.DP_f) >= 0.05:
+					GATK.STRBIAS=1-stats.fisher_exact([[GATK.RO_f, GATK.RO_r], [GATK.AO_f, GATK.AO_r]])[1]
+				else:
+					GATK.STRBIAS='.'
 			else:
-				GATK.STRBIAS='.'
-		else:
-			if min(GATK.DP_r,GATK.DP_f)/(GATK.DP_r+GATK.DP_f) > 0:
-				GATK.STRBIAS=1-stats.fisher_exact([[GATK.RO_f, GATK.RO_r], [GATK.AO_f, GATK.AO_r]])[1]
+				if min(GATK.DP_r,GATK.DP_f)/(GATK.DP_r+GATK.DP_f) > 0:
+					GATK.STRBIAS=1-stats.fisher_exact([[GATK.RO_f, GATK.RO_r], [GATK.AO_f, GATK.AO_r]])[1]
 
-			else:
-				freebayes.STRBIAS='.'
-		
+				else:
+					GATK.STRBIAS='.'
+		except:
+			GATK.STRBIAS='.'
 		
 
 		try:
@@ -481,7 +481,7 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 		
 		GATK.FILTER=filter
 		#print chrom,pos,ref,alt,GATK.GT
-	GATK.Call=1
+		GATK.Call=1
 	
 def get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan):
 	'''estrae le informazioni dal vcf di varscan'''
@@ -519,6 +519,10 @@ def get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan):
 		varscan.Call=1
 		varscan.QB_R=float(sample[format.index('RBQ')])
 		varscan.QB_A=float(sample[format.index('ABQ')])
+		try:
+			varscan.QB=varscan.QB_A
+		except:
+			varscan.QB='.'
 		Varscan.GQ=float(sample[format.index('GQ')])
 		
 		varscan.AF=float(varscan.AO/(varscan.DP))
@@ -645,7 +649,6 @@ def set_features(dictionary):
 					features.FILTER_GATK=varc_array[2].FILTER
 					features.AC_GATK=varc_array[2].AC
 					features.AN_GATK=varc_array[2].AN
-					features.sQD_GATK=varc_array[2].sQD
 					features.STRBIAS_TOT_GATK=varc_array[2].STRBIAS_TOT
 
 					features.AF_TOT_GATK=varc_array[2].AF_TOT
@@ -720,6 +723,7 @@ def set_features(dictionary):
 		except:
 			features.DP_mediana='.'
 
+				
 		v=[]
 		for ao in vett_AO:
 			if ao and ao is not '':
@@ -748,7 +752,7 @@ def set_features(dictionary):
 
 		v=[]
 		for bq in vett_MBQ:
-			if bq and bq is not '.':
+			if bq is not '.':
 				v=v+[float(bq)]
 		try:
 			features.MBQ_media=statistics.mean(v)
@@ -811,18 +815,21 @@ def switch(dictionary,ID,index,chrom,pos,ref,alt,filter,info,format,sample):
 		# print 'Freebayes'
 		freebayes=Freebayes()
 		get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes)
-		vettore[0]=freebayes
+		if freebayes.GT != './.':
+			vettore[0]=freebayes
 
 	elif index==2:
 		# print 'gatk'
 		gatk=GATK()
 		get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,gatk)
-		vettore[2]=gatk
+		if gatk.GT != './.':
+			vettore[2]=gatk
 	elif index==1 :
 		# print 'varscan'
 		varscan=Varscan()
 		get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan)
-		vettore[1]=varscan
+		if varscan.GT != './.':
+			vettore[1]=varscan
 	dictionary[ID]=vettore
 
 def read(iterable,index,dictionary):
@@ -925,7 +932,7 @@ def split_vcf(vcf_dir,samples):
 			variant_caller = 'GATK'
 	elif 'VarScan' in vcf_name:
 			variant_caller = 'VarScan'
-
+	print '\n'+variant_caller +'\n'
 	for line in vcf:
 		line=line.rstrip()
 		if line.startswith('##'):
@@ -977,15 +984,23 @@ def split_vcf(vcf_dir,samples):
 					if line.startswith(chrom+'\t'+pos) and line.split('\t')[4]:
 						format = line.split('\t')[-2]
 						sformat = line.split('\t')[-1]
-						format_qual = line.split('\t')[5]
+						qual = line.split('\t')[5]
 						info = line.split('\t')[7].split(';')
+						ad = (sformat.split(':')[(format.split(':')).index('AD')]).split(',')
+						
+						ad = map(float, ad)
+						ad_sum = sum(ad[1:])
+
 						for elem in info:
 							if elem.startswith('DP='):
 								DP = elem.split('=')[1]
 								break
 						try:
 							sSB = sformat.split(':')[format.split(':').index('SB')]
-							sQD = round(float(format_qual)/float(DP) ,2)
+							if ad_sum > 0.0:
+								sQD = round(float(qual)/ad_sum ,2)
+							else:
+								sQD = 0.0
 							break
 						except:
 							print 'ci sono problemi',sample,chrom,pos,format,sformat
@@ -1003,9 +1018,9 @@ def split_vcf(vcf_dir,samples):
 def main():
 
 	parser = argparse.ArgumentParser('Parse VCF output from Variant callers to output a variant_dataset.txt.  Output is to stdout.')
-	parser.add_argument('-f', '--freebayes', help="Freebayes vcf output file name")
-	parser.add_argument('-g', '--gatk', help="gatk vcf output file name")
-	parser.add_argument('-v', '--varscan', help="Varscan vcf output file name")
+	parser.add_argument('-f', '--freebayes', help="Freebayes vcf output file name",default=None)
+	parser.add_argument('-g', '--gatk', help="gatk vcf output file name",default=None)
+	parser.add_argument('-v', '--varscan', help="Varscan vcf output file name",default=None)
 	parser.add_argument('-l', '--listaFeatures', help="Lista di features da stampare",default=None)
 	parser.add_argument('-s', '--split', help="Split vcf per samples", action='store_true')
 	parser.add_argument('-F', '--feat_extraction', help="Enable features extraction", action='store_true')
@@ -1031,6 +1046,7 @@ def main():
 		print'Done'
 
 	if opts.feat_extraction:
+		print 'FEATURES EXTRACTION...'
 		varianti_total = dict()
 		for dir_sample in os.listdir(opts.out_path):
 			varianti = dict()
@@ -1051,6 +1067,7 @@ def main():
 				
 				set_features(varianti)
 				print_var(varianti,opts.out_path,dir_sample)
+			
 			for var in varianti.keys():
 				#varianti_total[var] = var.split('\t')[0]+'\t'+var.split('\t')[1]+'\t.\t'+var.split('\t')[2]+'\t'+var.split('\t')[3]+'\t.\t.\t.\t.\t.'
 				varianti_total[var] = ''
