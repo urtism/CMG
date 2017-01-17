@@ -127,9 +127,9 @@ class Features():
 	DP_media='.'
 	DP_mediana='.'
 
-	MQB_GATK='.'
-	MQB_Varscan='.'
-	MQB_Freebayes='.'
+	QB_GATK='.'
+	QB_Varscan='.'
+	QB_Freebayes='.'
 	MQB_media='.'
 	MQB_mediana='.'
 	
@@ -401,6 +401,7 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 		GATK.RO=float((sample[format.index('AD')]).split(',')[0])
 		#GATK.DP=GATK.AO+GATK.RO	
 		GATK.DP=float(sample[format.index('DP')])
+		GATK.AF=GATK.AO/GATK.DP
 		GATK.STR='0'
 		
 		try:
@@ -408,11 +409,15 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 			GATK.AO_f=float((sample[format.index('SB')]).split(',')[2])
 			GATK.RO_r=float((sample[format.index('SB')]).split(',')[1])
 			GATK.RO_f=float((sample[format.index('SB')]).split(',')[0])
+			GATK.DP_r=GATK.AO_r+GATK.RO_r
+			GATK.DP_f=GATK.AO_f+GATK.RO_f
 		except:
 			GATK.AO_r='.'
 			GATK.AO_f='.'
 			GATK.RO_r='.'
 			GATK.RO_f='.'
+			GATK.DP_r='.'
+			GATK.DP_f='.'
 
 		GATK.sQD=sample[format.index('SQD')]
 
@@ -459,20 +464,21 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 			if ind.startswith("SOR="):
 				GATK.SOR=ind.split('=')[1]
 
-		
-		if opts.amplicon:
-			if min(GATK.DP_r,GATK.DP_f)/(GATK.DP_r+GATK.DP_f) >= 0.05:
-				GATK.STRBIAS=1-stats.fisher_exact([[GATK.RO_f, GATK.RO_r], [GATK.AO_f, GATK.AO_r]])[1]
+		try:
+			if opts.amplicon:
+				if min(GATK.DP_r,GATK.DP_f)/(GATK.DP_r+GATK.DP_f) >= 0.05:
+					GATK.STRBIAS=1-stats.fisher_exact([[GATK.RO_f, GATK.RO_r], [GATK.AO_f, GATK.AO_r]])[1]
+				else:
+					GATK.STRBIAS='.'
 			else:
-				GATK.STRBIAS='.'
-		else:
-			if min(GATK.DP_r,GATK.DP_f)/(GATK.DP_r+GATK.DP_f) > 0:
-				GATK.STRBIAS=1-stats.fisher_exact([[GATK.RO_f, GATK.RO_r], [GATK.AO_f, GATK.AO_r]])[1]
-
-			else:
-				freebayes.STRBIAS='.'
-		
-		
+				if min(GATK.DP_r,GATK.DP_f)/(GATK.DP_r+GATK.DP_f) > 0:
+					GATK.STRBIAS=1-stats.fisher_exact([[GATK.RO_f, GATK.RO_r], [GATK.AO_f, GATK.AO_r]])[1]
+	
+				else:
+					GATK.STRBIAS='.'
+		except:
+			GATK.STRBIAS='.'
+			
 
 		try:
 			GATK.GQ=float(sample[format.index('GQ')])
