@@ -396,6 +396,7 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 		GATK.RO=float((sample[format.index('AD')]).split(',')[0])
 		#GATK.DP=GATK.AO+GATK.RO	
 		GATK.DP=float(sample[format.index('DP')])
+		GATK.AF=GATK.AO/GATK.DP
 		GATK.STR='0'
 		
 		try:
@@ -413,7 +414,11 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 			GATK.DP_r='.'
 			GATK.DP_f='.'
 
+<<<<<<< HEAD
 		GATK.QB=sample[format.index('SQD')]
+=======
+		GATK.sQD=sample[format.index('SQD')]
+>>>>>>> branch 'devel' of https://github.com/urtism/CMG.git
 
 
 		for ind in info:
@@ -467,12 +472,21 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 			else:
 				if min(GATK.DP_r,GATK.DP_f)/(GATK.DP_r+GATK.DP_f) > 0:
 					GATK.STRBIAS=1-stats.fisher_exact([[GATK.RO_f, GATK.RO_r], [GATK.AO_f, GATK.AO_r]])[1]
+<<<<<<< HEAD
 
 				else:
 					GATK.STRBIAS='.'
 		except:
 			GATK.STRBIAS='.'
 		
+=======
+	
+				else:
+					GATK.STRBIAS='.'
+		except:
+			GATK.STRBIAS='.'
+			
+>>>>>>> branch 'devel' of https://github.com/urtism/CMG.git
 
 		try:
 			GATK.GQ=float(sample[format.index('GQ')])

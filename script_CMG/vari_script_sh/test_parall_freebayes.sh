@@ -11,7 +11,6 @@ VARSCAN=~/NGS_TOOLS/VarScan/VarScan.v2.4.0.jar
 REF=~/NGS_TOOLS/hg19/ucsc.hg19.fasta
 MILLS=~/NGS_TOOLS/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf
 DBSNP=~/NGS_TOOLS/hg19/dbsnp_135.hg19.vcf
-
 TARGET=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a_ESTESO+-1000.list
 TARGETCARDIOBED=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a_ESTESO+-1000.bed
 TARGETMETRICS=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a.list
@@ -22,18 +21,20 @@ TARGETEXOME=~/NGS_ANALYSIS/TARGET/TruSight_One_v1.1_ESTESO+-1000.list
 TARGETEXOMEBED=~/NGS_ANALYSIS/TARGET/TruSight_One_v1.1_ESTESO+-1000.bed
 TARGETCANCER=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.list
 TARGETCANCERBED=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.bed
-TARGPARALLFREE=/home/minime/NGS_ANALYSIS/TARGET/Parallel_regions_Cardio+-1000.regions
-
-
+TARGPARALLFREE=/home/jarvis/NGS_ANALYSIS/TARGET/Parallel_regions_Cardio+-1000.regions
 VEP=~/NGS_TOOLS/ensembl-tools-release-84/scripts/variant_effect_predictor/
 VEPANN=~/NGS_TOOLS/ensembl-tools-release-84/scripts/variant_effect_predictor/variant_effect_predictor.pl
 VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-84/scripts/variant_effect_predictor/filter_vep.pl
 
+cd /home/jarvis/Scrivania/NGS_ANALYSIS_TEST/PROCESSING/5_BQSR
+
+ls *.bam > bam.list
+
 DATE=$(date +"%Y%m%d");
 STARTTIME=$(date +%s)
 
-	/home/minime/NGS_TOOLS/freebayes/scripts/freebayes-parallel $TARGPARALLFREE 6 -f $REF \
-	-L /home/minime/Scrivania/TEST/20161215/20161215_bamlist.list \
+	/home/jarvis/NGS_TOOLS/freebayes/scripts/freebayes-parallel $TARGPARALLFREE 6 -f $REF \
+	-L /home/jarvis/Scrivania/NGS_ANALYSIS_TEST/PROCESSING/5_BQSR/bam.list \
 	--genotype-qualities \
 	--report-genotype-likelihood-max \
 	--allele-balance-priors-off \
@@ -41,25 +42,8 @@ STARTTIME=$(date +%s)
 	--min-base-quality 10 \
 	--min-alternate-fraction 0.1 \
 	--min-alternate-count 2 \
-	--min-coverage 10 >/home/minime/Scrivania/TEST/Cardio_FreeBayes.vcf
+	--min-coverage 10 > /home/jarvis/Scrivania/TEST/Cardio_FreeBayes.vcf
+	
 ENDTIME=$(date +%s)
 echo "TEMPO TOTALE DI PROCESSING: $(($ENDTIME - $STARTTIME)) sec"
 
-DATE=$(date +"%Y%m%d");
-STARTTIME=$(date +%s)
-
-	freebayes -f $REF \
-	-L /home/minime/Scrivania/TEST/20161215/20161215_bamlist.list \
-	--genotype-qualities \
-	--report-genotype-likelihood-max \
-	--allele-balance-priors-off \
-	--min-mapping-quality 20 \
-	--min-base-quality 10 \
-	--min-alternate-fraction 0.1 \
-	--min-alternate-count 2 \
-	--min-coverage 10 \
-	-t $TARGETCARDIOBED > /home/minime/Scrivania/TEST/Cardio_FreeBayes.2.vcf
-
-ENDTIME=$(date +%s)
-echo "TEMPO TOTALE DI PROCESSING: $(($ENDTIME - $STARTTIME)) sec"
-printf "\n\n"

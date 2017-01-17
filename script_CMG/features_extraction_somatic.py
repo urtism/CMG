@@ -309,7 +309,6 @@ def get_info_Mutect(chrom,pos,ref,alt,filter,info,format,tumor,normal,Mutect):
 	Mutect.DP_f=float(Mutect.AO_f)+float(Mutect.RO_f)
 	Mutect.DP_r=float(Mutect.AO_r)+float(Mutect.RO_r)
 
-	#print str((float((tumor[format.index('QSS')]).split(',')[0]) + float((tumor[format.index('QSS')]).split(',')[1]))/Mutect.DP),str(Mutect.DP)
 	try:
 		Mutect.QB=(float((tumor[format.index('QSS')]).split(',')[0]) + float((tumor[format.index('QSS')]).split(',')[1]))/Mutect.DP_t
 	except:
@@ -1190,6 +1189,7 @@ def main():
 	parser.add_argument('-a','--amplicon',help="Amplicon design", action='store_true')
 	parser.add_argument('-c','--complete',help="Print complete info", action='store_true')
 	parser.add_argument('-o', '--out', help="file name in output. It returns file_name.features.tsv and file_name.vcf ")
+	parser.add_argument('-l', '--listaFeatures', help="Lista di features da stampare",default=None)
 	
 	global opts 
 	opts = parser.parse_args()
@@ -1203,7 +1203,6 @@ def main():
 		vcfreader = read(in_file,index,varianti)
 		index = index + 1
 	set_features_snp(varianti)
-	#max_delta_perc(varianti)
 	control(varianti)
 	if opts.complete:
 		print_var_snp_complete(varianti)
