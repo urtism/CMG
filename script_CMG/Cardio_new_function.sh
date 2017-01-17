@@ -34,7 +34,7 @@ VEP=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 VEPANN=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/variant_effect_predictor.pl
 VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/filter_vep.pl
 
-DataRun=20161213
+DataRun=20151113
 
 
 cd $PROCESSING/5_BQSR/
@@ -45,8 +45,8 @@ cd $PROCESSING/5_BQSR/
 		-R ~/NGS_TOOLS/hg19/ucsc.hg19.fasta \
 		-I ~/Scrivania/NGS_ANALYSIS_TEST/PROCESSING/5_BQSR/Path_bam.list \
 		-L ~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a.list \
-		-o $DIAGNOSE/Target_dig.vcf \
-		--missing_intervals ~/Scrivania/NGS_ANALYSIS_TEST/PROCESSING/Missing.tsv
+		-o $DIAGNOSE/$DataRun\_Target_Diagnosis.vcf \
+		--missing_intervals $DIAGNOSE/$DataRun\_Missing.tsv
 
 
 cd $PROCESSING/5_BQSR/
@@ -67,12 +67,13 @@ cd $PROCESSING/5_BQSR/
  		--indel_heterozygosity 1.25E-4 \
  		--maxReadsInRegionPerSample 50000 \
 		--min_base_quality_score 10 \
-		--minReadsPerAlignmentStart 5 \
+		--minReadsPerAlignmentStart 1 \
+		--minReadsPerAlignmentStart 1 \
  		--max_alternate_alleles 6 \
+ 		--standard_min_confidence_threshold_for_calling 1.0 \
 		-L $TARGET
-		
 #		-bamout $PROCESSING/6_Variant/GATK/${filename%.*}.g.vcf.bam \
- 
+
  		printf $"\n =========>	Sample ${filename%.*} => Variant Calling: Haplotype Caller: DONE\n\n"
  
 	done
@@ -98,9 +99,10 @@ cd $PROCESSING/5_BQSR/
 		-V:VCF $PROCESSING/6_Variant/GATK/gvcf.list \
 		-o $PROCESSING/6_Variant/GATK/$DataRun\_Cardio_GATK.vcf
 
-	#	-A HomopolymerRun \
+
 	# Salvo nella cartella storage
 	# cp $PROCESSING/6_Variant/GATK/$DataRun\_Cardio_GATK.vcf $STORAGE/$Name_Dir
+	
 	echo $'\n\n =========>	Variant Calling: Genotype GVCF & Multi-sample variant calling: DONE\n'
 	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
 	echo $'\n =========>	GATK vcf norm\n\n'
@@ -148,11 +150,13 @@ cd $PROCESSING/5_BQSR/
 	--genotype-qualities \
 	--report-genotype-likelihood-max \
 	--allele-balance-priors-off \
-	--min-mapping-quality 20 \
-	--min-base-quality 10 \
-	--min-alternate-fraction 0.1 \
-	--min-alternate-count 2 \
+	--min-mapping-quality 0 \
+	--min-base-quality 1 \
+	--mismatch-base-quality-threshold 1 \
+	--min-alternate-fraction 0.001 \
+	--min-alternate-count 1 \
 	--min-coverage 10 \
+	--reference-quality MQ,BQ
 	-t $TARGETCARDIOBED > $PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes.vcf
 
 	echo $'\n =========>	Variant Calling with FreeBayes: DONE\n'
@@ -180,20 +184,23 @@ cd $PROCESSING/5_BQSR/
 
 
 
- 	samtools mpileup -B -q 1 -f $REF \
+ 	samtools mpileup -B -q 1 -f --max-depth 30000 -L 30000 --min-BQ 1 $REF \
  	-l $TARGETCARDIOBED -b $PROCESSING/5_BQSR/Bam_list.txt > $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio.mpileup
  
  	java -jar -Xmx64g $VARSCAN mpileup2snp $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio.mpileup \
- 	--min-coverage 10 \
- 	--min-var-freq 0.20 \
- 	--pvalue 0.05 \
+ 	--min-coverage 1 \
+ 	--min-var-freq 0.001 \
+ 	--min-reads2 1 \
+ 	--min-avg-qual 1 \
+ 	--strand-filter 0 \
  	--output-vcf 1 \
  	--vcf-sample-list $PROCESSING/5_BQSR/Sample_list.txt > $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan_snp.vcf
  
  	java -jar -Xmx64g $VARSCAN mpileup2indel $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio.mpileup \
- 	--min-coverage 10 \
- 	--min-var-freq 0.10 \
- 	--pvalue 0.1 \
+ 	--min-coverage 1 \
+ 	--min-var-freq 0.001 \
+ 	--min-reads2 1 \
+ 	--min-avg-qual 1 \
  	--output-vcf 1 \
  	--vcf-sample-list $PROCESSING/5_BQSR/Sample_list.txt > $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan_Indel.vcf
  
