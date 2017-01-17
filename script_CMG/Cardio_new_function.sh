@@ -155,7 +155,7 @@ cd $PROCESSING/5_BQSR/
 	--min-alternate-fraction 0.001 \
 	--min-alternate-count 1 \
 	--min-coverage 10 \
-	--reference-quality MQ,BQ
+	--reference-quality MQ,BQ \
 	-t $TARGETCARDIOBED > $PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes.vcf
 
 	echo $'\n =========>	Variant Calling with FreeBayes: DONE\n'
