@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cat ~/Scrivania/SCRIPT_PIPELINE/logo_cmg.txt
+cat ~/SCRIPT_PIPELINE/logo_cmg.txt
 
 FASTQC=~/NGS_TOOLS/FastQC/fastqc
 BWA=~/NGS_TOOLS/bwa-0.7.15
@@ -11,11 +11,11 @@ BCFTOOLS=~/NGS_TOOLS/bcftools-1.3.1/bcftools
 REF=~/NGS_TOOLS/hg19/ucsc.hg19.fasta
 MILLS=~/NGS_TOOLS/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf
 DBSNP=~/NGS_TOOLS/hg19/dbsnp_138.hg19.vcf
-INPUT=~/Scrivania/NGS_ANALYSIS_TEST/INPUT_DATA/CARDIO
-INPUTBRCA=~/Scrivania/NGS_ANALYSIS_TEST/INPUT_DATA/BRCA
-INPUTCANCER=~/Scrivania/NGS_ANALYSIS_TEST/INPUT_DATA/CANCER
-INPUTEXOME=~/Scrivania/NGS_ANALYSIS_TEST/INPUT_DATA/EXOME
-PROCESSING=~/Scrivania/NGS_ANALYSIS_TEST/PROCESSING
+INPUT=~/NGS_ANALYSIS/INPUT_DATA/CARDIO
+INPUTBRCA=~/NGS_ANALYSIS/INPUT_DATA/BRCA
+INPUTCANCER=~/NGS_ANALYSIS/INPUT_DATA/CANCER
+INPUTEXOME=~/NGS_ANALYSIS/INPUT_DATA/EXOME
+PROCESSING=~/NGS_ANALYSIS/PROCESSING
 TARGET=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a_ESTESO+-1000.list
 TARGETCARDIOBED=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a_ESTESO+-1000.bed
 TARGETMETRICS=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a.list
@@ -28,8 +28,8 @@ TARGETCANCER=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.list
 TARGETCANCERBED=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.bed
 TARGETCARDIOPARALLEL=~/NGS_ANALYSIS/TARGET/Parallel_regions_Cardio+-1000.regions
 DIAGNOSE=~/NGS_ANALYSIS/PROCESSING/9_Diagnose
-OUTVCF=~/Scrivania/NGS_ANALYSIS_TEST/OUTPUT_DATA
-STORAGE=~/Scrivania/NGS_ANALYSIS_TEST/STORAGE
+OUTVCF=~/NGS_ANALYSIS/OUTPUT_DATA
+STORAGE=~/NGS_ANALYSIS/STORAGE
 VEP=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 VEPANN=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/variant_effect_predictor.pl
 VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/filter_vep.pl
@@ -43,7 +43,7 @@ cd $PROCESSING/5_BQSR/
 
 		java -jar -Xmx64g $GATK -T DiagnoseTargets \
 		-R ~/NGS_TOOLS/hg19/ucsc.hg19.fasta \
-		-I ~/Scrivania/NGS_ANALYSIS_TEST/PROCESSING/5_BQSR/Path_bam.list \
+		-I $PROCESSING/5_BQSR/Path_bam.list \
 		-L ~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a.list \
 		-o $DIAGNOSE/$DataRun\_Target_Diagnosis.vcf \
 		--missing_intervals $DIAGNOSE/$DataRun\_Missing.tsv
@@ -54,7 +54,7 @@ cd $PROCESSING/5_BQSR/
 	for filename in *.bam
 	do
  
- 		cat ~/Scrivania/SCRIPT_PIPELINE/logo_variant.txt
+ 		cat ~/SCRIPT_PIPELINE/logo_variant.txt
  		printf $"\n =========>	Sample ${filename%.*} => Variant Calling: Haplotype Caller\n\n"
  
  		java -Xmx64g -jar $GATK -T HaplotypeCaller \
@@ -67,7 +67,6 @@ cd $PROCESSING/5_BQSR/
  		--indel_heterozygosity 1.25E-4 \
  		--maxReadsInRegionPerSample 50000 \
 		--min_base_quality_score 10 \
-		--minReadsPerAlignmentStart 1 \
 		--minReadsPerAlignmentStart 1 \
  		--max_alternate_alleles 6 \
  		--standard_min_confidence_threshold_for_calling 1.0 \
@@ -91,7 +90,7 @@ cd $PROCESSING/5_BQSR/
 	cd $PROCESSING/6_Variant/GATK/
 	
 	ls *.g.vcf > gvcf.list
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_multi.txt
+	cat ~/SCRIPT_PIPELINE/logo_multi.txt
 	echo $'\n =========>	Variant Calling: Genotype GVCF & Multi-sample variant calling\n\n'
 
 		java -jar -Xmx64g $GATK -T GenotypeGVCFs \
@@ -104,7 +103,7 @@ cd $PROCESSING/5_BQSR/
 	# cp $PROCESSING/6_Variant/GATK/$DataRun\_Cardio_GATK.vcf $STORAGE/$Name_Dir
 	
 	echo $'\n\n =========>	Variant Calling: Genotype GVCF & Multi-sample variant calling: DONE\n'
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
+	cat ~/SCRIPT_PIPELINE/logo_cornice.txt
 	echo $'\n =========>	GATK vcf norm\n\n'
 
 	python ~/git/CMG/scripts/header_fix.py \
@@ -118,7 +117,7 @@ cd $PROCESSING/5_BQSR/
 	> $PROCESSING/6_Variant/GATK/NORM_GATK/$DataRun\_Cardio_GATK.split.vcf	
 
 	echo $'\n =========>	GATK vcf norm: DONE\n'
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
+	cat ~/SCRIPT_PIPELINE/logo_cornice.txt
 	echo $'\n =========>	Variant Calling with VarScan2\n\n'
 
 
@@ -150,7 +149,7 @@ cd $PROCESSING/5_BQSR/
 	--genotype-qualities \
 	--report-genotype-likelihood-max \
 	--allele-balance-priors-off \
-	--min-mapping-quality 0 \
+	--min-mapping-quality 1 \
 	--min-base-quality 1 \
 	--mismatch-base-quality-threshold 1 \
 	--min-alternate-fraction 0.001 \
@@ -160,7 +159,7 @@ cd $PROCESSING/5_BQSR/
 	-t $TARGETCARDIOBED > $PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes.vcf
 
 	echo $'\n =========>	Variant Calling with FreeBayes: DONE\n'
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
+	cat ~/SCRIPT_PIPELINE/logo_cornice.txt
 	echo $'\n =========>	FreeBayes vcf norm\n\n'
 
 	python ~/git/CMG/scripts/header_fix.py \
@@ -174,7 +173,7 @@ cd $PROCESSING/5_BQSR/
 	> $PROCESSING/6_Variant/FreeBayes/NORM_FREE/$DataRun\_Cardio_FreeBayes.split.vcf	
 
 	echo $'\n =========>	FreeBayes vcf norm: DONE\n'
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
+	cat ~/SCRIPT_PIPELINE/logo_cornice.txt
 	echo $'\n =========>	Variant Calling with VarScan2\n\n'
 
 
@@ -201,11 +200,12 @@ cd $PROCESSING/5_BQSR/
  	--min-var-freq 0.001 \
  	--min-reads2 1 \
  	--min-avg-qual 1 \
+ 	--strand-filter 0 \
  	--output-vcf 1 \
  	--vcf-sample-list $PROCESSING/5_BQSR/Sample_list.txt > $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan_Indel.vcf
  
  	echo $'\n =========>	Variant Calling with VarScan2: DONE\n'
- 	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
+ 	cat ~/SCRIPT_PIPELINE/logo_cornice.txt
  	echo $'\n =========>	VarScan2 vcf merge and sort\n\n'
  
  	#Copio in Intersect
@@ -221,14 +221,14 @@ cd $PROCESSING/5_BQSR/
  	
  	vcf-sort -c $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan_Merge.vcf > $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan_Merge_Sort.vcf
  	mv $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan_Merge_Sort.vcf $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan.vcf
- 	rm /home/jarvis/Scrivania/NGS_ANALYSIS_TEST/PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan_Merge.vcf
+ 	rm $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan_Merge.vcf
  	rm $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan_snp.vcf.gz.tbi
  	rm $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan_Indel.vcf.gz.tbi
  	rm $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan_snp.vcf.gz
  	rm $PROCESSING/6_Variant/VarScan/$DataRun\_Cardio_VarScan_Indel.vcf.gz
  	
  	echo $'\n =========>	VarScan2 vcf merge and sort: DONE\n'
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
+	cat ~/SCRIPT_PIPELINE/logo_cornice.txt
 	echo $'\n =========>	FreeBayes vcf norm\n\n'
 
 	python ~/git/CMG/scripts/header_fix.py \
@@ -242,7 +242,7 @@ cd $PROCESSING/5_BQSR/
 	> $PROCESSING/6_Variant/VarScan/NORM_VARSCAN/$DataRun\_Cardio_VarScan.split.vcf	
 
 	echo $'\n =========>	FreeBayes vcf norm: DONE\n'
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
+	cat ~/SCRIPT_PIPELINE/logo_cornice.txt
 	echo $'\n =========>	Variant Calling with VarScan2\n\n'
 
 
@@ -256,7 +256,7 @@ cd $PROCESSING/5_BQSR/
 
 
 # 	printf "\n\n"
-# 	cat ~/Scrivania/SCRIPT_PIPELINE/logo_annotation.txt
+# 	cat ~/SCRIPT_PIPELINE/logo_annotation.txt
 # 	printf $"\n\n\n"
  
 # 	cd $VEP
@@ -285,7 +285,7 @@ cd $PROCESSING/5_BQSR/
 # 	--vcf
 # 
 # 	echo $'\n =========>	GATK ANNOTATION: DONE\n'
-# 	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
+# 	cat ~/SCRIPT_PIPELINE/logo_cornice.txt
 # 	echo $'\n =========>	INTERSECTION ANNOTATION\n\n'
 # 
 # 	rm $PROCESSING/6_Variant/GATK/$DataRun\_Cardio_GATK_Filter.vcf
@@ -334,6 +334,6 @@ cd $PROCESSING/5_BQSR/
 # 	$STORAGE/$Name_Dir/README.txt
 # 
 # 	echo $'\n =========>	INTERSECTION ANNOTATION: DONE\n'
-# 	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
+# 	cat ~/SCRIPT_PIPELINE/logo_cornice.txt
 # 	echo $'\n =========>	FILE MODIFICATION FOR CSV FORMAT \n\n'
 
