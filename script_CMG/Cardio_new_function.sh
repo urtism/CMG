@@ -154,9 +154,7 @@ cd $PROCESSING/5_BQSR/
 	--mismatch-base-quality-threshold 1 \
 	--min-alternate-fraction 0.001 \
 	--min-alternate-count 1 \
-	--min-coverage 10 \
-#	--reference-quality MQ,BQ \
-	-t $TARGETCARDIOBED > $PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes.vcf
+	--min-coverage 10 > $PROCESSING/6_Variant/FreeBayes/$DataRun\_Cardio_FreeBayes.vcf
 
 	echo $'\n =========>	Variant Calling with FreeBayes: DONE\n'
 	cat ~/SCRIPT_PIPELINE/logo_cornice.txt
