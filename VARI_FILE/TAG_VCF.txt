@@ -1,0 +1,92 @@
+GATK:
+
+
+AD  "Allelic depths for the ref and alt alleles in the order listed">
+DP  "Approximate read depth (reads with MQ=255 or with bad mates are filtered)">
+GQ  "Genotype Quality"
+GT  "Genotype"
+PL  "Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification">
+AC  "Allele count in genotypes, for each ALT allele, in the same order as listed">
+AF  "Allele Frequency, for each ALT allele, in the same order as listed">
+AN  "Total number of alleles in called genotypes">
+BaseQRankSum  "Z-score from Wilcoxon rank sum test of Alt Vs. Ref base qualities">
+ClippingRankSum  "Z-score From Wilcoxon rank sum test of Alt vs. Ref number of hard clipped bases">
+DP  "Approximate read depth; some reads may have been filtered">
+END  "Stop position of the interval">
+ExcessHet  "Phred-scaled p-value for exact test of excess heterozygosity">
+FS  "Phred-scaled p-value using Fisher's exact test to detect strand bias">
+InbreedingCoeff  "Inbreeding coefficient as estimated from the genotype likelihoods per-sample when compared against the Hardy-Weinberg expectation">
+MLEAC  "Maximum likelihood expectation (MLE) for the allele counts (not necessarily the same as the AC), for each ALT allele, in the same order as listed">
+MLEAF  "Maximum likelihood expectation (MLE) for the allele frequency (not necessarily the same as the AF), for each ALT allele, in the same order as listed">
+MQ  "RMS Mapping Quality">
+MQRankSum  "Z-score From Wilcoxon rank sum test of Alt vs. Ref read mapping qualities">
+QD  "Variant Confidence/Quality by Depth">
+ReadPosRankSum  "Z-score from Wilcoxon rank sum test of Alt vs. Ref read position bias">
+SOR  "Symmetric Odds Ratio of 2x2 contingency table to detect strand bias">
+
+
+
+
+FREEBAYES:
+
+NS	"Number of samples with data">
+DP	"Total read depth at the locus">
+DPB	"Total read depth per bp at the locus; bases in reads overlapping / bases in haplotype">
+AC	"Total number of alternate alleles in called genotypes">
+AN	"Total number of alleles in called genotypes">
+AF	"Estimated allele frequency in the range (0,1]">
+RO	"Reference allele observation count, with partial observations recorded fractionally">
+AO	"Alternate allele observations, with partial observations recorded fractionally">
+PRO	"Reference allele observation count, with partial observations recorded fractionally">
+PAO	"Alternate allele observations, with partial observations recorded fractionally">
+QR	"Reference allele quality sum in phred">
+QA	"Alternate allele quality sum in phred">
+PQR	"Reference allele quality sum in phred for partial observations">
+PQA	"Alternate allele quality sum in phred for partial observations">
+SRF	"Number of reference observations on the forward strand">
+SRR	"Number of reference observations on the reverse strand">
+SAF	"Number of alternate observations on the forward strand">
+SAR	"Number of alternate observations on the reverse strand">
+SRP	"Strand balance probability for the reference allele: Phred-scaled upper-bounds estimate of the probability of observing the deviation between SRF and SRR given E(SRF/SRR) ~ 0.5, derived using Hoeffding's inequality">
+SAP	"Strand balance probability for the alternate allele: Phred-scaled upper-bounds estimate of the probability of observing the deviation between SAF and SAR given E(SAF/SAR) ~ 0.5, derived using Hoeffding's inequality">
+AB	"Allele balance at heterozygous sites: a number between 0 and 1 representing the ratio of reads showing the reference allele to all reads, considering only reads from individuals called as heterozygous">
+ABP	"Allele balance probability at heterozygous sites: Phred-scaled upper-bounds estimate of the probability of observing the deviation between ABR and ABA given E(ABR/ABA) ~ 0.5, derived using Hoeffding's inequality">
+RUN	"Run length: the number of consecutive repeats of the alternate allele in the reference genome">
+RPP	"Read Placement Probability: Phred-scaled upper-bounds estimate of the probability of observing the deviation between RPL and RPR given E(RPL/RPR) ~ 0.5, derived using Hoeffding's inequality">
+RPPR	"Read Placement Probability for reference observations: Phred-scaled upper-bounds estimate of the probability of observing the deviation between RPL and RPR given E(RPL/RPR) ~ 0.5, derived using Hoeffding's inequality">
+RPL	"Reads Placed Left: number of reads supporting the alternate balanced to the left (5') of the alternate allele">
+RPR	"Reads Placed Right: number of reads supporting the alternate balanced to the right (3') of the alternate allele">
+EPP	"End Placement Probability: Phred-scaled upper-bounds estimate of the probability of observing the deviation between EL and ER given E(EL/ER) ~ 0.5, derived using Hoeffding's inequality">
+EPPR	"End Placement Probability for reference observations: Phred-scaled upper-bounds estimate of the probability of observing the deviation between EL and ER given E(EL/ER) ~ 0.5, derived using Hoeffding's inequality">
+DPRA	"Alternate allele depth ratio.  Ratio between depth in samples with each called alternate allele and those without.">
+ODDS	"The log odds ratio of the best genotype combination to the second-best.">
+GTI	"Number of genotyping iterations required to reach convergence or bailout.">
+TYPE	"The type of allele, either snp, mnp, ins, del, or complex.">
+CIGAR	"The extended CIGAR representation of each alternate allele, with the exception that '=' is replaced by 'M' to ease VCF parsing.  Note that INDEL alleles do not have the first matched base (which is provided by default, per the spec) referred to by the CIGAR.">
+NUMALT	"Number of unique non-reference alleles in called genotypes at this position.">
+MEANALT	"Mean number of unique non-reference allele observations per sample with the corresponding alternate alleles.">
+LEN	"allele length">
+MQM	"Mean mapping quality of observed alternate alleles">
+MQMR	"Mean mapping quality of observed reference alleles">
+PAIRED	"Proportion of observed alternate alleles which are supported by properly paired read fragments">
+PAIREDR	"Proportion of observed reference alleles which are supported by properly paired read fragments">
+MIN	"Minimum depth in gVCF output block.">
+END	"Last position (inclusive) in gVCF output record.">
+technology.ILLUMINA	"Fraction of observations supporting the alternate observed in reads from ILLUMINA">
+GT	"Genotype">
+GQ	"Genotype Quality, the Phred-scaled marginal (or unconditional) probability of the called genotype">
+GL	"Genotype Likelihood, log10-scaled likelihoods of the data given the called genotype for each possible genotype generated from the reference and alternate alleles given the sample ploidy">
+DP	"Read Depth">
+DPR	"Number of observation for each allele">
+RO	"Reference allele observation count">
+QR	"Sum of quality of the reference observations">
+AO	"Alternate allele observation count">
+QA	"Sum of quality of the alternate observations">
+MIN	"Minimum depth in gVCF output block.">
+
+Ti dico quelle che toglierei
+
+
+VARSCAN:
+
+Li lascerei tutti, sono informativi ad eccezzione di SDP che è la stessa tag di DP
