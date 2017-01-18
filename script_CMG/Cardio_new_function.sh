@@ -71,7 +71,6 @@ cd $PROCESSING/5_BQSR/
  		--max_alternate_alleles 6 \
  		--standard_min_confidence_threshold_for_calling 1.0 \
 		-L $TARGET
-#		-bamout $PROCESSING/6_Variant/GATK/${filename%.*}.g.vcf.bam \
 
  		printf $"\n =========>	Sample ${filename%.*} => Variant Calling: Haplotype Caller: DONE\n\n"
  
