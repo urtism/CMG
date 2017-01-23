@@ -178,7 +178,7 @@ Features_extraction_germline () {
 ANNOTATION_germline () {
 
 	printf "\n\n"
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_annotation.txt
+	cat $LOGHI/logo_annotation.txt
 	printf $"\n\n\n"
 	
 	perl $VEPANN -i $1 \
