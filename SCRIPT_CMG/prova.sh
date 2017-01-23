@@ -15,18 +15,30 @@ source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_Germline.sh
 # source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_Germline_all.sh
 # source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_Somatic.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/ALLINEAMENTO.sh
+source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/VARIANT_CALLING.sh
+source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/PREPROCESSING.sh
 
 ### TOOLS ###
+
+SCRIPT_PIPELINE=~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE
 FASTQC=~/NGS_TOOLS/FastQC/fastqc
 BWA=~/NGS_TOOLS/bwa-0.7.15
 PICARD=~/NGS_TOOLS/picard-tools-2.7.1/picard.jar
+
 GATK=~/NGS_TOOLS/GATK/GenomeAnalysisTK.jar
 VARSCAN=~/NGS_TOOLS/VarScan/VarScan.v2.3.9.jar
+FREEBAYES=~/NGS_TOOLS/freebayes/bin/freebayes
+#VARDICT=
+
 VEP=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 VEPANN=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/variant_effect_predictor.pl
 VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/filter_vep.pl
 
 ### DATABASES & FILES ###
+LISTAFEATURES_GERMLINE=
+LISTAFEATURES_SOMATIC=
+ANN_LIST_GERMLINE=
+ANN_LIST_SOMATIC=
 REF=~/NGS_TOOLS/hg19/ucsc.hg19.fasta
 MILLS=~/NGS_TOOLS/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf
 DBSNP=~/NGS_TOOLS/hg19/dbsnp_138.hg19.vcf
@@ -121,24 +133,28 @@ PIPELINE_GERMLINE() {
 	then
 		DESIGN="ENRICHMENT"
 		TARGET=$TARGET_CARDIO_1000
+		TRANSCR_LIST=
 		echo "Cardio"
 
 	elif [ "$PANNELLO" == "Cancer" ]
 	then
 		DESIGN="ENRICHMENT"
 		TARGET=$TARGET_CANCER_1000
+		TRANSCR_LIST=
 		echo "Cancer"
 
 	elif [ "$PANNELLO" == "Exome" ] 
 	then
 		DESIGN="ENRICHMENT"
 		TARGET=$TARGET_EXOME_1000
+		TRANSCR_LIST=
 		echo "Exome"
 
 	elif [ "$PANNELLO" == "BRCA" ]
 	then
 		DESIGN="AMPLICON"
 		TARGET=$TARGET_BRCA
+		TRANSCR_LIST=
 		echo "BRCA"
 
 	fi
@@ -147,16 +163,6 @@ PIPELINE_GERMLINE() {
 	VARIANT_CALLING_GERMLINE
 
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

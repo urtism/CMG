@@ -2,8 +2,15 @@ PREPROCESSING () {
 
 	cat ~/Scrivania/SCRIPT_PIPELINE/logo_processing.txt
 
+	mkdir $WORKDIR/PREPROCESSING
+
 	for bamsort in $WORKDIR/Alignment/*.sort.bam
 	do
+
+		sample_name="$(basename "${bamsort%.*}")"
+		alig_path="$(dirname "${bamsort%.*}")"
+
+
 
 		printf $"\n~~~>	Sample ${*.bamsort%.*.*} => Add Or Replace Read Groups\n\n"
 
@@ -76,7 +83,7 @@ PREPROCESSING () {
 			-R $REF \
 			-I ${bamsort%.*}.Realigned.bam \
 			-BQSR ${bamsort%.*}.Recal.table  \
-			-o ${bamsort%.*}.bam \
+			-o $WORKDIR/PREPROCESSING/$sample_name.bam \
 			-L $TARGET
 
 			rm $bamsort
@@ -93,7 +100,7 @@ PREPROCESSING () {
 
 		elif [ "$DESIGN" == "AMPLICON" ]
 		then
-			rm ${bamsort%.*}.Add.bam ${bamsort%.*}.bam
+			rm ${bamsort%.*}.Add.bam $WORKDIR/PREPROCESSING/$sample_name.bam
 
 	done
 

@@ -78,51 +78,6 @@ def extract_info(varianti,hash_var,pazienti):
 						hash_var[var_id] = [0,1,[id],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
 
 
-
-
-			#print variante[index_of_gen]
-
-			# id_buff = var_id + '\t' + id
-			# if id_buff not in buff:
-			# 	buff = buff + [id_buff]
-				
-			# 	try:
-			# 		if var_id in hash_var.keys():
-			# 			if variante[index_of_gen].split('/')[0] == variante[index_of_gen].split('/')[1]:
-			# 				hash_var[var_id][1] = hash_var[var_id][1] + 1
-			# 			else: 
-							
-			# 				hash_var[var_id][0] = hash_var[var_id][0] + 1
-			# 			try:
-			# 				hash_var[var_id][2] = hash_var[var_id][2] + [pazienti[id][0]]
-			# 			except:
-			# 				hash_var[var_id][2] = hash_var[var_id][2] + [id]
-						
-			# 			hash_var[var_id][4] = HGVSc
-			# 			hash_var[var_id][5] = HGVSp
-			# 			hash_var[var_id][6] = CONSEQUENCE
-			# 			hash_var[var_id][7] = AC
-			# 			hash_var[var_id][8] = AN
-
-			# 		else:
-			# 			if variante[index_of_gen].split('/')[0] == variante[index_of_gen].split('/')[1]:
-			# 				try:
-			# 					hash_var[var_id] = [0,1,[pazienti[id][0]],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
-			# 				except:
-			# 					hash_var[var_id] = [0,1,[id],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
-									
-			# 			else:
-			# 				try:
-			# 					hash_var[var_id] = [1,0,[pazienti[id][0]],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
-			# 				except:
-			# 					hash_var[var_id] = [0,1,[id],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
-									
-			# 	except:
-			# 		#pass
-			# 		print var_id,id,variante
-			# else:
-			# 	continue
-
 def extract_var_from_gene(varianti,vc):
 	var_list = open(opts.out + '/lista_varianti_' + opts.gene + '_' + vc + '.list','a+')
 	var_array = var_list.readlines()
@@ -215,7 +170,7 @@ def main():
 		else:
 			extract_info(open(filename,'r'),hash_var,pazienti)
 
-	statistiche = open(opts.out + '/lista_varianti_' + opts.gene + '_STATS.txt','w')
+	statistiche = open(opts.out + '/lista_varianti_' + opts.gene + '_STATS.tsv','w')
 	statistiche.write('CHROM'+'\t' + 'POS'+'\t' + 'REF'+'\t' + 'ALT' +'\t' +'HGVSc'+'\t' + 'HGVSp'+'\t'+'CONSEQUENCE'+'\t'+ 'FRAZ_ALLELICA'+'\t' + 'FRAZ_PERC'+'\t' + 'MAF'+'\t'+'ETERO'+'\t'+ 'OMO'+'\t'+'NUM_PAZ_MUTATI'+'\t'+'PAZIENTI'+'\n')
 	
 	for var in hash_var.keys():

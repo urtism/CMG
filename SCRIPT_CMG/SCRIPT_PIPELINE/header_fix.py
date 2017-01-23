@@ -20,10 +20,11 @@ for line in read:
 			riga=(line.split(','))
 			riga[riga.index('Number=A')]='Number=G'
 			line=','.join(riga)
-		if line.startswith('##FORMAT=<ID=GQ'):
-			riga=(line.split(','))
-			riga[riga.index('Type=Integer')]='Type=Float'
-			line=','.join(riga)
+			
+		# if line.startswith('##FORMAT=<ID=GQ'):
+		# 	riga=(line.split(','))
+		# 	riga[riga.index('Type=Integer')]='Type=Float'
+		# 	line=','.join(riga)
 	# 	if line.startswith('chr'):
 	# 		riga=line.split('\t')
 	# 		replaced = re.sub('[(chr)]', '', riga[0])
