@@ -3,7 +3,7 @@ ALLINEAMENTO() {
 	cat $LOGHI/logo_alignment.txt
 
 	mkdir -p $WORKDIR/Alignment
-	mkdir -p $WORKDIR/Alignment/Aligned_Sam/
+	mkdir -p $WORKDIR/Alignment/
 
 	cat $FILEPATH | while read line
 	do
@@ -37,5 +37,5 @@ ALLINEAMENTO() {
 		rm $WORKDIR/Alignment/$SAMPLE_NAME.sam
 	
 	done
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_cornice.txt
+	cat $LOGHI/logo_cornice.txt
 }

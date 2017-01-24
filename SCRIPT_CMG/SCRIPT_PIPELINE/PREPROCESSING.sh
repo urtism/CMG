@@ -26,8 +26,8 @@ PREPROCESSING () {
 
 		if [ "$DESIGN" == "ENRICHMENT" ]
 		then
-			printf $"\n~~~>	Sample ${filename%.*} => Add Or Replace Read Groups: DONE\n\n"
-			printf $"\n~~~>	Sample ${filename%.*} => Mark Duplicates\n\n"
+			printf $"\n~~~>	Sample $sample_name => Add Or Replace Read Groups: DONE\n\n"
+			printf $"\n~~~>	Sample $sample_name => Mark Duplicates\n\n"
 
 			java -Xmx64g -jar $PICARD MarkDuplicates \
 			I=${bamsort%.*}.Add.bam \
@@ -37,16 +37,16 @@ PREPROCESSING () {
 			VALIDATION_STRINGENCY=LENIENT \
 			REMOVE_DUPLICATES=true ASSUME_SORTED=true
 
-			printf $"\n~~~>	Sample ${filename%.*} => Mark Duplicates: DONE\n\n"
-			printf $"\n~~~>	Sample ${filename%.*} => Build Bam Index\n\n"
+			printf $"\n~~~>	Sample $sample_name => Mark Duplicates: DONE\n\n"
+			printf $"\n~~~>	Sample $sample_name => Build Bam Index\n\n"
 
 			java -Xmx64g -jar $PICARD BuildBamIndex \
 			I=${bamsort%.*}.mark.bam \
 			O=${bamsort%.*}.mark.bai \
 			VALIDATION_STRINGENCY=LENIENT
 
-			printf $"\n~~~>	Sample ${filename%.*} => Build Bam Index: DONE\n\n"
-			printf $"\n~~~>	Sample ${filename%.*} => Realigner Target Creator\n\n"
+			printf $"\n~~~>	Sample $sample_name => Build Bam Index: DONE\n\n"
+			printf $"\n~~~>	Sample $sample_name => Realigner Target Creator\n\n"
 
 			java -Xmx64g -jar $GATK -T RealignerTargetCreator \
 			-R $REF \
@@ -55,8 +55,8 @@ PREPROCESSING () {
 			--known $MILLS \
 			-L $TARGET
 
-			printf $"\n~~~>	Sample ${filename%.*} => Realigner Target Creator: DONE\n\n"
-			printf $"\n~~~>	Sample ${filename%.*} => Indel Realigner\n\n"
+			printf $"\n~~~>	Sample $sample_name => Realigner Target Creator: DONE\n\n"
+			printf $"\n~~~>	Sample $sample_name => Indel Realigner\n\n"
 
 			java -Xmx64g -jar $GATK -T IndelRealigner \
 			-R $REF \
@@ -66,7 +66,7 @@ PREPROCESSING () {
 			-known $MILLS
 
 			echo $'\n =========>	Indel Realigner: DONE\n'
-			printf $"\n~~~>	Sample ${filename%.*} => Base Quality Score Recalibration (BQSR): Base Recalibrator\n\n"
+			printf $"\n~~~>	Sample $sample_name => Base Quality Score Recalibration (BQSR): Base Recalibrator\n\n"
 
 			java -Xmx64g -jar $GATK -T BaseRecalibrator \
 			-R $REF \
@@ -76,8 +76,8 @@ PREPROCESSING () {
 			-o ${bamsort%.*}.Recal.table \
 			-L $TARGET
 
-			printf $"\n~~~>	Sample ${filename%.*} => Base Quality Score Recalibration (BQSR): Base Recalibrator: DONE\n\n"
-			printf $"\n~~~>	Sample ${filename%.*} => Base Quality Score Recalibration (BQSR): Print reads\n\n"
+			printf $"\n~~~>	Sample $sample_name => Base Quality Score Recalibration (BQSR): Base Recalibrator: DONE\n\n"
+			printf $"\n~~~>	Sample $sample_name => Base Quality Score Recalibration (BQSR): Print reads\n\n"
 
 			java -Xmx64g -jar $GATK -T PrintReads \
 			-R $REF \
@@ -96,7 +96,7 @@ PREPROCESSING () {
 			rm ${bamsort%.*}.Realigned.bai
 			rm ${bamsort%.*}.IndelRealigner.intervals
 
-			printf $"\n~~~>	Sample ${filename%.*} => Base Quality Score Recalibration (BQSR): Print reads: DONE\n\n"
+			printf $"\n~~~>	Sample $sample_name => Base Quality Score Recalibration (BQSR): Print reads: DONE\n\n"
 
 		elif [ "$DESIGN" == "AMPLICON" ]
 		then
