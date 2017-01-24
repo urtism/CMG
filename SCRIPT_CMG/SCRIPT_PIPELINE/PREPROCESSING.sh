@@ -1,6 +1,6 @@
 PREPROCESSING () {
 
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_processing.txt
+	cat $LOGHI/logo_processing.txt
 
 	mkdir $WORKDIR/PREPROCESSING
 

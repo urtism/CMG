@@ -57,73 +57,87 @@ TARGET_CANCER_1000=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000
 TARGET_CANCER_1000_BED=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.bed
 
 
+MAIN () {
+	if [ "$#" == "0" ]
+	then
+		echo "usa -h"
+		exit 1;
+	else
+		while [[ $# -gt 0 ]]
+		do
+		key="$1"
+		case $key in
+			-a|--analisi)
+			ANALISI="$2"
+			shift # past argument
+			;;
+			-w|--workdir)
+			WORKDIR="$2"
+			shift # past argument
+			;;
+			--cfg)
+			FILEPATH="$2"
+			shift # past argument
+			;;
+			-d|--data)
+			DATA="$2"
+			shift # past argument
+			;;
+			-r|--run)
+			RUN="$2"
+			shift # past argument
+			;;
+			-p|--pannello)
+			PANNELLO="$2"
+			shift # past argument
+			;;
+			-h|--help)
+			echo -e "questo è l'help"
+			exit 1;
+			;;
+			--default)
+			DEFAULT=YES
+			;;
+			*)
+			echo "wrong"
+			exit 1;
+			;;
+		esac
+		shift 
+		done
+	fi
 
-if [ "$#" == "0" ]
-then
-	echo "usa -h"
-	exit 1;
-else
-	while [[ $# -gt 0 ]]
-	do
-	key="$1"
-	case $key in
-		-a|--analisi)
-		ANALISI="$2"
-		shift # past argument
-		;;
-		-w|--workdir)
-		WORKDIR="$2"
-		shift # past argument
-		;;
-		--cfg)
-		FILEPATH="$2"
-		shift # past argument
-		;;
-		-d|--data)
-		DATA="$2"
-		shift # past argument
-		;;
-		-r|--run)
-		RUN="$2"
-		shift # past argument
-		;;
-		-p|--pannello)
-		PANNELLO="$2"
-		shift # past argument
-		;;
-		-h|--help)
-		echo -e "questo è l'help"
-		exit 1;
-		;;
-		--default)
-		DEFAULT=YES
-		;;
-		*)
-		echo "wrong"
-		exit 1;
-		;;
-	esac
-	shift 
+	DATE=$(date +"%Y%m%d");
+	STARTTIME=$(date +%s)
+
+	NGSDIR=~/NGS_ANALYSIS_TEMP
+
+	var=1
+	while [ -d $NGSDIR/$DATA\_Run_$RUN\_$PANNELLO\_$var ]; do
+	    ((var++))
 	done
-fi
 
-DATE=$(date +"%Y%m%d");
-STARTTIME=$(date +%s)
+	if [ "$WORKDIR" == "" ]
+	then
+		WORKDIR=$NGSDIR/$DATA\_Run_$RUN\_$PANNELLO\_$var
+	fi
 
-NGSDIR=~/NGS_ANALYSIS_TEMP
+	mkdir -p $WORKDIR
 
-var=1
-while [ -d $NGSDIR/$DATA\_Run_$RUN\_$PANNELLO\_$var ]; do
-    ((var++))
-done
+	if [ "$ANALISI" == "Germline" ] || [ "$ANALISI" == "germline" ] || [ "$ANALISI" == "GERMLINE" ]
+	then
+		PIPELINE_GERMLINE
 
-if [ "$WORKDIR" == "" ]
-then
-	WORKDIR=$NGSDIR/$DATA\_Run_$RUN\_$PANNELLO\_$var
-fi
-mkdir -p $WORKDIR
-
-
+	elif [ "$ANALISI" == "Somatic" ] || [ "$ANALISI" == "somatic" ] || [ "$ANALISI" == "SOMATIC" ]
+	then
+		echo "somatic"
+		#PIPELINE_SOMATIC
+	elif [ "$ANALISI" == "Cellfree" ] || [ "$ANALISI" == "cellfree" ] || [ "$ANALISI" == "CELLFREE" ]
+	then
+		echo "cellfree"
+		#PIPELINE_CELLFREE
+	fi
+}
 
 PIPELINE_GERMLINE() {
 
@@ -161,36 +175,7 @@ PIPELINE_GERMLINE() {
 
 	PREPROCESSING
 	VARIANT_CALLING_GERMLINE
-
 }
 
 
-
-if [ "$ANALISI" == "Germline" ] || [ "$ANALISI" == "germline" ] || [ "$ANALISI" == "GERMLINE" ]
-then
-	PIPELINE_GERMLINE
-
-elif [ "$ANALISI" == "Somatic" ] || [ "$ANALISI" == "somatic" ] || [ "$ANALISI" == "SOMATIC" ]
-then
-	echo "somatic"
-	PIPELINE_SOMATIC
-elif [ "$ANALISI" == "Cellfree" ] || [ "$ANALISI" == "cellfree" ] || [ "$ANALISI" == "CELLFREE" ]
-then
-	echo "cellfree"
-	#PIPELINE_CELLFREE
-
-fi
-
-cat $FILEPATH | while read line
-do
-
-	som_name=$(echo "$line" | cut -f1)
-	sane_name=$(echo "$line" | cut -f2)
-	#echo $line
-	#echo -e "$som_name"
-	#echo -e "$sane_name"
-done
-
-
-
-
+MAIN
