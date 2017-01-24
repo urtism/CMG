@@ -11,7 +11,6 @@ PipeVersion=3.0
 # source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_CellFree_Germline.sh
 # source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_CellFree_Somatic.sh
 # source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_CellFree_Synthetic.sh
-source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_Germline.sh
 # source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_Germline_all.sh
 # source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_Somatic.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/ALLINEAMENTO.sh
