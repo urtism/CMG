@@ -1,6 +1,26 @@
 
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     GATK     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+Mutect2 () {
+	printf $"\n =========>	Sample $3 => Variant Calling: MuTect2\n\n"
+	
+	java -Xmx64g -jar $GATK -T MuTect2 \
+	-R $REF \
+	-I:tumor $1 \
+	-I:normal $2 \
+	-L $TARGET \
+	-o $WORKDIR/VARIANT_CALLING/$3\_Sane_GATK.vcf \
+	-bamout $WORKDIR/VARIANT_CALLING/$3\_Sane_GATK.vcf.bam
+
+	$BCFTOOLS norm -m -both \
+	-f $REF \
+	$WORKDIR/VARIANT_CALLING/$3\_SANE_GATK.vcf \
+	> $WORKDIR/VARIANT_CALLING/$3\_Sane_GATK.split.vcf 
+
+	VCF_MUTECT=$WORKDIR/VARIANT_CALLING/$3\_Sane_GATK.split.vcf
+
+	printf $"\n =========>	Sample $3 => Variant Calling: MuTect2: DONE\n\n"
+}
 
 
 HaplotypeCaller () {
@@ -26,7 +46,7 @@ GenotypeGVCFs () {
 	
 	cat ~/Scrivania/SCRIPT_PIPELINE/logo_multi.txt
 
-	echo $'\n =========>	Variant Calling: Genotype GVCF & Multi-sample variant calling\n\n'
+	printf $'\n =========>	Variant Calling: Genotype GVCF & Multi-sample variant calling\n\n'
 
 	java -jar -Xmx64g $GATK -T GenotypeGVCFs \
 	-R $REF \
@@ -46,7 +66,7 @@ GenotypeGVCFs () {
 
 	VCF_GATK=$WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_GATK.split.vcf
 
-	echo $'\n\n =========>	Variant Calling: Genotype GVCF & Multi-sample variant calling: DONE\n'
+	printf $'\n\n =========>	Variant Calling: Genotype GVCF & Multi-sample variant calling: DONE\n'
 
 }
 
@@ -55,18 +75,17 @@ GenotypeGVCFs () {
 
 FreeBayes () {
 
-	echo $'\n =========>	Variant Calling with FreeBayes\n'
+	printf $'\n =========>	Variant Calling with FreeBayes\n'
 
 	$FREEBAYES -f $REF \
-	-L $WORKDIR/Bam_list.txt \
+	-L $1 \
 	-K \
 	-J \
-	-s $1 \
+	-s $2 \
 	--genotype-qualities \
 	--report-genotype-likelihood-max \
 	--allele-balance-priors-off \
-	-t $TARGET > $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf
-
+	-t $TARGETBED > $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf
 
 	python  $SCRIPT_PIPELINE/header_fix.py -v F -f $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf \
 	> $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.fix.vcf
@@ -81,7 +100,7 @@ FreeBayes () {
 
 	VCF_FREEBAYES=$WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.split.vcf
 
-	echo $'\n =========>	Variant Calling with FreeBayes: DONE\n'
+	printf $'\n =========>	Variant Calling with FreeBayes: DONE\n'
 	
 }
 
@@ -90,10 +109,10 @@ FreeBayes () {
 
 VarScan2_germline () {	
 
-	echo $'\n =========>	Variant Calling with VarScan2\n\n'
+	printf $'\n =========>	Variant Calling with VarScan2\n\n'
 
 	samtools mpileup -B -q 1 -d 50000 -L 50000 -f $REF \
-	-l $TARGET -b $1 > $WORKDIR/PREPROCESSING/$DATA\_$PANNELLO.mpileup
+	-l $TARGETBED -b $1 > $WORKDIR/PREPROCESSING/$DATA\_$PANNELLO.mpileup
 
 	java -jar -Xmx64g $VARSCAN mpileup2snp $WORKDIR/PREPROCESSING/$DATA\_$PANNELLO.mpileup \
 	--min-coverage 10 \
@@ -137,48 +156,140 @@ VarScan2_germline () {
 	#rm $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_Indel.vcf.gz.tbi
 	#rm $WORKDIR/PREPROCESSING/$DATA\_$PANNELLO.mpileup
 
-	echo $'\n =========>	Variant Calling with VarScan2: DONE\n'
+	printf $'\n =========>	Variant Calling with VarScan2: DONE\n'
 
 }
 
+
+VarScan2_somatic () {
 	
+	printf $"\n =========>	Sample $3 => Variant Calling: VarScan2\n\n"
+	
+	samtools mpileup -f $REF -l $TARGETBED -q 1 -B $2 $1 > $WORKDIR/VARIANT_CALLING/$3\_Sane.mpileup 
+ 		
+	java -jar -Xmx64g $VARSCAN somatic $WORKDIR/VARIANT_CALLING/$3\_Sane.mpileup \
+	$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan --output-vcf 1 --mpileup 1
+
+	VCF_VARSCAN_SNP=$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.snp.vcf
+	VCF_VARSCAN_INDEL=$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.indel.vcf
+	
+	printf $"\n =========>	Sample $3 => Variant Calling: Varscan2: DONE\n\n"	
+}
+
+
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     VARDICT     :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+VarDict () {	
+
+	printf $"\n =========>	Sample $3 => Variant Calling: VarDict\n\n"
+	
+	$VARDICT -G $REF -f 0.01 -N $3 -b "$1|$2" \
+	-z -F 0 -c 1 -S 2 -E 3 -g 4 $TARGETBED | ~/NGS_TOOLS/VarDictJava-master/VarDict/testsomatic.R | ~/NGS_TOOLS/VarDictJava-master/VarDict/var2vcf_paired.pl \
+	-N "$3|$4" -f 0.01 > $WORKDIR/VARIANT_CALLING/$3\_Sane_VarDict.vcf
+
+	VCF_VARDICT=$WORKDIR/VARIANT_CALLING/$3\_SANE_VarDict.vcf
+	
+	printf $"\n =========>	Sample $3 => Variant Calling: VarDict: DONE\n\n"	
+}
+
+
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::     FEATURES EXTRACTION     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 Features_extraction_germline () {
 
+	rm -f $WORKDIR/PostFeatureExtraction.cfg
+	CFG=$WORKDIR/PostFeatureExtraction.cfg
+	
+	cat $1 | while read line
+	do
+		VCF_GATK=$(echo "$line" | cut -f1)
+		VCF_FREEBAYES=$(echo "$line" | cut -f2)
+		VCF_VARSCAN=$(echo "$line" | cut -f3)
+		
+		printf $"Estraggo le Features...\n"
 
-	printf $"Estraggo le Features...\n"
+		if [ "$DESIGN" == "ENRICHMENT" ]
+		then
 
-	if [ "$DESIGN" == "ENRICHMENT" ]
-	then
+			python $SCRIPT_PIPELINE/features_extraction_germline.py \
+		 	-g $VCF_GATK \
+		 	-f $VCF_FREEBAYES \
+		 	-v $VCF_VARSCAN \
+		 	-l $LISTAFEATURES_GERMLINE \
+		 	-F -s \
+		 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION \
+		    -G $WORKDIR/VARIANT_CALLING/GVCF
 
-		python $SCRIPT_PIPELINE/features_extraction_germline.py \
-	 	-g $1 \
-	 	-f $2 \
-	 	-v $3 \
-	 	-l $LISTAFEATURES_GERMLINE \
-	 	-F -s \
-	 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION \
-	    -G $WORKDIR/VARIANT_CALLING/GVCF
+		elif [ "$DESIGN" == "AMPLICON" ]
+		then
 
-	elif [ "$DESIGN" == "AMPLICON" ]
-	then
+			python $SCRIPT_PIPELINE/features_extraction_germline.py \
+		 	-g $VCF_GATK \
+		 	-f $VCF_FREEBAYES \
+		 	-v $VCF_VARSCAN \
+		 	-l $LISTAFEATURES_GERMLINE \
+		 	-F -a -s \
+		 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION \
+		    -G $WORKDIR/VARIANT_CALLING/GVCF
 
-		python $SCRIPT_PIPELINE/features_extraction_germline.py \
-	 	-g $1 \
-	 	-f $2 \
-	 	-v $3 \
-	 	-l $LISTAFEATURES_GERMLINE \
-	 	-F -a -s \
-	 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION \
-	    -G $WORKDIR/VARIANT_CALLING/GVCF
+		fi
 
-	fi
-
-	printf $"\n=========> Features extraction: DONE"
-
-	mv $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/TOTAL.vcf $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf
-	VCF_TOTAL=$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf
+		mv $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/TOTAL.vcf $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf
+		
+		INPUT=$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf
+		#printf $"$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf\n" >> $CFG
+		printf $"\n=========> Features extraction: DONE"
+	done
 
 }
+
+
+Features_extraction_somatic () {
+
+	rm -f $WORKDIR/PostFeatureExtraction.cfg
+	CFG=$WORKDIR/PostFeatureExtraction.cfg
+
+	cat $1 | while read line
+	do
+		VCF_MUTECT=$(echo "$line" | cut -f1)
+		VCF_VARDICT=$(echo "$line" | cut -f2)
+		VCF_VARSCAN_SNP=$(echo "$line" | cut -f3)
+		VCF_VARSCAN_INDEL=$(echo "$line" | cut -f4)
+		SAMPLE_NAME_SOM=$(echo "$line" | cut -f5)
+		SAMPLE_NAME_NORM=$(echo "$line" | cut -f6)
+
+		printf $"\n =========>	Sample $SAMPLE_NAME_SOM => Features extraction\n\n"
+
+		if [ "$DESIGN" == "ENRICHMENT" ]
+		then
+
+		 	python $SCRIPT_PIPELINE/features_extraction_somatic.py \
+		 	-m $VCF_MUTECT \
+		 	-d $VCF_VARDICT \
+		 	-v $VCF_VARSCAN_SNP \
+		 	-i $VCF_VARSCAN_INDEL \
+		 	-n $SAMPLE_NAME_NORM -t $SAMPLE_NAME_SOM \
+		 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME_SOM
+			
+		elif [ "$DESIGN" == "AMPLICON" ]
+		then
+
+			python $SCRIPT_PIPELINE/features_extraction_somatic.py \
+		 	-m $VCF_MUTECT \
+		 	-d $VCF_VARDICT \
+		 	-v $VCF_VARSCAN_SNP \
+		 	-i $VCF_VARSCAN_INDEL \
+		 	-n $SAMPLE_NAME_NORM -t $SAMPLE_NAME_SOM -a \
+		 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME_SOM
+		fi
+	
+		printf $"\n =========>	Sample $SAMPLE_NAME_SOM => Features extraction: DONE\n\n"
+		printf $"$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME_SOM\n" >> $CFG
+	done
+}
+
+
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::     ANNOTATION     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 ANNOTATION_germline () {
 
@@ -194,7 +305,7 @@ ANNOTATION_germline () {
 	--offline \
 	--force_overwrite \
 	-v \
-	--fork 10 \
+	--fork 2 \
 	--variant_class \
 	--sift b \
 	--poly b \
@@ -209,8 +320,8 @@ ANNOTATION_germline () {
 	--failed 1 \
 	--vcf
 
-	VCF_TOTAL_ANN=${1%.*}.ANN.vcf
-	echo $'\n =========>	ANNOTATION: DONE\n'
+	INPUT=${1%.*}.ANN.vcf
+	printf $'\n =========>	ANNOTATION: DONE\n'
 
 }
 
@@ -219,20 +330,69 @@ ADD_ANNOTATION_germline () {
 
 	python $SCRIPT_PIPELINE/Estrai_Annotazione_Somatic.py \
   	-i $1 \
-  	-f $2 \
+  	-f ${1%.*.*}.features.tsv \
   	-l $ANN_LIST_GERMLINE \
   	-t $TRANSCR_LIST \
-  	-o ${2%.*}.ANN
+  	-o  ${1%.*.*}.ANN
  	
- 	sort -V ${2%.*}.ANN.tsv > ${2%.*}.ANN.sort.tsv
-  	sort -V ${2%.*}.ANN.Other_transcripts.tsv > ${2%.*}.ANN.Other_transcripts.sort.tsv
+ 	sort -V ${1%.*.*}.ANN.tsv > ${1%.*.*}.ANN.sort.tsv
+  	sort -V ${1%.*.*}.ANN.Other_transcripts.tsv > ${1%.*.*}.ANN.Other_transcripts.sort.tsv
  	
   	rm ${2%.*}.ANN.tsv
   	rm ${2%.*}.ANN.Other_transcripts.tsv
-
-
 }
+
+
+ANNOTATION_somatic () {
+
+	printf "\n\n"
+	cat $LOGHI/logo_annotation.txt
+	printf $"\n\n\n"
 	
+	perl $VEPANN -i $1 \
+ 	-o ${1%.*}.ANN.vcf \
+ 	--stats_file ${1%.*}.ANN.html \
+ 	--cache \
+ 	--assembly GRCh37 \
+ 	--offline \
+ 	--force_overwrite \
+ 	-v \
+ 	--fork 10 \
+ 	--variant_class \
+ 	--sift b \
+ 	--poly b \
+ 	--vcf_info_field ANN \
+ 	--hgvs \
+ 	--protein \
+ 	--canonical \
+ 	--check_existing \
+ 	--gmaf \
+ 	--pubmed \
+ 	--species homo_sapiens \
+ 	--failed 1 \
+ 	--vcf
+
+ 	INPUT=${1%.*}.ANN.vcf
+ 	printf $'\n =========>	ANNOTATION: DONE\n'
+}
+
+
+ADD_ANNOTATION_somatic () {
+	
+	python $SCRIPT_PIPELINE/Estrai_Annotazione_Somatic.py \
+  	-i $1 \
+  	-f ${1%.*.*}.features.tsv \
+  	-l $ANN_LIST_SOMATIC \
+ 	-t $TRANSCR_LIST \
+  	-o ${1%.*.*}.ANN
+ 	
+ 	sort -V ${1%.*.*}.ANN.tsv > ${1%.*.*}.ANN.sort.tsv
+  	sort -V ${1%.*.*}.ANN.Other_transcripts.tsv > ${1%.*.*}.ANN.Other_transcripts.sort.tsv
+ 	
+  	rm ${1%.*.*}.ANN.tsv
+  	rm ${1%.*.*}.ANN.Other_transcripts.tsv
+}
+
 
 VARIANT_CALLING_GERMLINE () {
 	
@@ -245,6 +405,8 @@ VARIANT_CALLING_GERMLINE () {
 	rm -f $WORKDIR/Bam_list.txt
 	rm -f $WORKDIR/Sample_list.txt
 	rm -f $WORKDIR/gvcf.list
+	rm -f $WORKDIR/PostVariantCalling.cfg
+	CFG=$WORKDIR/PostVariantCalling.cfg
 
 	cat $1 | while read line
 	do
@@ -261,14 +423,11 @@ VARIANT_CALLING_GERMLINE () {
 
 	GenotypeGVCFs $WORKDIR/gvcf.list
 	
-	FreeBayes $WORKDIR/Bam_list.txt
+	FreeBayes $WORKDIR/Bam_list.txt $WORKDIR/Sample_list.txt
 
 	VarScan2_germline $WORKDIR/Bam_list.txt $WORKDIR/Sample_list.txt
 
-	Features_extraction_germline $VCF_GATK $VCF_FREEBAYES $VCF_VARSCAN
-
-	ANNOTATION_germline $VCF_TOTAL
-
+	printf $"$VCF_GATK\t$VCF_FREEBAYES\t$VCF_VARSCAN\n" >> $CFG
 	
 	# cat $1 | while read line
 	# do
@@ -277,7 +436,38 @@ VARIANT_CALLING_GERMLINE () {
 	# 	FASTQ2=$(echo "$line" | cut -f2)
 	# 	SAMPLE_NAME=$(echo "$line" | cut -f3)
 				
-	# 	ADD_ANNOTATION_germline $VCF_TOTAL_ANN $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME.features.tsv;
+	# 	ADD_ANNOTATION_germline $INPUT $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME.features.tsv;
 
 	# done
+}
+
+
+
+VARIANT_CALLING_SOMATIC () {
+	
+	cat $LOGHI/logo_variant.txt
+
+	mkdir -p $WORKDIR/VARIANT_CALLING
+	mkdir -p $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION
+	
+	rm -f $WORKDIR/PostVariantCalling.cfg
+	CFG=$WORKDIR/PostVariantCalling.cfg
+
+	cat $1 | while read line
+	do
+
+		BAM_SOM=$(echo "$line" | cut -f1)
+		SAMPLE_NAME_SOM=$(echo "$line" | cut -f2)
+		BAM_NORM=$(echo "$line" | cut -f3)
+		SAMPLE_NAME_NORM=$(echo "$line" | cut -f4)
+			
+		Mutect2 $BAM_SOM $BAM_NORM $SAMPLE_NAME_SOM $SAMPLE_NAME_NORM
+
+		VarScan2_somatic $BAM_SOM $BAM_NORM $SAMPLE_NAME_SOM $SAMPLE_NAME_NORM
+		
+		VarDict $BAM_SOM $BAM_NORM $SAMPLE_NAME_SOM $SAMPLE_NAME_NORM
+
+		printf $"$VCF_MUTECT\t$VCF_VARDICT\t$VCF_VARSCAN_SNP\t$VCF_VARSCAN_INDEL\t$SAMPLE_NAME_SOM\t$SAMPLE_NAME_NORM\n" >> $CFG
+	done
+
 }

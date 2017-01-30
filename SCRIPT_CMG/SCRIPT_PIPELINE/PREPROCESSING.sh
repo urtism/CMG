@@ -17,7 +17,7 @@ AddOrReplaceReadGroups () {
 }
 
 MarkDuplicates () {
-	echo $1
+	
 	printf $"\n~~~>	Sample $SAMPLE_NAME => Mark Duplicates\n\n"
 
 	java -Xmx64g -jar $PICARD MarkDuplicates \
@@ -30,19 +30,22 @@ MarkDuplicates () {
 	ASSUME_SORTED=true
 
 	INPUT=${1%.*.*}.mark.bam
+
 	printf $"\n~~~>	Sample $SAMPLE_NAME => Mark Duplicates: DONE\n\n"
+
+	BuildBamIndex $INPUT
 }
 
 BuildBamIndex () {
 
-	printf $"\n~~~>	Sample $SAMPLE_NAME => Build Bam Index\n\n"
+	printf $"\n~~~>	$1 => Build Bam Index\n\n"
 
 	java -Xmx64g -jar $PICARD BuildBamIndex \
 	I=$1 \
 	O=${1%.*}.bai \
 	VALIDATION_STRINGENCY=LENIENT
 
-	printf $"\n~~~>	Sample $SAMPLE_NAME => Build Bam Index: DONE\n\n"
+	printf $"\n~~~>	$1 => Build Bam Index: DONE\n\n"
 }
 
 IndelRealigner () {
@@ -107,45 +110,109 @@ PREPROCESSING () {
 	rm -f $WORKDIR/PostPreprocessing.cfg
 	CFG=$WORKDIR/PostPreprocessing.cfg
 
-	cat $1 | while read line
-	do
-
-		INPUT=$(echo "$line" | cut -f1)
-		SAMPLE_NAME=$(echo "$line" | cut -f2)
-				
-		AddOrReplaceReadGroups $INPUT
-
-
-		if [ "$DESIGN" == "ENRICHMENT" ]
+	if [ "$ANALISI" == "Germline" ]
 		then
-			
-			MarkDuplicates $INPUT
+		cat $1 | while read line
+		do
+			INPUT=$(echo "$line" | cut -f1)
+			SAMPLE_NAME=$(echo "$line" | cut -f2)
+					
+			AddOrReplaceReadGroups $INPUT
 
-			BuildBamIndex $INPUT
+			if [ "$DESIGN" == "ENRICHMENT" ]
+			then
+				if [[ "$START" == *"M"* ]]
+				then
+					MarkDuplicates $INPUT
+				fi
+				if [[ "$START" == *"I"* ]]
+				then
+					IndelRealigner $INPUT
+				fi
+				if [[ "$START" == *"B"* ]]
+				then
+					BaseRecalibrator $INPUT
+				fi
 
-			IndelRealigner $INPUT
+				mv $INPUT $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+				BuildBamIndex $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
 
-			BaseRecalibrator $INPUT
-			
-			mv $INPUT $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
-
-			BuildBamIndex $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
-
-			# rm ${INPUT%.*}.Add.bam
-			# rm ${INPUT%.*}.Metrics.txt
-			# rm ${INPUT%.*}.mark.bam
-			# rm ${INPUT%.*}.mark.bai
-			# rm ${INPUT%.*}.Recal.table
-			# rm ${INPUT%.*}.Realigned.bam
-			# rm ${INPUT%.*}.Realigned.bai
-			# rm ${INPUT%.*}.IndelRealigner.intervals
-
-		elif [ "$DESIGN" == "AMPLICON" ]
+			elif [ "$DESIGN" == "AMPLICON" ]
+			then
+				mv ${INPUT%.*.*}.Add.bam $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+				BuildBamIndex $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+			fi
+			printf $"$WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam\t$SAMPLE_NAME\n" >> $CFG
+		done
+	elif [ "$ANALISI" == "Somatic" ]
 		then
-			rm ${INPUT%.*.*}.Add.bam $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+		cat $1 | while read line
+		do
+			INPUT=$(echo "$line" | cut -f1)
+			SAMPLE_NAME=$(echo "$line" | cut -f2)
+					
+			AddOrReplaceReadGroups $INPUT
 
-			BuildBamIndex $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
-		fi
-		printf $"$WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam\t$SAMPLE_NAME\n" >> $CFG
-	done
+			if [ "$DESIGN" == "ENRICHMENT" ]
+			then
+				if [[ "$START" == *"M"* ]]
+				then
+					MarkDuplicates $INPUT
+				fi
+				if [[ "$START" == *"I"* ]]
+				then
+					IndelRealigner $INPUT
+				fi
+				if [[ "$START" == *"B"* ]]
+				then
+					BaseRecalibrator $INPUT
+				fi
+
+				mv $INPUT $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+				BuildBamIndex $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+
+			elif [ "$DESIGN" == "AMPLICON" ]
+			then
+				mv ${INPUT%.*.*}.Add.bam $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+				BuildBamIndex $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+			fi
+
+			INPUT_SOM=$WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+			SAMPLE_NAME_SOM=$SAMPLE_NAME
+			
+			INPUT=$(echo "$line" | cut -f3)
+			SAMPLE_NAME=$(echo "$line" | cut -f4)
+
+			AddOrReplaceReadGroups $INPUT
+
+			if [ "$DESIGN" == "ENRICHMENT" ]
+			then
+				if [[ "$START" == *"M"* ]]
+				then
+					MarkDuplicates $INPUT
+				fi
+				if [[ "$START" == *"I"* ]]
+				then
+					IndelRealigner $INPUT
+				fi
+				if [[ "$START" == *"B"* ]]
+				then
+					BaseRecalibrator $INPUT
+				fi
+
+				mv $INPUT $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+				BuildBamIndex $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+
+			elif [ "$DESIGN" == "AMPLICON" ]
+			then
+				mv ${INPUT%.*.*}.Add.bam $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+				BuildBamIndex $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+			fi
+
+			INPUT_NORM=$WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+			SAMPLE_NAME_NORM=$SAMPLE_NAME
+			
+			printf $"$INPUT_SOM\t$SAMPLE_NAME_SOM\t$INPUT_NORM\t$SAMPLE_NAME_NORM\n" >> $CFG
+		done
+	fi
 }
