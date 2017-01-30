@@ -3,16 +3,6 @@
 PipeVersion=3.0
 
 ### IMPORT ###
-# source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/BRCA_function.sh
-# source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Cancer_function.sh
-# source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Cardio_function.sh
-# source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Cardio_function_all.sh
-# source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Exome_function.sh
-# source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_CellFree_Germline.sh
-# source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_CellFree_Somatic.sh
-# source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_CellFree_Synthetic.sh
-# source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_Germline_all.sh
-# source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/Pipeline_Somatic.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/ALLINEAMENTO.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/PREPROCESSING.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/VARIANT_CALLING.sh
@@ -277,16 +267,27 @@ then
 	WORKDIR=$NGSDIR/$DATA\_Run_$RUN\_$ANALISI\_$PANNELLO\_$var
 fi
 
+
+
+STORAGE=$WORKDIR/STORAGE/$DATA\_Run_$RUN\_$ANALISI\_$PANNELLO
+OUT=$WORKDIR/OUTPUT/$DATA\_Run_$RUN\_$ANALISI\_$PANNELLO\_$PipeVersion
+DELETE=$WORKDIR/DELETE
+
 mkdir -p $WORKDIR
+mkdir -p $DELETE
+mkdir -p $WORKDIR/STORAGE
+mkdir -p $WORKDIR/OUTPUT
+mkdir -p $STORAGE
+mkdir -p $OUT
 
 
-if [ "$ANALISI" == "Germline" ] || [ "$ANALISI" == "germline" ] || [ "$ANALISI" == "GERMLINE" ]
+if [ "$ANALISI" == "Germline" ]
 then
 	PIPELINE_GERMLINE
-elif [ "$ANALISI" == "Somatic" ] || [ "$ANALISI" == "somatic" ] || [ "$ANALISI" == "SOMATIC" ]
+elif [ "$ANALISI" == "Somatic" ]
 then
 	PIPELINE_SOMATIC
-elif [ "$ANALISI" == "Cellfree" ] || [ "$ANALISI" == "cellfree" ] || [ "$ANALISI" == "CELLFREE" ]
+elif [ "$ANALISI" == "Cellfree" ] 
 then
 	echo "cellfree"
 	#PIPELINE_CELLFREE

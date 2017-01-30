@@ -52,6 +52,10 @@ ALLINEAMENTO() {
 			SamFormatConverter $INPUT
 			SortSam $INPUT
 			
+			mv $FASTQ1 $STORAGE
+			mv $FASTQ2 $STORAGE
+
+
 			#rm $WORKDIR/ALIGNMENT/$SAMPLE_NAME.sam
 			#rm $WORKDIR/ALIGNMENT/$SAMPLE_NAME.converted.bam
 			
@@ -71,6 +75,12 @@ ALLINEAMENTO() {
 			SortSam $INPUT
 			INPUT_SOM=$INPUT
 			SAMPLE_NAME_SOM=$SAMPLE_NAME
+
+			cp $FASTQ1 $STORAGE
+			cp $FASTQ2 $STORAGE
+
+			mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.sam $DELETE
+			mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.converted.bam $DELETE
 			
 			FASTQ1=$(echo "$line" | cut -f4)
 			FASTQ2=$(echo "$line" | cut -f5)
@@ -82,8 +92,10 @@ ALLINEAMENTO() {
 			INPUT_NORM=$INPUT
 			SAMPLE_NAME_NORM=$SAMPLE_NAME
 			
-			#rm $WORKDIR/ALIGNMENT/$SAMPLE_NAME.sam
-			#rm $WORKDIR/ALIGNMENT/$SAMPLE_NAME.converted.bam
+			mv $FASTQ1 $STORAGE
+			mv $FASTQ2 $STORAGE
+			mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.sam $DELETE
+			mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.converted.bam $DELETE
 			
 			printf $"$INPUT_SOM\t$SAMPLE_NAME_SOM\t$INPUT_NORM\t$SAMPLE_NAME_NORM\n" >> $CFG
 		done

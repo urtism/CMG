@@ -1,3 +1,12 @@
+save_in_storage () {
+	cat $1 | while read line
+	do
+		mv $line $STORAGE
+	done
+}
+
+
+
 
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     GATK     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -100,7 +109,7 @@ FreeBayes () {
 
 	VCF_FREEBAYES=$WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.split.vcf
 
-	printf $'\n =========>	Variant Calling with FreeBayes: DONE\n'
+	printf $'\n =========>	Variant Calling with FreeBayes: DONE\n\n'
 	
 }
 
@@ -235,7 +244,14 @@ Features_extraction_germline () {
 		fi
 
 		mv $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/TOTAL.vcf $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf
-		
+		cp $VCF_GATK $OUT
+		cp $VCF_FREEBAYES $OUT
+		cp $VCF_VARSCAN $OUT
+		mv $VCF_GATK $STORAGE
+		mv $VCF_FREEBAYES $STORAGE
+		mv $VCF_VARSCAN $STORAGE
+		save_in_storage $WORKDIR/gvcf.list
+
 		INPUT=$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf
 		#printf $"$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf\n" >> $CFG
 		printf $"\n=========> Features extraction: DONE"
@@ -282,7 +298,18 @@ Features_extraction_somatic () {
 		 	-n $SAMPLE_NAME_NORM -t $SAMPLE_NAME_SOM -a \
 		 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME_SOM
 		fi
-	
+		
+		cp $VCF_MUTECT $OUT
+		cp $VCF_VARDICT $OUT
+		cp $VCF_VARSCAN_SNP $OUT
+		cp $VCF_VARSCAN_INDEL $OUT
+
+
+		mv $VCF_MUTECT $STORAGE
+		mv $VCF_VARDICT $STORAGE
+		mv $VCF_VARSCAN_SNP $STORAGE
+		mv $VCF_VARSCAN_INDEL $STORAGE
+
 		printf $"\n =========>	Sample $SAMPLE_NAME_SOM => Features extraction: DONE\n\n"
 		printf $"$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME_SOM\n" >> $CFG
 	done
@@ -320,6 +347,7 @@ ANNOTATION_germline () {
 	--failed 1 \
 	--vcf
 
+	mv $1 $DELETE
 	INPUT=${1%.*}.ANN.vcf
 	printf $'\n =========>	ANNOTATION: DONE\n'
 
@@ -338,8 +366,13 @@ ADD_ANNOTATION_germline () {
  	sort -V ${1%.*.*}.ANN.tsv > ${1%.*.*}.ANN.sort.tsv
   	sort -V ${1%.*.*}.ANN.Other_transcripts.tsv > ${1%.*.*}.ANN.Other_transcripts.sort.tsv
  	
-  	rm ${2%.*}.ANN.tsv
-  	rm ${2%.*}.ANN.Other_transcripts.tsv
+ 	cp ${1%.*.*}.ANN.sort.tsv $STORAGE
+ 	cp ${1%.*.*}.ANN.Other_transcripts.sort.tsv $STORAGE
+ 	mv ${1%.*.*}.ANN.sort.tsv $OUT
+ 	mv ${1%.*.*}.ANN.Other_transcripts.sort.tsv $OUT
+
+  	mv ${2%.*}.ANN.tsv $DELETE
+  	mv ${2%.*}.ANN.Other_transcripts.tsv $DELETE
 }
 
 
@@ -372,6 +405,7 @@ ANNOTATION_somatic () {
  	--failed 1 \
  	--vcf
 
+ 	mv $1 $DELETE
  	INPUT=${1%.*}.ANN.vcf
  	printf $'\n =========>	ANNOTATION: DONE\n'
 }
@@ -389,8 +423,13 @@ ADD_ANNOTATION_somatic () {
  	sort -V ${1%.*.*}.ANN.tsv > ${1%.*.*}.ANN.sort.tsv
   	sort -V ${1%.*.*}.ANN.Other_transcripts.tsv > ${1%.*.*}.ANN.Other_transcripts.sort.tsv
  	
-  	rm ${1%.*.*}.ANN.tsv
-  	rm ${1%.*.*}.ANN.Other_transcripts.tsv
+ 	cp ${1%.*.*}.ANN.sort.tsv $STORAGE
+ 	cp ${1%.*.*}.ANN.Other_transcripts.sort.tsv $STORAGE
+ 	mv ${1%.*.*}.ANN.sort.tsv $OUT
+ 	mv ${1%.*.*}.ANN.Other_transcripts.sort.tsv $OUT
+ 	
+  	mv ${2%.*}.ANN.tsv $DELETE
+  	mv ${2%.*}.ANN.Other_transcripts.tsv $DELETE
 }
 
 
@@ -426,6 +465,8 @@ VARIANT_CALLING_GERMLINE () {
 	FreeBayes $WORKDIR/Bam_list.txt $WORKDIR/Sample_list.txt
 
 	VarScan2_germline $WORKDIR/Bam_list.txt $WORKDIR/Sample_list.txt
+
+	save_in_storage $WORKDIR/Bam_list.txt
 
 	printf $"$VCF_GATK\t$VCF_FREEBAYES\t$VCF_VARSCAN\n" >> $CFG
 	
@@ -466,6 +507,9 @@ VARIANT_CALLING_SOMATIC () {
 		VarScan2_somatic $BAM_SOM $BAM_NORM $SAMPLE_NAME_SOM $SAMPLE_NAME_NORM
 		
 		VarDict $BAM_SOM $BAM_NORM $SAMPLE_NAME_SOM $SAMPLE_NAME_NORM
+
+		mv $BAM_SOM $STORAGE
+		mv $BAM_NORM $STORAGE
 
 		printf $"$VCF_MUTECT\t$VCF_VARDICT\t$VCF_VARSCAN_SNP\t$VCF_VARSCAN_INDEL\t$SAMPLE_NAME_SOM\t$SAMPLE_NAME_NORM\n" >> $CFG
 	done

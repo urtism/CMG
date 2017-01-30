@@ -127,9 +127,9 @@ def extract_paz_name(pazienti):
 def main():
 	parser = argparse.ArgumentParser('Adds number of exon for each interval')
 	
-	parser.add_argument('-p','--path',help="variants file")
-	parser.add_argument('-g','--gene',help="variants file")
-	parser.add_argument('-o','--out',help="variants file")
+	parser.add_argument('-p','--path',help="path dei tsv")
+	parser.add_argument('-g','--gene',help="gene to search")
+	parser.add_argument('-o','--out',help="path di output")
 	parser.add_argument('-l','--paz_list',help="lista dei nomi dei pazienti e degli id")
 	parser.add_argument('-t','--tipo',help="Cancer o Cardio",default='Cardio')
 
