@@ -12,6 +12,7 @@ AddOrReplaceReadGroups () {
 	RGLB=$PANNELLO \
 	VALIDATION_STRINGENCY=LENIENT
 
+	mv $1 $DELETE
 	INPUT=${1%.*.*}.Add.bam
 	printf $"\n~~~>	Sample $SAMPLE_NAME => Add Or Replace Read Groups: DONE\n\n"
 }
@@ -29,6 +30,7 @@ MarkDuplicates () {
 	REMOVE_DUPLICATES=true \
 	ASSUME_SORTED=true
 
+	mv $1 $DELETE
 	INPUT=${1%.*.*}.mark.bam
 
 	printf $"\n~~~>	Sample $SAMPLE_NAME => Mark Duplicates: DONE\n\n"
@@ -70,6 +72,7 @@ IndelRealigner () {
 	-o ${1%.*.*}.Realigned.bam \
 	-known $MILLS
 
+	mv $1 $DELETE
 	INPUT=${1%.*.*}.Realigned.bam
 
 	printf $"\n =========>	Indel Realigner: DONE\n"
@@ -98,6 +101,7 @@ BaseRecalibrator () {
 	-o ${1%.*.*}.bam \
 	-L $TARGET
 
+	mv $1 $DELETE
 	INPUT=${1%.*.*}.bam
 	printf $"\n~~~>	Sample $SAMPLE_NAME => Base Quality Score Recalibration (BQSR): Print reads: DONE\n\n"
 	
