@@ -36,11 +36,11 @@ def add_ann(vcf,file_list,file_coor):
 			continue
 
 		else:
-			line = re.split('\||ANN=|;\t|\t|,', line)
+			line = re.split('\||ANN=|CSQ=|;\t|\t|,', line)
 			for i in line:
 				if i == '':
 					#qui sostituisco al valore vuoto il simbolo -
-					line[line.index(i)] = '-'
+					line[line.index(i)] = '.'
 		# Salvo in ogni elemento del vettore il vettore contenente ciascuna riga del vcf annotato
 		vettore += [line[0:len(header)]]
 
@@ -90,7 +90,8 @@ def main():
 	parser.add_argument('-l','--list',help="lista di annotazioni: una per riga")
 	parser.add_argument('-f','--file',help="file tab delimited da cui pescare le coordinate del cromosoma")
 	parser.add_argument('-o','--outfile',help="file di output tab delimited")
-	
+	parser.add_argument('-db','--database',help="database dal quale aggiungere le annotazioni")
+
 	global opts
 	
 	opts = parser.parse_args()
