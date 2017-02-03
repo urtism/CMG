@@ -1,10 +1,12 @@
 save_in_storage () {
+
 	cat $1 | while read line
 	do
 		mv $line $STORAGE
+		mv $line.idx $STORAGE
+		mv ${line%.*}.bai $STORAGE
 	done
 }
-
 
 
 
@@ -18,8 +20,7 @@ Mutect2 () {
 	-I:tumor $1 \
 	-I:normal $2 \
 	-L $TARGET \
-	-o $WORKDIR/VARIANT_CALLING/$3\_Sane_GATK.vcf \
-	-bamout $WORKDIR/VARIANT_CALLING/$3\_Sane_GATK.vcf.bam
+	-o $WORKDIR/VARIANT_CALLING/$3\_Sane_GATK.vcf 
 
 	$BCFTOOLS norm -m -both \
 	-f $REF \
@@ -42,7 +43,6 @@ HaplotypeCaller () {
 	-o $WORKDIR/VARIANT_CALLING/GVCF/$SAMPLE_NAME.g.vcf \
 	-ERC GVCF \
 	--doNotRunPhysicalPhasing \
-	-bamout $WORKDIR/VARIANT_CALLING/GVCF/$SAMPLE_NAME.g.vcf.bam \
 	-L $TARGET
 
 	printf $"$WORKDIR/VARIANT_CALLING/GVCF/$SAMPLE_NAME.g.vcf\n" >> $WORKDIR/gvcf.list
@@ -70,12 +70,13 @@ GenotypeGVCFs () {
 	$WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_GATK.fix.vcf \
 	> $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_GATK.split.vcf
 
-	#rm $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_GATK.fix.vcf
-	#rm $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_GATK.vcf
+	mv $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_GATK.fix.vcf $DELETE
+	mv $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_GATK.vcf $DELETE
+	mv $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_GATK.vcf.idx $DELETE
 
 	VCF_GATK=$WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_GATK.split.vcf
 
-	printf $'\n\n =========>	Variant Calling: Genotype GVCF & Multi-sample variant calling: DONE\n'
+	printf $'\n =========>	Variant Calling: Genotype GVCF & Multi-sample variant calling: DONE\n'
 
 }
 
@@ -84,7 +85,7 @@ GenotypeGVCFs () {
 
 FreeBayes () {
 
-	printf $'\n =========>	Variant Calling with FreeBayes\n'
+	printf $'\n =========>	Variant Calling with FreeBayes\n\n'
 
 	$FREEBAYES -f $REF \
 	-L $1 \
@@ -104,8 +105,8 @@ FreeBayes () {
  	$WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.fix.vcf \
  	> $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.split.vcf
 
- 	#rm $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.fix.vcf
-	#rm $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf
+ 	mv $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.fix.vcf $DELETE
+	mv $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf $DELETE
 
 	VCF_FREEBAYES=$WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.split.vcf
 
@@ -121,16 +122,16 @@ VarScan2_germline () {
 	printf $'\n =========>	Variant Calling with VarScan2\n\n'
 
 	samtools mpileup -B -q 1 -d 50000 -L 50000 -f $REF \
-	-l $TARGETBED -b $1 > $WORKDIR/PREPROCESSING/$DATA\_$PANNELLO.mpileup
+	-l $TARGETBED -b $1 > $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO.mpileup
 
-	java -jar -Xmx64g $VARSCAN mpileup2snp $WORKDIR/PREPROCESSING/$DATA\_$PANNELLO.mpileup \
+	java -jar -Xmx64g $VARSCAN mpileup2snp $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO.mpileup \
 	--min-coverage 10 \
 	--min-var-freq 0.20 \
 	--pvalue 0.05 \
 	--output-vcf 1 \
 	--vcf-sample-list $2 > $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_snp.vcf
 
-	java -jar -Xmx64g $VARSCAN mpileup2indel $WORKDIR/PREPROCESSING/$DATA\_$PANNELLO.mpileup \
+	java -jar -Xmx64g $VARSCAN mpileup2indel $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO.mpileup \
 	--min-coverage 10 \
 	--min-var-freq 0.10 \
 	--pvalue 0.1 \
@@ -155,15 +156,13 @@ VarScan2_germline () {
 
  	VCF_VARSCAN=$WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan.split.vcf
 
-	rm $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan.Merge.vcf
-	#rm $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan.sort.vcf
-	#rm $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_snp.vcf
-	#rm $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_Indel.vcf
-	#rm $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_snp.vcf.gz
-	#rm $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_Indel.vcf.gz
-	#rm $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_snp.vcf.gz.tbi
-	#rm $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_Indel.vcf.gz.tbi
-	#rm $WORKDIR/PREPROCESSING/$DATA\_$PANNELLO.mpileup
+	mv $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan.Merge.vcf $DELETE
+	mv $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan.sort.vcf $DELETE
+	mv $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_snp.vcf.gz $DELETE
+	mv $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_Indel.vcf.gz $DELETE
+	mv $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_snp.vcf.gz.tbi $DELETE
+	mv $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_Indel.vcf.gz.tbi $DELETE
+	mv $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO.mpileup $DELETE
 
 	printf $'\n =========>	Variant Calling with VarScan2: DONE\n'
 
@@ -182,6 +181,7 @@ VarScan2_somatic () {
 	VCF_VARSCAN_SNP=$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.snp.vcf
 	VCF_VARSCAN_INDEL=$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.indel.vcf
 	
+	mv $WORKDIR/VARIANT_CALLING/$3\_Sane.mpileup $DELETE
 	printf $"\n =========>	Sample $3 => Variant Calling: Varscan2: DONE\n\n"	
 }
 
@@ -215,7 +215,7 @@ Features_extraction_germline () {
 		VCF_FREEBAYES=$(echo "$line" | cut -f2)
 		VCF_VARSCAN=$(echo "$line" | cut -f3)
 		
-		printf $"Estraggo le Features...\n"
+		printf $"\n=========> Features extraction\n\n"
 
 		if [ "$DESIGN" == "ENRICHMENT" ]
 		then
@@ -250,12 +250,14 @@ Features_extraction_germline () {
 		mv $VCF_GATK $STORAGE
 		mv $VCF_FREEBAYES $STORAGE
 		mv $VCF_VARSCAN $STORAGE
+		
 		save_in_storage $WORKDIR/gvcf.list
 
-		INPUT=$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf
 		#printf $"$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf\n" >> $CFG
 		printf $"\n=========> Features extraction: DONE"
 	done
+	INPUT=$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf
+
 
 }
 
@@ -316,121 +318,6 @@ Features_extraction_somatic () {
 }
 
 
-#:::::::::::::::::::::::::::::::::::::::::::::::::::::::     ANNOTATION     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-ANNOTATION_germline () {
-
-	printf "\n\n"
-	cat $LOGHI/logo_annotation.txt
-	printf $"\n\n\n"
-	
-	perl $VEPANN -i $1 \
-	-o ${1%.*}.ANN.vcf \
-	--stats_file ${1%.*}.ANN.html \
-	--cache \
-	--assembly GRCh37 \
-	--offline \
-	--force_overwrite \
-	-v \
-	--fork 2 \
-	--variant_class \
-	--sift b \
-	--poly b \
-	--vcf_info_field ANN \
-	--hgvs \
-	--protein \
-	--canonical \
-	--check_existing \
-	--gmaf \
-	--pubmed \
-	--species homo_sapiens \
-	--failed 1 \
-	--vcf
-
-	mv $1 $DELETE
-	INPUT=${1%.*}.ANN.vcf
-	printf $'\n =========>	ANNOTATION: DONE\n'
-
-}
-
-
-ADD_ANNOTATION_germline () {
-
-	python $SCRIPT_PIPELINE/Estrai_Annotazione_Somatic.py \
-  	-i $1 \
-  	-f ${1%.*.*}.features.tsv \
-  	-l $ANN_LIST_GERMLINE \
-  	-t $TRANSCR_LIST \
-  	-o  ${1%.*.*}.ANN
- 	
- 	sort -V ${1%.*.*}.ANN.tsv > ${1%.*.*}.ANN.sort.tsv
-  	sort -V ${1%.*.*}.ANN.Other_transcripts.tsv > ${1%.*.*}.ANN.Other_transcripts.sort.tsv
- 	
- 	cp ${1%.*.*}.ANN.sort.tsv $STORAGE
- 	cp ${1%.*.*}.ANN.Other_transcripts.sort.tsv $STORAGE
- 	mv ${1%.*.*}.ANN.sort.tsv $OUT
- 	mv ${1%.*.*}.ANN.Other_transcripts.sort.tsv $OUT
-
-  	mv ${2%.*}.ANN.tsv $DELETE
-  	mv ${2%.*}.ANN.Other_transcripts.tsv $DELETE
-}
-
-
-ANNOTATION_somatic () {
-
-	printf "\n\n"
-	cat $LOGHI/logo_annotation.txt
-	printf $"\n\n\n"
-	
-	perl $VEPANN -i $1 \
- 	-o ${1%.*}.ANN.vcf \
- 	--stats_file ${1%.*}.ANN.html \
- 	--cache \
- 	--assembly GRCh37 \
- 	--offline \
- 	--force_overwrite \
- 	-v \
- 	--fork 10 \
- 	--variant_class \
- 	--sift b \
- 	--poly b \
- 	--vcf_info_field ANN \
- 	--hgvs \
- 	--protein \
- 	--canonical \
- 	--check_existing \
- 	--gmaf \
- 	--pubmed \
- 	--species homo_sapiens \
- 	--failed 1 \
- 	--vcf
-
- 	mv $1 $DELETE
- 	INPUT=${1%.*}.ANN.vcf
- 	printf $'\n =========>	ANNOTATION: DONE\n'
-}
-
-
-ADD_ANNOTATION_somatic () {
-	
-	python $SCRIPT_PIPELINE/Estrai_Annotazione_Somatic.py \
-  	-i $1 \
-  	-f ${1%.*.*}.features.tsv \
-  	-l $ANN_LIST_SOMATIC \
- 	-t $TRANSCR_LIST \
-  	-o ${1%.*.*}.ANN
- 	
- 	sort -V ${1%.*.*}.ANN.tsv > ${1%.*.*}.ANN.sort.tsv
-  	sort -V ${1%.*.*}.ANN.Other_transcripts.tsv > ${1%.*.*}.ANN.Other_transcripts.sort.tsv
- 	
- 	cp ${1%.*.*}.ANN.sort.tsv $STORAGE
- 	cp ${1%.*.*}.ANN.Other_transcripts.sort.tsv $STORAGE
- 	mv ${1%.*.*}.ANN.sort.tsv $OUT
- 	mv ${1%.*.*}.ANN.Other_transcripts.sort.tsv $OUT
- 	
-  	mv ${2%.*}.ANN.tsv $DELETE
-  	mv ${2%.*}.ANN.Other_transcripts.tsv $DELETE
-}
 
 
 VARIANT_CALLING_GERMLINE () {
@@ -470,16 +357,6 @@ VARIANT_CALLING_GERMLINE () {
 
 	printf $"$VCF_GATK\t$VCF_FREEBAYES\t$VCF_VARSCAN\n" >> $CFG
 	
-	# cat $1 | while read line
-	# do
-
-	# 	FASTQ1=$(echo "$line" | cut -f1)
-	# 	FASTQ2=$(echo "$line" | cut -f2)
-	# 	SAMPLE_NAME=$(echo "$line" | cut -f3)
-				
-	# 	ADD_ANNOTATION_germline $INPUT $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME.features.tsv;
-
-	# done
 }
 
 

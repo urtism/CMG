@@ -11,21 +11,27 @@ def main():
 	opts = parser.parse_args()
 
 
-	
-	for filename in os.listdir(opts.path):
-		#print filename
-		infile=open(opts.path+'/'+filename,'r')
-		for line in infile:
-			line = line.rstrip()
-			if line.startswith('#') or line.startswith('track') :
-				continue
+	for path in  os.listdir(opts.path):
+		newpath=opts.path+'/'+path
+		for filename in  os.listdir(newpath):
+			#print filename
+			infile=open(newpath+'/'+filename,'r')
+			outfile=open(newpath+'/'+filename.split('.')[0]+'.chr.tsv','w')
+			print newpath+'/'+filename
 
-			elif line.startswith('variableStep'):
-				chr=(line.split(' ')[1]).split('=')[1]
-			else:
-				print '\t'.join([chr]+[line])
+			for line in infile:
+				line = line.rstrip()
+				if line.startswith('#') or line.startswith('track') :
+					continue
 
-		infile.close()
+				elif line.startswith('variableStep'):
+					chr=(line.split(' ')[1]).split('=')[1]
+					outfile.write('\t'.join(['CHROM','POS','SCORE']) +'\n')
+				else:
+					outfile.write('\t'.join([chr]+[line]) +'\n')
+
+			infile.close()
+			outfile.close()
 
 
 

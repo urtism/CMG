@@ -15,6 +15,7 @@ SamFormatConverter () {
 	I=$1 \
 	O=${1%.*}.converted.bam
 	
+	mv $1 $DELETE
 	INPUT=${1%.*}.converted.bam
 	printf $"\n~~~>	Sample $SAMPLE_NAME => Sam Format Converter: DONE\n\n"
 }
@@ -26,6 +27,7 @@ SortSam () {
 	O=${1%.*.*}.sort.bam \
 	SORT_ORDER=coordinate
 
+	mv $1 $DELETE
 	INPUT=${1%.*.*}.sort.bam
 	printf $"\n~~~>	Sample $SAMPLE_NAME => Sort Sam: DONE\n\n"
 }
@@ -52,12 +54,8 @@ ALLINEAMENTO() {
 			SamFormatConverter $INPUT
 			SortSam $INPUT
 			
-			mv $FASTQ1 $STORAGE
-			mv $FASTQ2 $STORAGE
-
-
-			#rm $WORKDIR/ALIGNMENT/$SAMPLE_NAME.sam
-			#rm $WORKDIR/ALIGNMENT/$SAMPLE_NAME.converted.bam
+			cp $FASTQ1 $STORAGE
+			cp $FASTQ2 $STORAGE
 			
 			printf $"$INPUT\t$SAMPLE_NAME\n" >> $CFG
 		done
@@ -92,8 +90,8 @@ ALLINEAMENTO() {
 			INPUT_NORM=$INPUT
 			SAMPLE_NAME_NORM=$SAMPLE_NAME
 			
-			mv $FASTQ1 $STORAGE
-			mv $FASTQ2 $STORAGE
+			cp $FASTQ1 $STORAGE
+			cp $FASTQ2 $STORAGE
 			mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.sam $DELETE
 			mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.converted.bam $DELETE
 			

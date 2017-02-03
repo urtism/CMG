@@ -1063,7 +1063,7 @@ def control(dictionary):
 			del dictionary[variante]
 				
 def print_var_snp_complete(dictionary):
-	varianti_tsv=open(opts.out+ '.features.tsv','w')
+	varianti_tsv=open(opts.out+ '.tsv','w')
 	varianti_tsv.write('\t'.join(["SAMPLE_NORMAL_ID","SAMPLE_TUMOR_ID","CHROM","POS","REF","ALT","CallMutect","CallVarscan","CallVardict",
 			"SomaticMutect","SomaticVarscan","SomaticVardict",
 			"GT_Mutect","GT_Varscan","GT_Vardict","DP_median","BQ_Mutect","BQ_Vardict","MBQT_media","MBQT_mediana",
@@ -1103,7 +1103,7 @@ def print_var_snp_complete(dictionary):
 
 def print_var_snp_reduced(dictionary):
 	
-	varianti_tsv=open(opts.out+ '.features.tsv','w')
+	varianti_tsv=open(opts.out+ '.tsv','w')
 	
 	varianti_tsv.write('\t'.join(["CHROM","POS","ID","REF","ALT","CallMutect","CallVarscan","CallVardict",
 			"SomaticMutect","SomaticVarscan","SomaticVardict",

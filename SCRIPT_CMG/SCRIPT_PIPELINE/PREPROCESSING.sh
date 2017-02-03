@@ -13,6 +13,7 @@ AddOrReplaceReadGroups () {
 	VALIDATION_STRINGENCY=LENIENT
 
 	mv $1 $DELETE
+	mv ${1%.*}.bai $DELETE
 	INPUT=${1%.*.*}.Add.bam
 	printf $"\n~~~>	Sample $SAMPLE_NAME => Add Or Replace Read Groups: DONE\n\n"
 }
@@ -30,6 +31,7 @@ MarkDuplicates () {
 	REMOVE_DUPLICATES=true \
 	ASSUME_SORTED=true
 
+	mv ${1%.*.*}.Metrics.txt $DELETE
 	mv $1 $DELETE
 	INPUT=${1%.*.*}.mark.bam
 
@@ -72,7 +74,9 @@ IndelRealigner () {
 	-o ${1%.*.*}.Realigned.bam \
 	-known $MILLS
 
+	mv ${1%.*.*}.IndelRealigner.intervals $DELETE
 	mv $1 $DELETE
+	mv ${1%.*}.bai $DELETE
 	INPUT=${1%.*.*}.Realigned.bam
 
 	printf $"\n =========>	Indel Realigner: DONE\n"
@@ -101,7 +105,10 @@ BaseRecalibrator () {
 	-o ${1%.*.*}.bam \
 	-L $TARGET
 
+
+	mv ${1%.*.*}.Recal.table $DELETE
 	mv $1 $DELETE
+	mv ${1%.*}.bai $DELETE
 	INPUT=${1%.*.*}.bam
 	printf $"\n~~~>	Sample $SAMPLE_NAME => Base Quality Score Recalibration (BQSR): Print reads: DONE\n\n"
 	
@@ -139,7 +146,7 @@ PREPROCESSING () {
 				fi
 
 				mv $INPUT $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
-				BuildBamIndex $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+				mv ${INPUT%.*}.bai $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bai
 
 			elif [ "$DESIGN" == "AMPLICON" ]
 			then
@@ -173,7 +180,7 @@ PREPROCESSING () {
 				fi
 
 				mv $INPUT $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
-				BuildBamIndex $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+				mv ${INPUT%.*}.bai $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bai
 
 			elif [ "$DESIGN" == "AMPLICON" ]
 			then
@@ -205,7 +212,7 @@ PREPROCESSING () {
 				fi
 
 				mv $INPUT $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
-				BuildBamIndex $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+				mv ${INPUT%.*}.bai $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bai
 
 			elif [ "$DESIGN" == "AMPLICON" ]
 			then

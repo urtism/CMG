@@ -27,6 +27,7 @@ class Caller():
 	AC=''
 	AN=''
 	STRBIAS_TOT=''
+	RF=''
 
 class Freebayes(Caller):
 	
@@ -106,7 +107,7 @@ class GATK(Caller):
 class Varscan(Caller):
 
 	SDP=''
-	
+
 	ADP=''
 	WT=''
 	HET=''
@@ -126,6 +127,10 @@ class Features():
 
 	DP_media='.'
 	DP_mediana='.'
+
+	RF_Varscan='.'
+	RF_Freebayes='.'
+	RF_GATK='.'
 
 	QB_GATK='.'
 	QB_Varscan='.'
@@ -256,7 +261,13 @@ def get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes):
 		freebayes.GQ=sample[format.index('GQ')]
 		freebayes.AO=float(sample[format.index('AO')])
 		freebayes.RO=float(sample[format.index('RO')])
+		#freebayes.DP=freebayes.AO+freebayes.RO
 		freebayes.DP=float(sample[format.index('DP')])
+
+		try:
+			freebayes.RF=(freebayes.AO+freebayes.RO)/freebayes.DP
+		except:
+			freebayes.RF='.'
 
 		for ind in info:
 			if ind.startswith("SAF="):
@@ -366,7 +377,10 @@ def get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes):
 		except:
 			freebayes.lod = -1.0
 		
-		freebayes.AF=freebayes.AO/freebayes.DP
+		try:
+			freebayes.AF=freebayes.AO/freebayes.DP
+		except:
+			freebayes.AF
 
 		if opts.amplicon:
 			if min(freebayes.DP_r_TOT,freebayes.DP_f_TOT)/(freebayes.DP_r_TOT+freebayes.DP_f_TOT) >= 0.05:
@@ -394,9 +408,15 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 	else:
 		GATK.AO=float((sample[format.index('AD')]).split(',')[1])
 		GATK.RO=float((sample[format.index('AD')]).split(',')[0])
-		#GATK.DP=GATK.AO+GATK.RO	
 		GATK.DP=float(sample[format.index('DP')])
-		GATK.AF=GATK.AO/GATK.DP
+		try:
+			GATK.RF=(GATK.AO+GATK.RO)/GATK.DP
+		except:
+			GATK.RF='.'
+		try:
+			GATK.AF=GATK.AO/GATK.DP
+		except:
+			GATK.AF='.'
 		GATK.STR='0'
 		
 		try:
@@ -494,7 +514,10 @@ def get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan):
 	else:
 		varscan.AO=float(sample[format.index('AD')])
 		varscan.RO=float(sample[format.index('RD')])
-		varscan.DP=varscan.RO + varscan.AO
+		varscan.DP=float(sample[format.index('DP')])
+		varscan.SDP=float(sample[format.index('SDP')])
+
+		varscan.RF=(varscan.RO + varscan.AO)/varscan.SDP
 	
 	 	for ind in info:
 	 		if ind.startswith("ADP"):
@@ -526,8 +549,10 @@ def get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan):
 			varscan.QB='.'
 		Varscan.GQ=float(sample[format.index('GQ')])
 		
-		varscan.AF=float(varscan.AO/(varscan.DP))
-		
+		try:
+			varscan.AF=float(varscan.AO/(varscan.DP))
+		except:
+			varscan.AF='.'
 
 		if opts.amplicon:
 			if min((varscan.DP_r),(varscan.DP_f))/(varscan.DP_r+varscan.DP_f) >= 0.05:
@@ -568,6 +593,7 @@ def set_features(dictionary):
 				
 				if index == 0:
 
+					features.RF_Freebayes=varc_array[0].RF
 					features.lod_Freebayes=varc_array[0].lod			
 					features.GT_Freebayes=varc_array[0].GT
 					features.AO_Freebayes=varc_array[0].AO
@@ -634,6 +660,7 @@ def set_features(dictionary):
 
 				if index == 2:
 
+					features.RF_GATK=varc_array[2].RF
 					features.GT_GATK=varc_array[2].GT
 					features.AO_GATK=varc_array[2].AO
 					features.RO_GATK=varc_array[2].RO
@@ -674,6 +701,7 @@ def set_features(dictionary):
 
 				elif index == 1:
 					
+					features.RF_Varscan=varc_array[1].RF
 					features.GT_Varscan=varc_array[1].GT
 					features.AO_Varscan=varc_array[1].AO
 					features.RO_Varscan=varc_array[1].RO
@@ -696,7 +724,7 @@ def set_features(dictionary):
 
 			index = index + 1	
 
-		
+		vett_RF_media=[features.RF_GATK,features.RF_Varscan,features.RF_Freebayes]
 		vett_AF_media=[features.AF_GATK,features.AF_Varscan,features.AF_Freebayes]
 		vett_STRB_media=[features.STRBIAS_GATK,features.STRBIAS_Varscan,features.STRBIAS_Freebayes]
 		
@@ -710,10 +738,13 @@ def set_features(dictionary):
 		RO_media='.'
 		AO_mediana='.'
 		RO_mediana='.'
+		RF_media='.'
+		RF_mediana='.'
+
 
 		v=[]
 		for dp in vett_DP:
-			if dp and dp is not '':
+			if dp and dp is not '.':
 				v=v+[float(dp)]
 		try:
 			features.DP_media=statistics.mean(v)
@@ -727,7 +758,7 @@ def set_features(dictionary):
 				
 		v=[]
 		for ao in vett_AO:
-			if ao and ao is not '':
+			if ao and ao is not '.':
 				v=v+[int(ao)]
 		try:
 			features.AO_media=statistics.mean(v)
@@ -766,7 +797,7 @@ def set_features(dictionary):
 
 		v=[]
 		for af in vett_AF_media:
-			if af and af is not '0':
+			if af and af is not '0'and af is not '.':
 				v=v+[float(af)]
 		try:
 			features.AF_media= statistics.mean(v)
@@ -802,6 +833,19 @@ def set_features(dictionary):
 			features.AC_mediana= statistics.median(v)
 		except:
 			features.AC_mediana='.'
+
+		v=[]
+		for rf in vett_RF:
+			if rf and rf is not '.':
+				v=v+[float(rf)]
+		try:
+			features.RF_media=statistics.mean(v)
+		except:
+			features.RF_media='.'
+		try:
+			features.RF_mediana=statistics.median(v)
+		except:
+			features.RF_mediana='.'
 
 		dictionary[variante]= varc_array + [features]
 
@@ -987,7 +1031,11 @@ def split_vcf(vcf_dir,samples):
 						sformat = line.split('\t')[-1]
 						qual = line.split('\t')[5]
 						info = line.split('\t')[7].split(';')
-						ad = (sformat.split(':')[(format.split(':')).index('AD')]).split(',')
+						try:
+							ad = (sformat.split(':')[(format.split(':')).index('AD')]).split(',')
+						except:
+							ad = ['0','0','0']
+
 						
 						ad = map(float, ad)
 						ad_sum = sum(ad[1:])
@@ -1040,20 +1088,20 @@ def main():
 		pass
 	
 	if opts.split:
-		print 'Splitto le varianti per campione...'
+		print 'Splitto le varianti per campione.'
 		for vcf_dir in callers:
 			#print 'Splitto ' + vcf_dir
 			split_vcf(vcf_dir,samples)
-		print'Done'
+		print'\nSplitto le varianti per campione:Done'
 
 	if opts.feat_extraction:
-		print 'FEATURES EXTRACTION...'
+		print '\nFEATURES EXTRACTION.'
 		varianti_total = dict()
 		for dir_sample in os.listdir(opts.out_path):
 			varianti = dict()
 			vcf_path = opts.out_path +'/' + dir_sample
 			if os.path.isdir(vcf_path):
-				print "Analizzo le varianti da: " + vcf_path
+				print "\nAnalizzo le varianti da: " + vcf_path
 				for vcf_name in os.listdir(vcf_path) :
 					print vcf_name
 					if 'Free' in vcf_name:
