@@ -7,16 +7,22 @@ def add_ann(vcf,file_list,file_coor):
 	file_coor = open(opts.file,'r')
 	#Con questo leggo il file delle annotazioni da prendere e assegno ad ogni elemento del vettore uan riga letta
 	ann_list = file_list.readlines()
+
 	vettore = []
-	
+
+
 	for line in vcf:
+
 		line = line.rstrip()
+
 		if line.startswith('##INFO=<ID=ANN') or line.startswith('##INFO=<ID=CSQ'):
 			
 			#Con questo estraggo la header contenente INFO dell'annotazione, del tipo Allele|Consequence|IMPACT etc...
 			#Con start e end definisco la parola da pescare in mezzo all'header
+			
 			start = line.find('Allele')
 			end = line.find('">')
+			
 			#Con questo assegno ad header la stringa trovata da start a stop
 			
 			header_ann = line[start:end]
@@ -30,19 +36,18 @@ def add_ann(vcf,file_list,file_coor):
 
 		elif line.startswith('#CHROM'):
 			header_chrom = line.split('\t')
-			#Salvo solo l'header fino al campo INFO + le annotazioni
-			header = header_chrom[0:8] + header_ann
+			header = header_chrom[0:8] + header_ann + header_chrom[9:]
 			vettore = vettore + [header]
 			continue
 
 		else:
-			line = re.split('\||ANN=|CSQ=|;\t|\t|,', line)
+			line = re.split('\||;ANN=|;\t|\t', line)
 			for i in line:
 				if i == '':
 					#qui sostituisco al valore vuoto il simbolo -
-					line[line.index(i)] = '.'
+					line[line.index(i)] = '-'
 		# Salvo in ogni elemento del vettore il vettore contenente ciascuna riga del vcf annotato
-		vettore += [line[0:len(header)]]
+		vettore += [line]
 
 	# Con i cicli for di seguito si procede cosi:
 	# 1) il primo for processa tutte le varianti nel file tab delimited
@@ -60,25 +65,16 @@ def add_ann(vcf,file_list,file_coor):
 			if elem[0].lstrip('#') == var[0] and elem[1] == var[1] and elem[3] == var[3] and elem[4] == var[4]:
 
 				for tag in ann_list:
-					
-					tag = tag.rstrip()	
-					
+
 					if tag.startswith('#'):
 						continue
 
-					if tag not in header:
-				#		print tag + 'non e nella lista'
-						continue
 
-				#	else:
-					#tag = tag.rstrip()
+					tag = tag.rstrip()
 
 					ann = header.index(tag)
 					var.append(elem[ann])
-					#print var
 				out.write('\t'.join(var) + '\n')
-			#else:
-			#	out.write('\t'.join(var) + '\n' + 'Annotazione Non Trovata')
 
 
 
@@ -90,8 +86,7 @@ def main():
 	parser.add_argument('-l','--list',help="lista di annotazioni: una per riga")
 	parser.add_argument('-f','--file',help="file tab delimited da cui pescare le coordinate del cromosoma")
 	parser.add_argument('-o','--outfile',help="file di output tab delimited")
-	parser.add_argument('-db','--database',help="database dal quale aggiungere le annotazioni")
-
+	
 	global opts
 	
 	opts = parser.parse_args()
