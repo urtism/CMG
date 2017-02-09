@@ -1148,7 +1148,7 @@ def print_vcf(varianti):
 def print_var(dictionary):
 
 	lista_features=open(opts.listaFeatures,'r')
-	varianti_tsv=open(opts.out+ '.features.tsv','w')
+	varianti_tsv=open(opts.out+ '.tsv','w')
 	
 	header=[]
 	features_variante=[]
@@ -1161,18 +1161,19 @@ def print_var(dictionary):
 			header=header+[line]
 			features_variante=features_variante+['features.'+line]
 
-	dataset_varianti.write('CHROM\tPOS\tID\tREF\tALT\t' + '\t'.join(header)+ '\n')
+	varianti_tsv.write('CHROM\tPOS\tID\tREF\tALT\t' + '\t'.join(header)+ '\n')
+	
 	for variante in dictionary.keys():
+		#print variante
 		features = dictionary.get(variante)[-1]
 		features_variante_eval=[]
 		for feat in features_variante:
-		 	feat_eval=str(eval(feat))
-		 	features_variante_eval=features_variante_eval + [feat_eval]
-		var=variante.split('\t')[0]+'\t'+variante.split('\t')[1]+'\t' +sample_name +'\t'+variante.split('\t')[2]+'\t'+variante.split('\t')[3]+ '\t' + '\t'.join(features_variante_eval)
+			feat_eval=str(eval(feat))
+			features_variante_eval=features_variante_eval + [feat_eval]
+		var=variante.split('\t')[0]+'\t'+variante.split('\t')[1]+'\t' +opts.tumor +'\t'+variante.split('\t')[2]+'\t'+variante.split('\t')[3]+ '\t' + '\t'.join(features_variante_eval)
 		if features.AF_media != '.':
-				dataset_varianti.write(var+ '\n')
-				break
-	dataset_varianti.close()
+			varianti_tsv.write(var+ '\n')
+	varianti_tsv.close()
 	lista_features.close()
 		
 def main():
@@ -1204,9 +1205,14 @@ def main():
 		index = index + 1
 	set_features_snp(varianti)
 	control(varianti)
-	if opts.complete:
-		print_var_snp_complete(varianti)
+	
+	if opts.listaFeatures:
+		print_var(varianti)
 	else:
-		print_var_snp_reduced(varianti)
+		if opts.complete:
+			print_var_snp_complete(varianti)
+		else:
+			print_var_snp_reduced(varianti)
+
 	print_vcf(varianti)
 main()

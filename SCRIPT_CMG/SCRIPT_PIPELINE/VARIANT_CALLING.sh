@@ -24,7 +24,7 @@ Mutect2 () {
 
 	$BCFTOOLS norm -m -both \
 	-f $REF \
-	$WORKDIR/VARIANT_CALLING/$3\_SANE_GATK.vcf \
+	$WORKDIR/VARIANT_CALLING/$3\_Sane_GATK.vcf \
 	> $WORKDIR/VARIANT_CALLING/$3\_Sane_GATK.split.vcf 
 
 	VCF_MUTECT=$WORKDIR/VARIANT_CALLING/$3\_Sane_GATK.split.vcf
@@ -196,7 +196,7 @@ VarDict () {
 	-z -F 0 -c 1 -S 2 -E 3 -g 4 $TARGETBED | ~/NGS_TOOLS/VarDictJava-master/VarDict/testsomatic.R | ~/NGS_TOOLS/VarDictJava-master/VarDict/var2vcf_paired.pl \
 	-N "$3|$4" -f 0.01 > $WORKDIR/VARIANT_CALLING/$3\_Sane_VarDict.vcf
 
-	VCF_VARDICT=$WORKDIR/VARIANT_CALLING/$3\_SANE_VarDict.vcf
+	VCF_VARDICT=$WORKDIR/VARIANT_CALLING/$3\_Sane_VarDict.vcf
 	
 	printf $"\n =========>	Sample $3 => Variant Calling: VarDict: DONE\n\n"	
 }
