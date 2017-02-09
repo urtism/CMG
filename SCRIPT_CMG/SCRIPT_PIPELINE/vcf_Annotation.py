@@ -269,7 +269,7 @@ def Add_ESP(line):
 						continue
 
 				val_add.append(val)
-				#Una volta trovata la variante e processata, allora esco dal for e passo alla linea successiva
+
 			break
 	line[7] = str(line[7] + '|' + '|'.join(val_add))
 	return line	
@@ -335,7 +335,7 @@ def Add_phastCons(line,pan):
 		val_add = val_add + ['.']
 
 	chr = line[0]
-	phastCons = open((opts.phastCons).split(',')[0] + '_' + chr + '_' + pan + '.tsv','r')
+	phastCons = open((opts.phastCons).split(',')[0] + '/' + 'phastCons_' + chr + '_' + pan + '.tsv','r')
 
 	for raw in phastCons:	
 		raw = raw.rstrip()
@@ -345,15 +345,16 @@ def Add_phastCons(line,pan):
 			header_phast = raw
 			continue
 
-		for spec in new_spec:
-			#Controllo che abbiano stesso gene e lo stesso p. :
-			if raw[header_phast.index('CHROM')] == line[0] and raw[header_phast.index('POS')] == line[1]:
-				val_add = val_add + raw[header_phast.index(str(spec))]
-				#val_add[new_spec.index(spec)] = raw[header_phast.index(str(spec))]
-				print val_add
-				break
+		if raw[header_phast.index('CHROM')] == line[0] and raw[header_phast.index('POS')] == line[1]:
+			val_add=[]
+			for spe in new_spec:
+				val_add = val_add + [raw[header_phast.index(str(spe))]]
+			break
+
+		else:
+			continue
 		
-		phastCons.close()
+	phastCons.close()
 
 	line[7] = str(line[7] + '|' + '|'.join(val_add))
 	return line
@@ -377,7 +378,7 @@ def Add_phyloP(line,pan):
 		val_add = val_add + ['.']
 
 	chr = line[0]
-	phyloP = open((opts.phyloP).split(',')[0] + '_' + chr + '_' + pan + '.tsv','r')
+	phyloP = open((opts.phyloP).split(',')[0] + '/' + 'phyloP_' + chr + '_' + pan + '.tsv','r')
 
 	for raw in phyloP:	
 		raw = raw.rstrip()
@@ -387,15 +388,16 @@ def Add_phyloP(line,pan):
 			header_phyloP = raw
 			continue
 
-		for spec in new_spec:
-			#Controllo che abbiano stesso gene e lo stesso p. :
-			if raw[header_phyloP.index('CHROM')] == line[0] and raw[header_phyloP.index('POS')] == line[1]:
-				val_add = val_add + raw[header_phyloP.index(str(spec))]
-				#val_add[new_spec.index(spec)] = raw[header_phyloP.index(str(spec))]
-				print val_add
-				break
+		if raw[header_phyloP.index('CHROM')] == line[0] and raw[header_phyloP.index('POS')] == line[1]:
+			val_add=[]
+			for spe in new_spec:
+				val_add = val_add + [raw[header_phyloP.index(str(spe))]]
+			break
 		
-		phyloP.close()
+		else:
+			continue
+
+	phyloP.close()
 
 	line[7] = str(line[7] + '|' + '|'.join(val_add))
 	return line
