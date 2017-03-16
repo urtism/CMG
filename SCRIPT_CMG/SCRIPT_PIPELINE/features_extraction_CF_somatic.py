@@ -43,6 +43,7 @@ class Varscan(Caller):
     pass
     
 class Features():
+
     GT_t_Varscan='.'
     GT_t_Vardict='.'
     GT_t_Mutect='.'
@@ -54,17 +55,18 @@ class Features():
     DP_t_Varscan='.'
     DP_t_Vardict='.'
     DP_t_Mutect='.'
+
     DP_n_Varscan='.'
     DP_n_Vardict='.'
     DP_n_Mutect='.'
     
     DP=float(0)
+    
     MBQT='.'
     
     QB_n_Mutect='.'
     QB_n_Varscan='.'
     QB_n_Vardict='.'
-    
        
     AF_t_Mutect='0'
     AF_n_Mutect='.'
@@ -80,7 +82,18 @@ class Features():
     Delta_perc_Mutect='.'
     Delta_perc_Varscan='.'
     Delta_perc_Vardict='.'
-    
+
+    MBQT='.'
+    MBQT_mediana='.'
+
+    MBQN_media='.'
+    MBQN_mediana='.'
+
+    delta_media='.'
+    delta_mediana='.'
+    Delta_perc_media='.'
+    Delta_perc_mediana='.'
+
     SomaticMutect='.'
     SomaticVarscan='.'
     SomaticVardict='.'
@@ -99,21 +112,27 @@ class Features():
 
     AO_tum_media='.'
     RO_tum_media='.'
-    AO_tum_median='.'
-    RO_tum_median='.'
+    AO_tum_mediana='.'
+    RO_tum_mediana='.'
+    
     DP_tum_media='.'
-    DP_tum_median='.'
+    DP_tum_mediana='.'
+
     AF_tum_media='.'
-    AF_tum_median='.'
+    AF_tum_mediana='.'
 
     AO_norm_media='.'
     RO_norm_media='.'
-    AO_norm_median='.'
-    RO_norm_median='.'
+    AO_norm_mediana='.'
+    RO_norm_mediana='.'
+
     DP_norm_media='.'
-    DP_norm_median='.'
+    DP_norm_mediana='.'
+
     AF_norm_media='.'
-    AF_norm_median='.'
+    AF_norm_mediana='.'
+
+
    
     FILTER_Mutect='.'     
     STATUS_Vardict='.'
@@ -361,13 +380,13 @@ def set_features_snp(dictionary):
     
         AO_tum_media='.'
         RO_tum_media='.'
-        AO_tum_median='.'
-        RO_tum_median='.'
+        AO_tum_mediana='.'
+        RO_tum_mediana='.'
 
         AO_norm_media='.'
         RO_norm_media='.'
-        AO_norm_median='.'
-        RO_norm_median='.'
+        AO_norm_mediana='.'
+        RO_norm_mediana='.'
 
         i=0
         nDP=0
@@ -382,9 +401,9 @@ def set_features_snp(dictionary):
         except:
             features.DP_tum_media='.'
         try:
-            features.DP_tum_median= int(statistics.median(v))
+            features.DP_tum_mediana= int(statistics.median(v))
         except:
-            features.DP_tum_median='.'
+            features.DP_tum_mediana='.'
 
         i=0
         nDP=0
@@ -399,9 +418,9 @@ def set_features_snp(dictionary):
         except:
             features.DP_norm_media='.'
         try:
-            features.DP_norm_median= int(statistics.median(v))
+            features.DP_norm_mediana= int(statistics.median(v))
         except:
-            features.DP_norm_median='.'
+            features.DP_norm_mediana='.'
         
         i=0
         v=[]
@@ -416,9 +435,9 @@ def set_features_snp(dictionary):
         except:
             features.AO_tum_media='.'
         try:
-            features.AO_tum_median= int(statistics.median(v))
+            features.AO_tum_mediana= int(statistics.median(v))
         except:
-            features.AO_tum_median='.'
+            features.AO_tum_mediana='.'
 
         i=0
         v=[]
@@ -435,9 +454,9 @@ def set_features_snp(dictionary):
         except:
             features.AO_norm_media='.'
         try:
-            features.AO_norm_median= int(statistics.median(v))
+            features.AO_norm_mediana= int(statistics.median(v))
         except:
-            features.AO_norm_median='.'
+            features.AO_norm_mediana='.'
         i=0
         v=[]
         nRO=0
@@ -451,9 +470,9 @@ def set_features_snp(dictionary):
         except:
             features.RO_tum_media='.'
         try:
-            features.RO_tum_median= statistics.median(v)
+            features.RO_tum_mediana= statistics.median(v)
         except:
-            features.RO_tum_median='.'
+            features.RO_tum_mediana='.'
 
         i=0
         v=[]
@@ -468,9 +487,9 @@ def set_features_snp(dictionary):
         except:
             features.RO_norm_media='.'
         try:
-            features.RO_norm_median= statistics.median(v)
+            features.RO_norm_mediana= statistics.median(v)
         except:
-            features.RO_norm_median='.'
+            features.RO_norm_mediana='.'
 
         i=0
         nMBQT=0
@@ -487,9 +506,9 @@ def set_features_snp(dictionary):
         except:
             features.MBQT='.'
         try:
-            features.MBQT_median=round(statistics.median(v))
+            features.MBQT_mediana=round(statistics.median(v))
         except:
-            features.MBQT_median='.'    
+            features.MBQT_mediana='.'    
 
         i=0
         nMBQN=0
@@ -509,9 +528,9 @@ def set_features_snp(dictionary):
         except:
             features.MBQN_media='.'
         try:
-            features.MBQN_median=round(statistics.median(v))
+            features.MBQN_mediana=round(statistics.median(v))
         except:
-            features.MBQN_median='.'
+            features.MBQN_mediana='.'
 
         i=0
         v=[]
@@ -525,9 +544,9 @@ def set_features_snp(dictionary):
         except:
             features.delta_media='.'
         try:
-            features.delta_median=statistics.median(v)
+            features.delta_mediana=statistics.median(v)
         except:
-            features.delta_median='.'
+            features.delta_mediana='.'
         
         i=0
         v=[]
@@ -542,9 +561,9 @@ def set_features_snp(dictionary):
         except:
             features.Delta_perc_media='.'
         try:
-            features.Delta_perc_median= statistics.median(v)
+            features.Delta_perc_mediana= statistics.median(v)
         except:
-            features.Delta_perc_median='.'
+            features.Delta_perc_mediana='.'
 
         i=0
         v=[]
@@ -558,9 +577,9 @@ def set_features_snp(dictionary):
         except:
             features.AF_tum_media='.'
         try:
-            features.AF_tum_median= statistics.median(v)
+            features.AF_tum_mediana= statistics.median(v)
         except:
-            features.AF_tum_median='.'
+            features.AF_tum_mediana='.'
 
         i=0
         AF_med=0
@@ -575,9 +594,9 @@ def set_features_snp(dictionary):
         except:
             features.AF_norm_media='.'
         try:
-            features.AF_norm_median= statistics.median(v)
+            features.AF_norm_mediana= statistics.median(v)
         except:
-            features.AF_norm_median='.'
+            features.AF_norm_mediana='.'
 
 
         #print vett_delta,"\tdeltamedia",features.delta_media,"\n",vett_delta_perc,"\tdelta_perc_media",features.Delta_perc_media,"\n",vett_AF_media,"\taf_media",features.AF_media,"\n",vett_STRB_media,"\tstrb",features.STRBIAS_media

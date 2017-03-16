@@ -12,7 +12,7 @@ import string
 
 def Add_ClinVar(line):
 
-	#Estraggo le tage dopo il path del db: es. path/to/ClinVar,CLNSIG,CLNDB --> prendo solo CLNSIG e CLNDB e li metto in tag
+	#Estraggo le tag e dopo il path del db: es. path/to/ClinVar,CLNSIG,CLNDB --> prendo solo CLNSIG e CLNDB e li metto in tag
 	#iIn clnv invece leggo le linee di clinvar
 	clnv = open((opts.clinvar).split(',')[0],'r')
 	tag = (opts.clinvar).split(',')[1:]
@@ -111,6 +111,55 @@ def Add_ClinVar(line):
 		return new_line
 	clnv.close()	
 		
+
+
+
+#------------------------------------------------------ Funzione per aggiungere COSMIC -----------------------------------------------------
+
+
+
+
+def Add_Cosmic(line,header_tsv,pan):
+
+	Cosm = open((opts.Cosmic).split(',')[0],'r')
+	tag = (opts.Cosmic).split(',')[1:]
+
+	if line[0] == 'CHROM':
+		#Aggiungo all'header le tag che mi servono
+		head = line + tag
+		return head
+
+	else:
+
+		val_add=[]
+
+		for elem in tag:
+			val_add = val_add + ['.']
+
+		for raw in Cosm:
+			
+			raw = raw.rstrip()
+			raw = raw.split('\t')
+
+			if raw[0].startswith('CHROM'):
+				header_Cosm = raw
+				continue
+
+			#Controllo che abbiano stesso gene e lo stesso p. :
+			if raw[header_Cosm.index('CHROM')] == line[header_tsv.index('CHROM')].strip('chr') and raw[header_Cosm.index('START')] == line[header_tsv.index('POS')] and raw[header_Cosm.index('REF')] == line[header_tsv.index('REF')] and raw[header_Cosm.index('ALT')] == line[header_tsv.index('ALT')]:
+				
+				val_add=[]
+
+				new_val=raw[5].split(';')[-1].strip('OCCURENCE=')
+
+				val_add = val_add + [new_val]
+
+				break
+		
+		line = line + val_add
+		return line
+	Cosm.close()
+
 
 
 
@@ -400,9 +449,8 @@ def main():
 	parser.add_argument('-gerp','--gerp',default=None,help="path database Gerp++. Utilizzo: path_to_GERP_folder,RS_Score")
 	parser.add_argument('-phastCons','--phastCons',default=None,help="path database phastCons. Utilizzo: path_to_folder,species,species ---> es: ~/phastCons/,primate,vertebrate,")
 	parser.add_argument('-phyloP','--phyloP',default=None,help="path database phyloP46way_placental. Utilizzo: path_to_folder,species ---> es: ~/phyloP/placental,vertebrate,")
+	parser.add_argument('-COSMIC','--Cosmic',default=None,help="path database Cosmic. Utilizzo: path_to_folder,tag ---> es: ~/DB_ANNOTAZIONE/COSMIC_DB/hg19_cosmic70.txt,COSMIC_OCCURENCE (Only OCCURENCE enabled in INFO field)")
 	parser.add_argument('-P','--pannello',help="Specificare il pannello utilizzato nell'analisi: Cancer | Cardio | Exome | BRCA")
-
-
 	parser.add_argument('-o','--outfile',help="file di output tab delimited")
 
 	global opts
@@ -439,6 +487,9 @@ def main():
 
 		if opts.phyloP:
 			line = Add_phyloP(line,header_tsv,pan)
+
+		if opts.Cosmic:
+			line = Add_Cosmic(line,header_tsv,pan)
 
 		print line
 

@@ -19,13 +19,14 @@ def read_donor(varianti,header):
 	for line in lista_snp:
 		line=line.rstrip()
 		if line.startswith('CHROM'):
+			HEADER=line.split('\t')
 			header = header + '\t' +'\t'.join(['GT_GATK_D','GT_VARSCAN_D','GT_FREEBAYES_D','DP_D','AF_D','QB_D'])
 		else:
 			chrom = line.split('\t')[0]
 			pos = line.split('\t')[1]
 			ref = line.split('\t')[3]
 			alt = line.split('\t')[4]
-			gt = '\t'.join(line.split('\t')[8:11])
+			gt = '\t'.join(line.split('\t')[HEADER.index('GT_GATK'):HEADER.index('GT_Freebayes') +1])
 			#print gt
 			#dp = '\t'.join(line.split('\t')[11:14])
 			dp = line.split('\t')[14]
@@ -48,13 +49,14 @@ def read_rec(varianti,header):
 	for line in lista_snp:
 		line=line.rstrip()
 		if line.startswith('CHROM'):
+			HEADER=line.split('\t')
 			header = header + '\t' + '\t'.join(['GT_GATK_R','GT_VARSCAN_R','GT_FREEBAYES_R','DP_R','AF_R','QB_R'])
 		else:
 			chrom = line.split('\t')[0]
 			pos = line.split('\t')[1]
 			ref = line.split('\t')[3]
 			alt = line.split('\t')[4]
-			gt = '\t'.join(line.split('\t')[8:11])
+			gt = '\t'.join(line.split('\t')[HEADER.index('GT_GATK'):HEADER.index('GT_Freebayes') +1])
 			#print gt
 			#dp = '\t'.join(line.split('\t')[11:14])
 			dp = line.split('\t')[14]
@@ -76,11 +78,12 @@ def read_sT1(varianti,header):
 	for line in lista_snp:
 		line=line.rstrip()
 		if line.startswith('CHROM'):
+			HEADER=line.split('\t')
 			header = header + '\t' + '\t'.join(['SOMATIC_VARSCAN_T1','FILTER_MUTECT_T1','STATUS_VARDICT_T1','GT_TUM_MUTECT_T1','GT_TUM_VARSCAN_T1','GT_TUM_VARDICT_T1',
 										'GT_NORM_MUTECT_T1','GT_NORM_VARSCAN_T1','GT_NORM_VARDICT_T1',
 										'DP_TUM_T1','AF_TUM_T1','QB_TUM_T1','DP_NORM_T1','AF_NORM_T1','QB_NORM_T1','DELTA_MEDIA_T1'])
 		else:
-			#print line
+			
 			chrom = line.split('\t')[0]
 			pos = line.split('\t')[1]
 			ref = line.split('\t')[3]
@@ -89,7 +92,7 @@ def read_sT1(varianti,header):
 			filter_mutect = line.split('\t')[10]
 			status_vardict = line.split('\t')[11]
 
-			gt_t = '\t'.join(line.split('\t')[12:15])
+			gt_t = '\t'.join(line.split('\t')[HEADER.index('GT_Mutect'):HEADER.index('GT_Vardict') +1])
 			gt_n = '\t'.join(line.split('\t')[15:18])
 			dp_t = line.split('\t')[18]
 			af_t = line.split('\t')[22]
@@ -116,11 +119,11 @@ def read_sT2(varianti,header):
 		line=line.rstrip()
 
 		if line.startswith('CHROM'):
+			HEADER=line.split('\t')
 			header = header +  '\t' +'\t'.join(['SOMATIC_VARSCAN_T2','FILTER_MUTECT_T2','STATUS_VARDICT_T2','GT_TUM_MUTECT_T2','GT_TUM_VARSCAN_T2','GT_TUM_VARDICT_T2',
 										'GT_NORM_MUTECT_T2','GT_NORM_VARSCAN_T2','GT_NORM_VARDICT_T2',
 										'DP_TUM_T2','AF_TUM_T2','QB_TUM_T2','DP_NORM_T2','AF_NORM_T2','QB_NORM_T2','DELTA_MEDIA_T2'])
 		else:
-			chrom = line.split('\t')[0]
 			chrom = line.split('\t')[0]
 			pos = line.split('\t')[1]
 			ref = line.split('\t')[3]
