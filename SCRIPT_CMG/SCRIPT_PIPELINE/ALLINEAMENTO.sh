@@ -2,7 +2,7 @@ BWAMEM () {
 	printf $"\n~~~>	Sample $SAMPLE_NAME => BWA MEM\n\n"
 	$BWA/bwa mem $REF \
 	-M $1 \
-	-t 8 \
+	-t 2 \
 	$2 > $WORKDIR/ALIGNMENT/$SAMPLE_NAME.sam
 	
 	INPUT=$WORKDIR/ALIGNMENT/$SAMPLE_NAME.sam
@@ -77,8 +77,8 @@ ALLINEAMENTO() {
 			cp $FASTQ1 $STORAGE
 			cp $FASTQ2 $STORAGE
 
-			mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.sam $DELETE
-			mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.converted.bam $DELETE
+			#mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.sam $DELETE
+			#mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.converted.bam $DELETE
 			
 			FASTQ1=$(echo "$line" | cut -f4)
 			FASTQ2=$(echo "$line" | cut -f5)
@@ -92,8 +92,8 @@ ALLINEAMENTO() {
 			
 			cp $FASTQ1 $STORAGE
 			cp $FASTQ2 $STORAGE
-			mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.sam $DELETE
-			mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.converted.bam $DELETE
+			#mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.sam $DELETE
+			#mv $WORKDIR/ALIGNMENT/$SAMPLE_NAME.converted.bam $DELETE
 			
 			printf $"$INPUT_SOM\t$SAMPLE_NAME_SOM\t$INPUT_NORM\t$SAMPLE_NAME_NORM\n" >> $CFG
 		done

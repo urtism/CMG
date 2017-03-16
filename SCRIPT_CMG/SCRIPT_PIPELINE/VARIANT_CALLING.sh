@@ -173,10 +173,11 @@ VarScan2_somatic () {
 	
 	printf $"\n =========>	Sample $3 => Variant Calling: VarScan2\n\n"
 	
-	samtools mpileup -f $REF -l $TARGETBED -q 1 -B $2 $1 > $WORKDIR/VARIANT_CALLING/$3\_Sane.mpileup 
+	samtools mpileup -f $REF -l $TARGETBED -d 50000 -L 50000 -q 1 -B $2 $1 > $WORKDIR/VARIANT_CALLING/$3\_Sane.mpileup 
  		
 	java -jar -Xmx64g $VARSCAN somatic $WORKDIR/VARIANT_CALLING/$3\_Sane.mpileup \
-	$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan --output-vcf 1 --mpileup 1
+	$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan \
+	--min-var-freq 0.005 --output-vcf 1 --mpileup 1
 
 	VCF_VARSCAN_SNP=$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.snp.vcf
 	VCF_VARSCAN_INDEL=$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.indel.vcf
@@ -192,9 +193,9 @@ VarDict () {
 
 	printf $"\n =========>	Sample $3 => Variant Calling: VarDict\n\n"
 	
-	$VARDICT -G $REF -f 0.01 -N $3 -b "$1|$2" \
+	$VARDICT -G $REF -f 0.005 -N $3 -b "$1|$2" \
 	-z -F 0 -c 1 -S 2 -E 3 -g 4 $TARGETBED | ~/NGS_TOOLS/VarDictJava-master/VarDict/testsomatic.R | ~/NGS_TOOLS/VarDictJava-master/VarDict/var2vcf_paired.pl \
-	-N "$3|$4" -f 0.01 > $WORKDIR/VARIANT_CALLING/$3\_Sane_VarDict.vcf
+	-N "$3|$4" -f 0.005 > $WORKDIR/VARIANT_CALLING/$3\_Sane_VarDict.vcf
 
 	VCF_VARDICT=$WORKDIR/VARIANT_CALLING/$3\_Sane_VarDict.vcf
 	
@@ -287,7 +288,8 @@ Features_extraction_somatic () {
 		 	-v $VCF_VARSCAN_SNP \
 		 	-i $VCF_VARSCAN_INDEL \
 		 	-n $SAMPLE_NAME_NORM -t $SAMPLE_NAME_SOM \
-		 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME_SOM
+		 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME_SOM \
+		 	-l $LISTAFEATURES_SOMATIC
 			
 		elif [ "$DESIGN" == "AMPLICON" ]
 		then
@@ -298,7 +300,8 @@ Features_extraction_somatic () {
 		 	-v $VCF_VARSCAN_SNP \
 		 	-i $VCF_VARSCAN_INDEL \
 		 	-n $SAMPLE_NAME_NORM -t $SAMPLE_NAME_SOM -a \
-		 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME_SOM
+		 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME_SOM \
+		 	-l $LISTAFEATURES_SOMATIC
 		fi
 		
 		cp $VCF_MUTECT $OUT

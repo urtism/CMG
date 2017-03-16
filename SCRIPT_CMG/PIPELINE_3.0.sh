@@ -28,7 +28,8 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 
 ### DATABASES & FILES ###
 LISTAFEATURES_GERMLINE=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_germline.list
-LISTAFEATURES_SOMATIC=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_somatic.list
+#LISTAFEATURES_SOMATIC=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_somatic.list
+LISTAFEATURES_SOMATIC=/home/jarvis/NGS_ANALYSIS/TARGET/Features_lists/lista_features_somatic_CF_20170315.list
 ANN_LIST_GERMLINE=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_annotazione.list
 ANN_LIST_SOMATIC=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_annotazione.list
 REF=~/NGS_TOOLS/hg19/ucsc.hg19.fasta
@@ -43,17 +44,20 @@ TRASCR_CANCER=~/NGS_ANALYSIS/TARGET/Lista_trascritti_Cancer.txt
 TARGET_CARDIO_1000=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a_ESTESO+-1000.list
 TARGET_CARDIO_1000_BED=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a_ESTESO+-1000.bed
 TARGET_CARDIO=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a.list
+TARGET_CARDIO_BED=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a.bed
 TARGET_BRCA=~/NGS_ANALYSIS/TARGET/AFP2_manifest_v1.list
 TARGET_BRCA_BED=~/NGS_ANALYSIS/TARGET/AFP2_manifest_v1.bed
 TARGET_BRCA_FREEBAYES=~/NGS_ANALYSIS/TARGET/BRCA_FreeBayes_amplicon.bed
 TARGET_EXOME_1000=~/NGS_ANALYSIS/TARGET/TruSight_One_v1.1_ESTESO+-1000.list
-TARGET_EXOME__1000_BED=~/NGS_ANALYSIS/TARGET/TruSight_One_v1.1_ESTESO+-1000.bed
+TARGET_EXOME_1000_BED=~/NGS_ANALYSIS/TARGET/TruSight_One_v1.1_ESTESO+-1000.bed
+TARGET_CF=~/NGS_ANALYSIS/TARGET/ctDNA_2_113416_AmpliconsExport.list
+TARGET_CF_BED=~/NGS_ANALYSIS/TARGET/ctDNA_2_113416_AmpliconsExport.bed
 TARGET_CANCER_1000=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.list
 TARGET_CANCER_1000_BED=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.bed
 
 HELP () {
 
-echo -e "\n\nGenomicANALYZER v.3.0 by Matteo Digiovannantonio & Mario Urtis.\n"
+echo -e "\n\nGenomicANALYZER v.3.0 by Matteo Di Giovannantonio & Mario Urtis.\n"
 echo -e "USAGE: 	bash PIPELINE_3.0.sh [OPTION(s)]\n
 OPTIONS:\n
 -h, --help			Print this HELP.
@@ -83,6 +87,8 @@ CHECK_PANNELLO () {
 	if [ "$PANNELLO" == "Cardio" ]
 	then
 		DESIGN="ENRICHMENT"
+		#TARGET=$TARGET_CARDIO
+		#TARGETBED=$TARGET_CARDIO_BED
 		TARGET=$TARGET_CARDIO_1000
 		TARGETBED=$TARGET_CARDIO_1000_BED
 		TRANSCR_LIST=$TRASCR_CARDIO
@@ -106,10 +112,18 @@ CHECK_PANNELLO () {
 		TARGET=$TARGET_BRCA
 		TARGETBED=$TARGET_BRCA_BED
 		TRANSCR_LIST=$TRASCR_BRCA
+
+	elif [ "$PANNELLO" == "CellFree" ]
+	then
+		DESIGN="AMPLICON"
+		TARGET=$TARGET_CF
+		TARGETBED=$TARGET_CF_BED
 	fi
 }
 
 PIPELINE_GERMLINE () {
+
+	cat $LOGHI/logo_cmg.txt
 
 	if [[ "$START" == *"A"* ]]
 	then
@@ -146,6 +160,8 @@ PIPELINE_GERMLINE () {
 
 
 PIPELINE_SOMATIC () {
+
+	cat $LOGHI/logo_cmg.txt
 
 	if [[ "$START" == *"A"* ]]
 	then
@@ -242,7 +258,8 @@ STARTTIME=$(date +%s)
 
 if [ "$START" == "" ] || [ "$START" == "ALL" ]
 then
-	START=AMIBVFE
+	START=AMIBVF
+	#START=AMIBVFE
 fi
 
 NGSDIR=~/NGS_ANALYSIS_TEMP
@@ -256,8 +273,6 @@ if [ "$WORKDIR" == "" ]
 then
 	WORKDIR=$NGSDIR/$DATA\_Run_$RUN\_$ANALISI\_$PANNELLO\_$var
 fi
-
-
 
 STORAGE=$WORKDIR/STORAGE/$DATA\_Run_$RUN\_$ANALISI\_$PANNELLO
 OUT=$WORKDIR/OUTPUT/$DATA\_Run_$RUN\_$ANALISI\_$PANNELLO\_$PipeVersion
@@ -290,5 +305,8 @@ fi
 
 ENDTIME=$(date +%s)
 echo "TEMPO TOTALE DI PROCESSING: $(($ENDTIME - $STARTTIME)) sec"
-printf "\n\n"
-
+printf "\nINVIO LE MAIL DI AVVISO"
+#nome_analisi=$DATA\_Run_$RUN\_$ANALISI\_$PANNELLO\_$var
+#echo -e "Ciao Valentina,\nl'analisi $nome_analisi e' completa. Speriamo sia andato tutto bene.\n\nBioinfo Alert" | mutt -s "BIOALERT" valentinafavalli@gmail.com
+#echo -e "Ciao Matteo,\nl'analisi $nome_analisi e' completa. Speriamo sia andato tutto bene.\n\nBioinfo Alert" | mutt -s "BIOALERT" matteodeg@gmail.com
+#echo -e "Ciao Mario,\nl'analisi $nome_analisi e' completa. Speriamo sia andato tutto bene.\n\nBioinfo Alert" | mutt -s "BIOALERT" mario.urtis01@universitadipavia.it
