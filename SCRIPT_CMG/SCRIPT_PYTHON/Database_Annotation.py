@@ -150,7 +150,7 @@ def Add_Cosmic(line,header_tsv,pan):
 				
 				val_add=[]
 
-				new_val=raw[5].split(';')[-1].strip('OCCURENCE=')
+				new_val = (raw[5].split(';')[-1]).strip('OCCURENCE=')
 
 				val_add = val_add + [new_val]
 
@@ -449,11 +449,7 @@ def main():
 	parser.add_argument('-gerp','--gerp',default=None,help="path database Gerp++. Utilizzo: path_to_GERP_folder,RS_Score")
 	parser.add_argument('-phastCons','--phastCons',default=None,help="path database phastCons. Utilizzo: path_to_folder,species,species ---> es: ~/phastCons/,primate,vertebrate,")
 	parser.add_argument('-phyloP','--phyloP',default=None,help="path database phyloP46way_placental. Utilizzo: path_to_folder,species ---> es: ~/phyloP/placental,vertebrate,")
-<<<<<<< HEAD
 	parser.add_argument('-COSMIC','--Cosmic',default=None,help="path database Cosmic. Utilizzo: path_to_folder,tag ---> es: ~/DB_ANNOTAZIONE/COSMIC_DB/hg19_cosmic70.txt,COSMIC_OCCURENCE (Only OCCURENCE enabled in INFO field)")
-=======
-	parser.add_argument('-COSMIC','--cosmic',default=None,help="path database COSMIC es: ~/COSMIC/valore_da_aggiungere,")	
->>>>>>> branch 'devel' of https://github.com/urtism/CMG.git
 	parser.add_argument('-P','--pannello',help="Specificare il pannello utilizzato nell'analisi: Cancer | Cardio | Exome | BRCA")
 	parser.add_argument('-o','--outfile',help="file di output tab delimited")
 
@@ -492,13 +488,8 @@ def main():
 		if opts.phyloP:
 			line = Add_phyloP(line,header_tsv,pan)
 
-<<<<<<< HEAD
 		if opts.Cosmic:
 			line = Add_Cosmic(line,header_tsv,pan)
-=======
-		if opts.cosmic:
-			line = Add_cosmic(line,header_tsv,pan)
->>>>>>> branch 'devel' of https://github.com/urtism/CMG.git
 
 		print line
 
