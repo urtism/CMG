@@ -150,7 +150,7 @@ def Add_Cosmic(line,header_tsv,pan):
 				
 				val_add=[]
 
-				new_val=raw[5].split(';')[-1].strip('OCCURENCE=')
+				new_val=(raw[5].split(';')[-1]).strip('OCCURENCE=')
 
 				val_add = val_add + [new_val]
 
@@ -492,13 +492,8 @@ def main():
 		if opts.phyloP:
 			line = Add_phyloP(line,header_tsv,pan)
 
-<<<<<<< HEAD
 		if opts.Cosmic:
 			line = Add_Cosmic(line,header_tsv,pan)
-=======
-		if opts.cosmic:
-			line = Add_cosmic(line,header_tsv,pan)
->>>>>>> branch 'devel' of https://github.com/urtism/CMG.git
 
 		print line
 
