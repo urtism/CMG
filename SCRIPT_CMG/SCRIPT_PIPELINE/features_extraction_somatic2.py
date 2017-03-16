@@ -9,30 +9,32 @@ import scipy.stats as stats
 ''' //////////// CLASSI ////////////'''
 
 class Caller():
-
 	GT_n=''
-	GT_t=''
+    GT_t=''
 
-	AO_t=''
-	AO_n=''
+    AO_t=''
+    AO_n=''
 
-	RO_t=''        
-	RO_n=''
+    RO_t=''        
+    RO_n=''
 
-	AO_f=''
-	AO_r=''
+    AO_f=''
+    AO_r=''
 
-	DP_n=0
-	DP_t=0
+    DP_n=0
+    DP_t=0
 
-	QB_t=''
-	QB_n=''
+    QB_t=''
+    QB_n=''
 
-	Somatic=''
-	Call=''
-	AF_t=''
-	AF_n=''
-	FILTER=''
+    Somatic=''
+    Call=''
+    AF_t=''
+    AF_n=''
+    FILTER=''
+
+
+
 
 	GT=''
 	SS=''
@@ -94,7 +96,7 @@ class Vardict(Caller):
 	StrandBias=''
 	ODDRATIO=''
 	SSF=''
-
+	
 	t_PMEAN=''
 	t_PSTD=''
 	t_QSTD=''
@@ -129,125 +131,166 @@ class Varscan(Caller):
 class Features():
 
 	GT_t_Varscan='.'
-	GT_t_Vardict='.'
-	GT_t_Mutect='.'
+    GT_t_Vardict='.'
+    GT_t_Mutect='.'
+    
+    GT_n_Varscan='.'
+    GT_n_Vardict='.'
+    GT_n_Mutect='.'
+    
+    DP_t_Varscan='.'
+    DP_t_Vardict='.'
+    DP_t_Mutect='.'
+    
+    DP_n_Varscan='.'
+    DP_n_Vardict='.'
+    DP_n_Mutect='.'
+    
+    DP=float(0)
+    MBQT='.'
+    
+    QB_n_Mutect='.'
+    QB_n_Varscan='.'
+    QB_n_Vardict='.'
+    
+       
+    AF_t_Mutect='0'
+    AF_n_Mutect='.'
+    AF_t_Varscan='0'
+    AF_n_Varscan='.'
+    AF_t_Vardict='0'
+    AF_n_Vardict='.'
+    
+    Delta_Mutect='.'
+    Delta_Varscan='.'
+    Delta_Vardict='.'
+    
+    Delta_perc_Mutect='.'
+    Delta_perc_Varscan='.'
+    Delta_perc_Vardict='.'
+    
+    SomaticMutect='.'
+    SomaticVarscan='.'
+    SomaticVardict='.'
+    
+    CallMutect='0'
+    CallVarscan='0'
+    CallVardict='0'
+    
+    SS_Mutect='.'
+    SS_Varscan='.'
+    SS_Vardict='.'
+    
+    INFO_Mutect='.'
+    INFO_Varscan='.'
+    INFO_Vardict='.'
 
-	GT_n_Varscan='.'
-	GT_n_Vardict='.'
-	GT_n_Mutect='.'
+    AO_tum_media='.'
+    RO_tum_media='.'
+    AO_tum_median='.'
+    RO_tum_median='.'
+    DP_tum_media='.'
+    DP_tum_median='.'
+    AF_tum_media='.'
+    AF_tum_median='.'
 
-	DP_t_Varscan='.'
-	DP_t_Vardict='.'
-	DP_t_Mutect='.'
+    AO_norm_media='.'
+    RO_norm_media='.'
+    AO_norm_median='.'
+    RO_norm_median='.'
+    DP_norm_media='.'
+    DP_norm_median='.'
+    AF_norm_media='.'
+    AF_norm_median='.'
+   
+    FILTER_Mutect='.'     
+    STATUS_Vardict='.'
 
-	DP_tum_media='.'
-	DP_tum_median='.'
 
-	DP_n_Varscan='.'
-	DP_n_Vardict='.'
-	DP_n_Mutect='.'
 
-	DP_norm_media='.'
-	DP_norm_median='.'
 
-	QB_t_Mutect='.'
-	QB_t_Varscan='.'
-	QB_t_Vardict='.'
 
-	MBQT_media='.'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	GT_Varscan='.'
+	GT_Vardict='.'
+	GT_Mutect='.'
+	
+	DP=float(0)
+	DP_median='.'
+
+	MBQT='.'
 	MBQT_median='.'
 
-	QB_n_Mutect='.'
-	QB_n_Varscan='.'
-	QB_n_Vardict='.'
+	QB_Mutect='.'
+	QB_Varscan='.'
+	QB_Vardict='.'
+	
+	AF_media="."
+	AF_median='.'
 
-	MBQN_median='.'
-	MBQN_media='.'    
-	   
-	AF_t_Mutect='0'
-	AF_t_Varscan='0'
-	AF_t_Vardict='0'
-
-	AF_tum_media='.'
-	AF_tum_median='.'
-
-	AF_n_Mutect='.'
-	AF_n_Varscan='.'
-	AF_n_Vardict='.'
-
-	AF_norm_media='.'
-	AF_norm_median='.'
-
-
-	Delta_Mutect='.'
-	Delta_Varscan='.'
-	Delta_Vardict='.'
-
-	Delta_perc_Mutect='.'
-	Delta_perc_Varscan='.'
-	Delta_perc_Vardict='.'
-
-	Delta_media='.'
-	Delta_median='.'
+	STRBIAS_media='.'
+	STRBIAS_median= '.'
+	
+	delta_media='.'
+	delta_median='.'
 
 	Delta_perc_media='.'
 	Delta_perc_median='.'
 
-	SomaticMutect='.'
-	SomaticVarscan='.'
-	SomaticVardict='.'
-
-	CallMutect='0'
-	CallVarscan='0'
-	CallVardict='0'
-
-	SS_Mutect='.'
-	SS_Varscan='.'
-	SS_Vardict='.'
-
-	INFO_Mutect='.'
-	INFO_Varscan='.'
-	INFO_Vardict='.'
-
-	AO_tum_media='.'
-	RO_tum_media='.'
-	AO_tum_median='.'
-	RO_tum_median='.'
-
-	AO_norm_media='.'
-	RO_norm_media='.'
-	AO_norm_median='.'
-	RO_norm_median='.'
-
-	FILTER_Mutect='.'     
-	STATUS_Vardict='.'
-
-	STRBIAS_media='.'
-	STRBIAS_median= '.'
+	DPn_t_median='.'
+	DPn_t_media='.'
 
 	DP_n_t_Mutect='.'
 	DP_n_t_Varscan='.'
 	DP_n_t_Vardict='.'
+	
+	AF_t_Mutect='0'
+	AF_t_Varscan='0'
+	AF_t_Vardict='0'
 
-	DPn_t_median='.'
-	DPn_t_media='.'
-
+	AF_n_Mutect='.'
+	AF_n_Varscan='.'
+	AF_n_Vardict='.'
+	
+	Delta_Mutect='.'
+	Delta_Varscan='.'
+	Delta_Vardict='.'
+	
 	Delta_perc_Mutect='.'
 	Delta_perc_Varscan='.'
 	Delta_perc_Vardict='.'
-
+	
 	SomaticMutect='.'
 	SomaticVarscan='.'
 	SomaticVardict='.'
-
+	
 	CallMutect='0'
 	CallVarscan='0'
 	CallVardict='0'
-
+	
 	SS_Mutect='.'
 	SS_Varscan='.'
 	SS_Vardict='.'
-
+	
 	tumor_lod_Mutect='.'
 	normal_lod_Mutect='.'
 	delta_lod_Mutect='.'
@@ -258,10 +301,10 @@ class Features():
 	STRBIAS_Vardict='.'
 
 	BIAS_Vardict='.'
-
+	
 	ODDRATIO_Vardict='.'
 	SBF_Vardict='.'
-
+	
 	LOH_Mutect='.'
 	LOH_Varscan='.'
 	LOH_Vardict='.'
@@ -272,7 +315,12 @@ class Features():
 
 	DP_n='.'
 	DP_Norm_median='.'
-
+	
+	MBQN_median='.'
+	MBQN_media='.'
+	
+	AF_norm_media="."
+	AF_norm_median='.'
 
 	STRBIAS_norm_media='.'
 	STRBIAS_norm_median= '.'
@@ -334,7 +382,7 @@ class Features():
 
 def get_info_Mutect(chrom,pos,ref,alt,filter,info,format,tumor,normal,Mutect):
 	'''estrae le informazioni dal vcf di Mutect'''
-	Mutect.GT_t=tumor[format.index('GT')]
+	Mutect.GT=tumor[format.index('GT')]
 	Mutect.AO_t=float((tumor[format.index('AD')]).split(',')[1])
 	Mutect.RO_t=float((tumor[format.index('AD')]).split(',')[0])
 	Mutect.DP_t=Mutect.AO_t+Mutect.RO_t
@@ -343,7 +391,6 @@ def get_info_Mutect(chrom,pos,ref,alt,filter,info,format,tumor,normal,Mutect):
 	
 
 	if normal is not 'null' and Mutect.DP_n is not '0':
-		Mutect.GT_n=normal[format.index('GT')]
 		try:
 			Mutect.AO_n=float((normal[format.index('AD')]).split(',')[1])
 		except:
@@ -392,9 +439,9 @@ def get_info_Mutect(chrom,pos,ref,alt,filter,info,format,tumor,normal,Mutect):
 	Mutect.DP_r=float(Mutect.AO_r)+float(Mutect.RO_r)
 
 	try:
-		Mutect.QB_t=(float((tumor[format.index('QSS')]).split(',')[0]) + float((tumor[format.index('QSS')]).split(',')[1]))/Mutect.DP_t
+		Mutect.QB=(float((tumor[format.index('QSS')]).split(',')[0]) + float((tumor[format.index('QSS')]).split(',')[1]))/Mutect.DP_t
 	except:
-		Mutect.QB_t='.'
+		Mutect.QB='.'
 	try:
 		Mutect.QB_n=(float((normal[format.index('QSS')]).split(',')[0]) + float((normal[format.index('QSS')]).split(',')[1]))/Mutect.DP_n
 	except:
@@ -457,14 +504,13 @@ def get_info_Mutect(chrom,pos,ref,alt,filter,info,format,tumor,normal,Mutect):
 	
 def get_info_varscan(chrom,pos,ref,alt,filter,info,format,tumor,normal,varscan):
 	'''estrae le informazioni dal vcf di varscan'''
-	varscan.GT_t=tumor[format.index('GT')]
+	varscan.GT=tumor[format.index('GT')]
 	varscan.AO_t=float(tumor[format.index('AD')])
 	varscan.RO_t=float(tumor[format.index('RD')])
 	varscan.DP=float(tumor[format.index('DP')])
 	varscan.DP_t=float(tumor[format.index('DP')])
 
 	if normal is not 'null' and normal[format.index('DP')] is not '0':
-		varscan.GT_n=normal[format.index('GT')]
 		varscan.AO_n=float(normal[format.index('AD')])
 		varscan.RO_n=float(normal[format.index('RD')])
 		varscan.DP_n=float(normal[format.index('DP')])
@@ -516,14 +562,14 @@ def get_info_varscan(chrom,pos,ref,alt,filter,info,format,tumor,normal,varscan):
 
 def get_info_vardict(chrom,pos,ref,alt,filter,info,format,tumor,normal,vardict):
 	'''estrae le informazioni dal vcf di vardict'''
-	vardict.GT_t=tumor[format.index('GT')]
+	vardict.GT=tumor[format.index('GT')]
 	vardict.AO_t=float(tumor[format.index('VD')])
 	vardict.RO_t=float(tumor[format.index('RD')].split(',')[0])+float(tumor[format.index('RD')].split(',')[1])
 	vardict.DP_t=float(tumor[format.index('DP')])
 	vardict.DP=float(tumor[format.index('DP')])
 
 	if normal is not 'null' and normal[format.index('DP')] is not '0' :
-		vardict.GT_n=normal[format.index('GT')]
+		
 		vardict.AO_n=float(normal[format.index('VD')])
 		vardict.RO_n=float(normal[format.index('RD')].split(',')[0])+float(normal[format.index('RD')].split(',')[1])
 		vardict.DP_n=float(normal[format.index('DP')])
@@ -568,7 +614,7 @@ def get_info_vardict(chrom,pos,ref,alt,filter,info,format,tumor,normal,vardict):
 	vardict.AO_r=float(tumor[format.index('ALD')].split(',')[1])
 	vardict.DP_f=float(tumor[format.index('ALD')].split(',')[0]) + float(tumor[format.index('RD')].split(',')[0])
 	vardict.DP_r=float(tumor[format.index('ALD')].split(',')[1]) + float(tumor[format.index('RD')].split(',')[1])
-	vardict.QB_t=float(tumor[format.index('QUAL')])
+	vardict.QB=float(tumor[format.index('QUAL')])
 	vardict.QB_n=float(normal[format.index('QUAL')])
 
 	vardict.Call=1
@@ -608,11 +654,10 @@ def set_features_snp(dictionary):
 	for variante in dictionary.keys():
 		features=Features()
 		varc_array=dictionary.get(variante)
-	
-
-		vett_MBQ_t=[]
+		
+		vett_MBQ=[]
 		vett_MBQ_n=[]
-		vett_DP_t=[]
+		vett_DP=[]
 		vett_DP_n=[]
 		vett_AO_tum=[]
 		vett_AO_norm=[]
@@ -624,9 +669,9 @@ def set_features_snp(dictionary):
 
 		for varcall in varc_array:
 			if varcall is not "":
-				vett_MBQ_t=vett_MBQ_t+[varcall.QB_t]
+				vett_MBQ=vett_MBQ+[varcall.QB]
 				vett_MBQ_n=vett_MBQ_n+[varcall.QB_n]
-				vett_DP_t=vett_DP_t+[varcall.DP_t]
+				vett_DP=vett_DP+[varcall.DP]
 				vett_DP_n=vett_DP_n+[varcall.DP_n]
 				vett_AO_tum=vett_AO_tum+[varcall.AO_t]
 				vett_RO_tum=vett_RO_tum+[varcall.RO_t]
@@ -635,14 +680,9 @@ def set_features_snp(dictionary):
 				
 				if index == 0:
 
-					features.GT_t_Mutect=varc_array[0].GT_t
-					features.GT_n_Mutect=varc_array[0].GT_n
-
-					features.QB_t_Mutect=varc_array[0].QB_t
-					features.QB_n_Mutect=varc_array[0].QB_n
-
+					features.GT_Mutect=varc_array[0].GT
+					features.QB_Mutect=varc_array[0].QB
 					features.DP_n_t_Mutect=float(varc_array[0].DP_n)/float(varc_array[0].DP_t)
-
 					features.AF_t_Mutect=varc_array[0].AF_t
 					features.AF_n_Mutect=varc_array[0].AF_n
 					
@@ -684,10 +724,7 @@ def set_features_snp(dictionary):
 
 				elif index == 1:
 					
-					features.GT_t_Varscan=varc_array[1].GT_t
-					features.GT_n_Varscan=varc_array[1].GT_n
-
-
+					features.GT_Varscan=varc_array[1].GT
 					features.DP_n_t_Varscan=float(varc_array[1].DP_n)/float(varc_array[1].DP_t)
 					features.AF_t_Varscan=varc_array[1].AF_t
 					features.AF_n_Varscan=varc_array[1].AF_n
@@ -711,12 +748,8 @@ def set_features_snp(dictionary):
 						
 				elif index == 2:
 
-					features.GT_t_Vardict=varc_array[2].GT_t
-					features.GT_n_Vardict=varc_array[2].GT_n
-
-					features.QB_t_Vardict=varc_array[2].QB_t
-					features.QB_n_Vardict=varc_array[2].QB_n
-
+					features.GT_Vardict=varc_array[2].GT
+					features.QB_Vardict=varc_array[2].QB
 					features.DP_n_t_Vardict=float(varc_array[2].DP_n)/float(varc_array[2].DP_t)
 					features.AF_t_Vardict=varc_array[2].AF_t
 					features.AF_n_Vardict=varc_array[2].AF_n
@@ -761,19 +794,17 @@ def set_features_snp(dictionary):
 
 		vett_delta=[features.Delta_Mutect,features.Delta_Varscan,features.Delta_Vardict]
 		vett_delta_perc=[features.Delta_perc_Mutect,features.Delta_perc_Varscan,features.Delta_perc_Vardict]
-		vett_AF_tum_media=[features.AF_t_Mutect,features.AF_t_Varscan,features.AF_t_Vardict]
+		vett_AF_media=[features.AF_t_Mutect,features.AF_t_Varscan,features.AF_t_Vardict]
 		vett_AF_norm_media=[features.AF_n_Mutect,features.AF_n_Varscan,features.AF_n_Vardict]
 		vett_STRB_media=[features.STRBIAS_Mutect,features.STRBIAS_Varscan,features.STRBIAS_Vardict]
 		vett_DPn_t=[features.DP_n_t_Mutect,features.DP_n_t_Varscan,features.DP_n_t_Vardict]
 		delta_m=0
 		delta_m_perc=0
-		
 		AF_med=0
 		SB_media=0
 		nDP=0
 		nMBQT=0
 		DP_n_t_m=0
-
 		AO_tum_media='.'
 		RO_tum_media='.'
 		AO_tum_median='.'
@@ -786,19 +817,19 @@ def set_features_snp(dictionary):
 
 		i=0
 		v=[]
-		for dp in vett_DP_t:
+		for dp in vett_DP:
 			if dp and dp is not '':
 				nDP= float(nDP)+float(dp)
 				v=v+[float(dp)]
 				i=i+1
 		try:
-			features.DP_tum_media=nDP/i
+			features.DP=nDP/i
 		except:
-			features.DP_tum_media='.'
+			features.DP='.'
 		try:
-			features.DP_tum_median= int(statistics.median(v))
+			features.DP_median= int(statistics.median(v))
 		except:
-			features.DP_tum_median='.'
+			features.DP_median='.'
 
 		i=0
 		nDP=0
@@ -809,9 +840,9 @@ def set_features_snp(dictionary):
 				v=v+[float(dp)]
 				i=i+1
 		try:
-			features.DP_norm_media=nDP/i
+			features.DP_n=nDP/i
 		except:
-			features.DP_norm_media='.'
+			features.DP_n='.'
 		try:
 			features.DP_norm_median= int(statistics.median(v))
 		except:
@@ -889,16 +920,17 @@ def set_features_snp(dictionary):
 		i=0
 		nMBQT=0
 		v=[]
-		for bq in vett_MBQ_t:
+		for bq in vett_MBQ:
+			#print variante,vett_MBQ,bq
 			if bq and bq is not '.':
 				nMBQT= float(nMBQT)+float(bq)
 				if bq is not '0':
 					v=v+[float(bq)]
 				i=i+1
 		try:
-			features.MBQT_media=nMBQT/i
+			features.MBQT=nMBQT/i
 		except:
-			features.MBQT_media='.'
+			features.MBQT='.'
 		try:
 			features.MBQT_median=round(statistics.median(v))
 		except:
@@ -934,13 +966,13 @@ def set_features_snp(dictionary):
 				v=v+[float(delta)]
 				i=i+1
 		try:
-			features.Delta_media = delta_m/i
+			features.delta_media = delta_m/i
 		except:
-			features.Delta_media='.'
+			features.delta_media='.'
 		try:
-			features.Delta_median=statistics.median(v)
+			features.delta_median=statistics.median(v)
 		except:
-			features.Delta_median='.'
+			features.delta_median='.'
 		
 		i=0
 		v=[]
@@ -961,19 +993,19 @@ def set_features_snp(dictionary):
 
 		i=0
 		v=[]
-		for af in vett_AF_tum_media:
+		for af in vett_AF_media:
 			if af and af is not '0':
 				AF_med=float(AF_med) + float(af)
 				v=v+[float(af)]
 				i=i+1
 		try:
-			features.AF_tum_media= AF_med/i
+			features.AF_media= AF_med/i
 		except:
-			features.AF_tum_media='.'
+			features.AF_media='.'
 		try:
-			features.AF_tum_median= statistics.median(v)
+			features.AF_median= statistics.median(v)
 		except:
-			features.AF_tum_median='.'
+			features.AF_median='.'
 
 		i=0
 		AF_med=0
@@ -1026,7 +1058,7 @@ def set_features_snp(dictionary):
 		except:
 			features.DPn_t_median='.'
 
-		#print vett_delta,"\tdeltamedia",features.delta_media,"\n",vett_delta_perc,"\tdelta_perc_media",features.Delta_perc_media,"\n",vett_AF_tum_media,"\taf_media",features.AF_media,"\n",vett_STRB_media,"\tstrb",features.STRBIAS_media
+		#print vett_delta,"\tdeltamedia",features.delta_media,"\n",vett_delta_perc,"\tdelta_perc_media",features.Delta_perc_media,"\n",vett_AF_media,"\taf_media",features.AF_media,"\n",vett_STRB_media,"\tstrb",features.STRBIAS_media
 		dictionary[variante]= varc_array + [features]
 
 def switch_snp(dictionary,ID,index,chrom,pos,ref,alt,filter,info,format,tumor,normal):
@@ -1163,7 +1195,7 @@ def print_var_snp_complete(dictionary):
 	varianti_tsv=open(opts.out+ '.tsv','w')
 	varianti_tsv.write('\t'.join(["SAMPLE_NORMAL_ID","SAMPLE_TUMOR_ID","CHROM","POS","REF","ALT","CallMutect","CallVarscan","CallVardict",
 			"SomaticMutect","SomaticVarscan","SomaticVardict",
-			"GT_Mutect","GT_Varscan","GT_Vardict","DP_tum_median","BQ_Mutect","BQ_Vardict","MBQT_media","MBQT_mediana",
+			"GT_Mutect","GT_Varscan","GT_Vardict","DP_median","BQ_Mutect","BQ_Vardict","MBQT_media","MBQT_mediana",
 			"AF_Mutect","AF_Varscan","AF_Vardict","AF_media","AF_median",
 			"Delta_Mutect","Delta_Varscan","Delta_Vardict","Delta_media","Delta_median",
 			"Delta_perc_Mutect","Delta_perc_Varscan","Delta_perc_Vardict","Delta_perc_media","Delta_perc_median",
@@ -1183,7 +1215,7 @@ def print_var_snp_complete(dictionary):
 
 		varianti_tsv.write('\t'.join([opts.normal,opts.tumor,variante,str(features.CallMutect),str(features.CallVarscan),str(features.CallVardict),
 			str(features.SomaticMutect),str(features.SomaticVarscan),str(features.SomaticVardict),
-			str(features.GT_t_Mutect),str(features.GT_t_Varscan),str(features.GT_t_Vardict),
+			str(features.GT_Mutect),str(features.GT_Varscan),str(features.GT_Vardict),
 			str(features.DP_median),str(features.QB_Mutect),str(features.QB_Vardict),str(features.MBQT),str(features.MBQT_median),
 			str(features.AF_t_Mutect),str(features.AF_t_Varscan),str(features.AF_t_Vardict),str(features.AF_media),str(features.AF_median),
 			str(features.Delta_Mutect),str(features.Delta_Varscan),str(features.Delta_Vardict),str(features.delta_media),str(features.delta_median),
@@ -1222,8 +1254,8 @@ def print_var_snp_reduced(dictionary):
 			str(features.CallMutect),str(features.CallVarscan),str(features.CallVardict),
 			str(features.SomaticMutect),str(features.SomaticVarscan),str(features.SomaticVardict),
 			str(features.FILTER_Mutect),str(features.STATUS_Vardict),
-			str(features.GT_t_Mutect),str(features.GT_t_Varscan),str(features.GT_t_Vardict),
-			str(features.DP_tum_median),str(features.AF_median),str(features.AO_tum_media),str(features.RO_tum_media),str(features.MBQT_median),
+			str(features.GT_Mutect),str(features.GT_Varscan),str(features.GT_Vardict),
+			str(features.DP_median),str(features.AF_median),str(features.AO_tum_media),str(features.RO_tum_media),str(features.MBQT_median),
 			str(features.DP_norm_median),str(features.AF_norm_median),str(features.AO_norm_media),str(features.RO_norm_media),str(features.MBQN_median),
 			str(features.delta_median),str(features.Delta_perc_median),
 			str(features.STRBIAS_median),str(features.HCNT_Mutect),str(features.MAX_ED_Mutect),str(features.MIN_ED_Mutect),str(features.STR_Mutect),
@@ -1268,7 +1300,7 @@ def print_var(dictionary):
 			feat_eval=str(eval(feat))
 			features_variante_eval=features_variante_eval + [feat_eval]
 		var=variante.split('\t')[0]+'\t'+variante.split('\t')[1]+'\t' +opts.tumor +'\t'+variante.split('\t')[2]+'\t'+variante.split('\t')[3]+ '\t' + '\t'.join(features_variante_eval)
-		if features.AF_tum_media != '.':
+		if features.AF_media != '.':
 			varianti_tsv.write(var+ '\n')
 	varianti_tsv.close()
 	lista_features.close()

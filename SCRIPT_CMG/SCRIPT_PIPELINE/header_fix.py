@@ -35,7 +35,10 @@ for line in read:
 	
 		if line.startswith('##FORMAT=<ID=AD'):
 			riga=(line.split(','))
-			riga[riga.index('Number=.')]='Number=G'
-			line=','.join(riga)
+			try:
+				riga[riga.index('Number=.')]='Number=G'
+				line=','.join(riga)
+			except:
+				pass
 	
 	print line.rstrip()

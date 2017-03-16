@@ -835,7 +835,7 @@ def set_features(dictionary):
 			features.AC_mediana='.'
 
 		v=[]
-		for rf in vett_RF:
+		for rf in vett_RF_media:
 			if rf and rf is not '.':
 				v=v+[float(rf)]
 		try:
@@ -971,7 +971,7 @@ def split_vcf(vcf_dir,samples):
 	header_chrom = []
 	varianti = []
 	
-	if 'Free' in vcf_name:
+	if 'FreeB' in vcf_name:
 			variant_caller = 'FreeBayes'
 	elif 'GATK' in vcf_name:
 			variant_caller = 'GATK'
@@ -1055,10 +1055,10 @@ def split_vcf(vcf_dir,samples):
 							print 'ci sono problemi',sample,chrom,pos,format,sformat
 		
 				variante_common = variante_split[0:8] + [variante_split[8]+':SB:SQD']
-				format_sample = variante_split[9 + samples.index(sample)]  +':'+ sSB + ':' + str(sQD)
+				format_sample = variante_split[header_chrom.index(sample)]  +':'+ sSB + ':' + str(sQD)
 			else:
 				variante_common = variante_split[0:9]
-				format_sample = variante_split[9 + samples.index(sample)   ]
+				format_sample = variante_split[header_chrom.index(sample)   ]
 				
 			sample_vcf.write('\t'.join(variante_common + [format_sample]) + '\n')
 			
@@ -1081,7 +1081,7 @@ def main():
 	opts = parser.parse_args()
 	callers = [opts.gatk,opts.varscan,opts.freebayes]
 	samples = samples_name_extract(open(opts.freebayes,'r'))
-	
+	print callers
 	try:
 		os.mkdir(opts.out_path)
 	except:
@@ -1104,7 +1104,7 @@ def main():
 				print "\nAnalizzo le varianti da: " + vcf_path
 				for vcf_name in os.listdir(vcf_path) :
 					print vcf_name
-					if 'Free' in vcf_name:
+					if 'FreeB' in vcf_name:
 						index = 0
 					elif 'GATK' in vcf_name:
 						index = 2
