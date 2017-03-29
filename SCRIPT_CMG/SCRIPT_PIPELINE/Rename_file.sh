@@ -1,6 +1,6 @@
 #!bin/bash
 
-DATA=20170308
+DATA=20170315
 
 TIPO=Conn
 NOMEDIR=CARDIO
@@ -9,7 +9,7 @@ Pannello=Cardio
 
 Upload=2.1
 
-NumRun=72
+NumRun=74
 
 cd ~/Scrivania/RUN_ILLUMINA/$NOMEDIR/$DATA\_Run_$NumRun\_$Pannello\_$Upload
 for (( a=1; a<10; a++ ))

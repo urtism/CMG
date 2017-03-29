@@ -135,8 +135,8 @@ class Features():
 	QB_GATK='.'
 	QB_Varscan='.'
 	QB_Freebayes='.'
-	MQB_media='.'
-	MQB_mediana='.'
+	MBQ_media='.'
+	MBQ_mediana='.'
 	
 	AF_GATK='0'
 	AF_Varscan='0'
@@ -151,6 +151,7 @@ class Features():
 	STRBIAS_GATK='.'
 	STRBIAS_Varscan='.'
 	STRBIAS_Freebayes='.'
+	
 	STRBIAS_media='.'
 	STRBIAS_mediana= '.'
 
@@ -784,7 +785,7 @@ def set_features(dictionary):
 
 		v=[]
 		for bq in vett_MBQ:
-			if bq is not '.':
+			if bq and bq is not '.':
 				v=v+[float(bq)]
 		try:
 			features.MBQ_media=statistics.mean(v)
@@ -817,7 +818,7 @@ def set_features(dictionary):
 		except:
 			features.STRBIAS_media='.'
 		try:
-			features.STRBIAS_median = statistics.median(v)
+			features.STRBIAS_mediana = statistics.median(v)
 		except:
 			features.STRBIAS_mediana='.'
 
@@ -939,9 +940,14 @@ def print_var(dictionary,out,sample_name):
 		var=variante.split('\t')[0]+'\t'+variante.split('\t')[1]+'\t' +sample_name +'\t'+variante.split('\t')[2]+'\t'+variante.split('\t')[3]+ '\t' + '\t'.join(features_variante_eval)
 		
 		for gt in [features.GT_GATK,features.GT_Varscan,features.GT_Freebayes]:
-			if gt != './.' and gt != '.' and gt != '0/0':
-				dataset_varianti.write(var+ '\n')
-				break
+			if opts.cf:
+				if gt != './.' and gt != '.':
+					dataset_varianti.write(var+ '\n')
+					break
+			else:
+				if gt != './.' and gt != '.' and gt != '0/0':
+					dataset_varianti.write(var+ '\n')
+					break
 	dataset_varianti.close()
 	lista_features.close()
 	
@@ -1076,6 +1082,7 @@ def main():
 	parser.add_argument('-a', '--amplicon',help="Amplicon design", action='store_true')
 	parser.add_argument('-o', '--out_path',help="path di output")
 	parser.add_argument('-G', '--gvcf_path',help="gvcf path")
+	parser.add_argument('--cf',help="gvcf path", action='store_true')
 
 	global opts 
 	opts = parser.parse_args()

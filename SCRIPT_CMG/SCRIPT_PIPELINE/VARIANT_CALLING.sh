@@ -177,10 +177,25 @@ VarScan2_somatic () {
  		
 	java -jar -Xmx64g $VARSCAN somatic $WORKDIR/VARIANT_CALLING/$3\_Sane.mpileup \
 	$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan \
-	--min-var-freq 0.005 --output-vcf 1 --mpileup 1
+	--min-var-freq 0.0005 \
+	--output-vcf 1 \
+	--mpileup 1
 
-	VCF_VARSCAN_SNP=$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.snp.vcf
-	VCF_VARSCAN_INDEL=$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.indel.vcf
+	$BCFTOOLS norm -m -both \
+ 	-f $REF \
+ 	$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.snp.vcf \
+ 	> $WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.norm.snp.vcf
+
+ 	python $SCRIPT_PIPELINE/header_fix.py -v V -f $WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.indel.vcf \
+	> $WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.fix.indel.vcf
+
+ 	$BCFTOOLS norm -m -both \
+ 	-f $REF \
+ 	$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.fix.indel.vcf \
+ 	> $WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.norm.indel.vcf
+
+	VCF_VARSCAN_SNP=$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.norm.snp.vcf
+	VCF_VARSCAN_INDEL=$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.norm.indel.vcf
 	
 	mv $WORKDIR/VARIANT_CALLING/$3\_Sane.mpileup $DELETE
 	printf $"\n =========>	Sample $3 => Variant Calling: Varscan2: DONE\n\n"	
@@ -193,9 +208,9 @@ VarDict () {
 
 	printf $"\n =========>	Sample $3 => Variant Calling: VarDict\n\n"
 	
-	$VARDICT -G $REF -f 0.005 -N $3 -b "$1|$2" \
+	$VARDICT -G $REF -f 0.0005 -N $3 -b "$1|$2" \
 	-z -F 0 -c 1 -S 2 -E 3 -g 4 $TARGETBED | ~/NGS_TOOLS/VarDictJava-master/VarDict/testsomatic.R | ~/NGS_TOOLS/VarDictJava-master/VarDict/var2vcf_paired.pl \
-	-N "$3|$4" -f 0.005 > $WORKDIR/VARIANT_CALLING/$3\_Sane_VarDict.vcf
+	-N "$3|$4" -f 0.0005 > $WORKDIR/VARIANT_CALLING/$3\_Sane_VarDict.vcf
 
 	VCF_VARDICT=$WORKDIR/VARIANT_CALLING/$3\_Sane_VarDict.vcf
 	
@@ -321,6 +336,63 @@ Features_extraction_somatic () {
 }
 
 
+Features_extraction_cellfree () {
+
+	rm -f $WORKDIR/PostFeatureExtraction.cfg
+	CFG=$WORKDIR/PostFeatureExtraction.cfg
+
+	cat $1 | while read line
+	do
+		VCF_MUTECT=$(echo "$line" | cut -f1)
+		VCF_VARDICT=$(echo "$line" | cut -f2)
+		VCF_VARSCAN_SNP=$(echo "$line" | cut -f3)
+		VCF_VARSCAN_INDEL=$(echo "$line" | cut -f4)
+		SAMPLE_NAME_SOM=$(echo "$line" | cut -f5)
+		SAMPLE_NAME_NORM=$(echo "$line" | cut -f6)
+
+		printf $"\n =========>	Sample $SAMPLE_NAME_SOM => Features extraction\n\n"
+
+		if [ "$DESIGN" == "ENRICHMENT" ]
+		then
+
+		 	python $SCRIPT_PIPELINE/features_extraction_somatic.py \
+		 	-m $VCF_MUTECT \
+		 	-d $VCF_VARDICT \
+		 	-v $VCF_VARSCAN_SNP \
+		 	-i $VCF_VARSCAN_INDEL \
+		 	-n $SAMPLE_NAME_NORM -t $SAMPLE_NAME_SOM \
+		 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME_SOM \
+		 	-l $LISTAFEATURES_SOMATIC
+			
+		elif [ "$DESIGN" == "AMPLICON" ]
+		then
+
+			python $SCRIPT_PIPELINE/features_extraction_somatic.py \
+		 	-m $VCF_MUTECT \
+		 	-d $VCF_VARDICT \
+		 	-v $VCF_VARSCAN_SNP \
+		 	-i $VCF_VARSCAN_INDEL \
+		 	-n $SAMPLE_NAME_NORM -t $SAMPLE_NAME_SOM -a \
+		 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME_SOM \
+		 	-l $LISTAFEATURES_SOMATIC
+		fi
+		
+		cp $VCF_MUTECT $OUT
+		cp $VCF_VARDICT $OUT
+		cp $VCF_VARSCAN_SNP $OUT
+		cp $VCF_VARSCAN_INDEL $OUT
+
+
+		mv $VCF_MUTECT $STORAGE
+		mv $VCF_VARDICT $STORAGE
+		mv $VCF_VARSCAN_SNP $STORAGE
+		mv $VCF_VARSCAN_INDEL $STORAGE
+
+		printf $"\n =========>	Sample $SAMPLE_NAME_SOM => Features extraction: DONE\n\n"
+		printf $"$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME_SOM\n" >> $CFG
+	done
+}
+
 
 
 VARIANT_CALLING_GERMLINE () {
@@ -392,6 +464,54 @@ VARIANT_CALLING_SOMATIC () {
 		mv $BAM_NORM $STORAGE
 
 		printf $"$VCF_MUTECT\t$VCF_VARDICT\t$VCF_VARSCAN_SNP\t$VCF_VARSCAN_INDEL\t$SAMPLE_NAME_SOM\t$SAMPLE_NAME_NORM\n" >> $CFG
+	done
+
+}
+
+VARIANT_CALLING_CELLFREE () {
+	
+	cat $LOGHI/logo_variant.txt
+
+	mkdir -p $WORKDIR/VARIANT_CALLING
+	mkdir -p $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION
+	
+	rm -f $WORKDIR/PostVariantCalling.cfg
+	CFG=$WORKDIR/PostVariantCalling.cfg
+
+	cat $1 | while read line
+	do
+		IFS=$':' DIRS=(${line//$'\t'/:})
+		dastampare=()
+
+		for (( i=0 ; i<${#DIRS[@]}-2 ; i++ ))
+		do
+			BAM_SOM=${DIRS[i]}
+			SAMPLE_NAME_SOM=${DIRS[i+1]}
+			BAM_NORM=${DIRS[-2]}
+			SAMPLE_NAME_NORM=${DIRS[-1]}
+			((i+=1))
+			
+			Mutect2 $BAM_SOM $BAM_NORM $SAMPLE_NAME_SOM $SAMPLE_NAME_NORM
+
+			VarScan2_somatic $BAM_SOM $BAM_NORM $SAMPLE_NAME_SOM $SAMPLE_NAME_NORM
+		
+			VarDict $BAM_SOM $BAM_NORM $SAMPLE_NAME_SOM $SAMPLE_NAME_NORM
+
+			mv $BAM_SOM $STORAGE
+
+			printf $"$VCF_MUTECT\t$VCF_VARDICT\t$VCF_VARSCAN_SNP\t$VCF_VARSCAN_INDEL\t$SAMPLE_NAME_SOM\t$SAMPLE_NAME_NORM\n" >> $CFG
+
+			#dastampare+=("$VCF_MUTECT\t$VCF_VARDICT\t$VCF_VARSCAN_SNP\t$VCF_VARSCAN_INDEL\t$SAMPLE_NAME_SOM")
+
+		done
+
+		cp $BAM_NORM $STORAGE
+
+		#dastampare+=("$SAMPLE_NAME_SOM")
+		#bar=$(IFS=$'\t' ; echo "${dastampare[*]}")
+		#echo -e "$bar">>$CFG
+
+		
 	done
 
 }

@@ -150,7 +150,11 @@ def Add_Cosmic(line,header_tsv,pan):
 				
 				val_add=[]
 
+<<<<<<< HEAD
 				new_val=(raw[5].split(';')[-1]).strip('OCCURENCE=')
+=======
+				new_val = (raw[5].split(';')[-1]).strip('OCCURENCE=')
+>>>>>>> refs/remotes/origin/devel
 
 				val_add = val_add + [new_val]
 

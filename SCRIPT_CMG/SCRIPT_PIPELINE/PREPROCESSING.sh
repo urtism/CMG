@@ -225,5 +225,54 @@ PREPROCESSING () {
 			
 			printf $"$INPUT_SOM\t$SAMPLE_NAME_SOM\t$INPUT_NORM\t$SAMPLE_NAME_NORM\n" >> $CFG
 		done
+
+	elif [ "$ANALISI" == "CellFree" ]
+		then
+		cat $1 | while read line
+		do
+			
+			IFS=$':' DIRS=(${line//$'\t'/:})
+			dastampare=()
+
+			for (( i=0 ; i<${#DIRS[@]} ; i++ ))
+			do
+				INPUT=${DIRS[i]}
+				SAMPLE_NAME=${DIRS[i+1]}
+				((i+=1))
+
+				AddOrReplaceReadGroups $INPUT
+
+				if [ "$DESIGN" == "ENRICHMENT" ]
+				then
+					if [[ "$START" == *"M"* ]]
+					then
+						MarkDuplicates $INPUT
+					fi
+					if [[ "$START" == *"I"* ]]
+					then
+						IndelRealigner $INPUT
+					fi
+					if [[ "$START" == *"B"* ]]
+					then
+						BaseRecalibrator $INPUT
+					fi
+
+					mv $INPUT $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+					mv ${INPUT%.*}.bai $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bai
+
+				elif [ "$DESIGN" == "AMPLICON" ]
+				then
+					mv ${INPUT%.*.*}.Add.bam $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+					BuildBamIndex $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
+				fi
+
+				dastampare+=("$WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam\t$SAMPLE_NAME")
+			done
+			bar=$(IFS=$'\t' ; echo "${dastampare[*]}")
+			echo -e "$bar">>$CFG
+		done
+
 	fi
+
+
 }

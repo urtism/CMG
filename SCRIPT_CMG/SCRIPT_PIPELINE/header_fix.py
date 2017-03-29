@@ -40,5 +40,28 @@ for line in read:
 				line=','.join(riga)
 			except:
 				pass
+
+	elif opts.variantcaller == 'V':
 	
+		if line.startswith('chr'):
+			riga=line.split('\t')
+			ref=riga[3]
+			alt=riga[4]
+			if '/+' in ref:
+				riga[3]=alt
+				riga[4]=alt+ref.split('/+')[1]
+				riga[7]+=";FIX"
+			elif '/' in ref:
+				riga[3]=ref.split('/')[0]
+				riga[7]+=";FIX"
+				
+			if '/-' in alt:
+				riga[4]=ref
+				riga[3]=alt.split('/-')[0]
+				riga[7]+=";FIX"
+			elif '/' in alt:
+				riga[4]=alt.split('/')[0]
+				riga[7]+=";FIX"
+
+			line='\t'.join(riga)
 	print line.rstrip()
