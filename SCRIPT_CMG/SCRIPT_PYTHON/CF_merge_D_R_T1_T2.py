@@ -11,6 +11,7 @@ def read_snp(varianti):
 			chrom = line.split('\t')[0]
 			pos = line.split('\t')[1]
 			var=['','','','','']
+			#print chrom + '\t'+ pos
 			varianti[chrom + '\t'+ pos]=var
 	lista_snp.close()
 
@@ -29,11 +30,12 @@ def read_donor(varianti,header):
 			gt = '\t'.join(line.split('\t')[HEADER.index('GT_GATK'):HEADER.index('GT_Freebayes') +1])
 			#print gt
 			#dp = '\t'.join(line.split('\t')[11:14])
-			dp = line.split('\t')[14]
-			qb = line.split('\t')[18]
-			AF = line.split('\t')[-1]
+			dp = line.split('\t')[HEADER.index('DP_media')]
+			qb = line.split('\t')[HEADER.index('MQB_media')]
+			AF = line.split('\t')[HEADER.index('AF_media')]
+			
+			#print chrom,pos
 			if varianti.has_key(chrom + '\t'+ pos):
-
 				donor = '\t'.join([gt,dp,AF,qb])
 				var = varianti.get(chrom + '\t'+ pos)
 				if var[0]=='':
@@ -59,9 +61,9 @@ def read_rec(varianti,header):
 			gt = '\t'.join(line.split('\t')[HEADER.index('GT_GATK'):HEADER.index('GT_Freebayes') +1])
 			#print gt
 			#dp = '\t'.join(line.split('\t')[11:14])
-			dp = line.split('\t')[14]
-			qb = line.split('\t')[18]
-			AF = line.split('\t')[-1]
+			dp = line.split('\t')[HEADER.index('DP_media')]
+			qb = line.split('\t')[HEADER.index('MQB_media')]
+			AF = line.split('\t')[HEADER.index('AF_media')]
 			if varianti.has_key(chrom + '\t'+ pos):
 				rec = '\t'.join([gt,dp,AF,qb])
 				var = varianti.get(chrom + '\t'+ pos)
@@ -88,19 +90,19 @@ def read_sT1(varianti,header):
 			pos = line.split('\t')[1]
 			ref = line.split('\t')[3]
 			alt = line.split('\t')[4]
-			somatic_varscan =line.split('\t')[8]
-			filter_mutect = line.split('\t')[10]
-			status_vardict = line.split('\t')[11]
+			somatic_varscan = line.split('\t')[HEADER.index('SomaticVarscan')]
+			filter_mutect = line.split('\t')[HEADER.index('FILTER_Mutect')]
+			status_vardict = line.split('\t')[HEADER.index('STATUS_Vardict')]
 
-			gt_t = '\t'.join(line.split('\t')[HEADER.index('GT_Mutect'):HEADER.index('GT_Vardict') +1])
-			gt_n = '\t'.join(line.split('\t')[15:18])
-			dp_t = line.split('\t')[18]
-			af_t = line.split('\t')[22]
-			qb_t = line.split('\t')[25]
-			dp_n = line.split('\t')[26]
-			af_n = line.split('\t')[30]
-			qb_n = line.split('\t')[33]
-			delta = line.split('\t')[-1]
+			gt_t = '\t'.join(line.split('\t')[HEADER.index('GT_t_Mutect'):HEADER.index('GT_t_Vardict') +1])
+			gt_n = '\t'.join(line.split('\t')[HEADER.index('GT_n_Mutect'):HEADER.index('GT_n_Vardict') +1])
+			dp_t = line.split('\t')[HEADER.index('DP_tum_media')]
+			af_t = line.split('\t')[HEADER.index('AF_tum_media')]
+			qb_t = line.split('\t')[HEADER.index('MBQT_media')]
+			dp_n = line.split('\t')[HEADER.index('DP_norm_media')]
+			af_n = line.split('\t')[HEADER.index('AF_norm_media')]
+			qb_n = line.split('\t')[HEADER.index('MBQN_media')]
+			delta = line.split('\t')[HEADER.index('Delta_median')]
 			if varianti.has_key(chrom + '\t'+ pos):
 				t1 = '\t'.join([somatic_varscan,filter_mutect,status_vardict,gt_t,gt_n,dp_t,af_t,qb_t,dp_n,af_n,qb_n,delta])
 				var = varianti.get(chrom + '\t'+ pos)
@@ -128,19 +130,19 @@ def read_sT2(varianti,header):
 			pos = line.split('\t')[1]
 			ref = line.split('\t')[3]
 			alt = line.split('\t')[4]
-			somatic_varscan =line.split('\t')[8]
-			filter_mutect = line.split('\t')[10]
-			status_vardict = line.split('\t')[11]
+			somatic_varscan = line.split('\t')[HEADER.index('SomaticVarscan')]
+			filter_mutect = line.split('\t')[HEADER.index('FILTER_Mutect')]
+			status_vardict = line.split('\t')[HEADER.index('STATUS_Vardict')]
 
-			gt_t = '\t'.join(line.split('\t')[12:15])
-			gt_n = '\t'.join(line.split('\t')[15:18])
-			dp_t = line.split('\t')[18]
-			af_t = line.split('\t')[22]
-			qb_t = line.split('\t')[25]
-			dp_n = line.split('\t')[26]
-			af_n = line.split('\t')[30]
-			qb_n = line.split('\t')[33]
-			delta = line.split('\t')[-1]
+			gt_t = '\t'.join(line.split('\t')[HEADER.index('GT_t_Mutect'):HEADER.index('GT_t_Vardict') +1])
+			gt_n = '\t'.join(line.split('\t')[HEADER.index('GT_n_Mutect'):HEADER.index('GT_n_Vardict') +1])
+			dp_t = line.split('\t')[HEADER.index('DP_tum_media')]
+			af_t = line.split('\t')[HEADER.index('AF_tum_media')]
+			qb_t = line.split('\t')[HEADER.index('MBQT_media')]
+			dp_n = line.split('\t')[HEADER.index('DP_norm_media')]
+			af_n = line.split('\t')[HEADER.index('AF_norm_media')]
+			qb_n = line.split('\t')[HEADER.index('MBQN_media')]
+			delta = line.split('\t')[HEADER.index('Delta_median')]
 			if varianti.has_key(chrom + '\t'+ pos):
 				t2 = '\t'.join([somatic_varscan,filter_mutect,status_vardict,gt_t,gt_n,dp_t,af_t,qb_t,dp_n,af_n,qb_n,delta])
 				var = varianti.get(chrom + '\t'+ pos)

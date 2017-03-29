@@ -97,6 +97,34 @@ ALLINEAMENTO() {
 			
 			printf $"$INPUT_SOM\t$SAMPLE_NAME_SOM\t$INPUT_NORM\t$SAMPLE_NAME_NORM\n" >> $CFG
 		done
+
+	elif [ "$ANALISI" == "CellFree" ]
+		then
+		
+		cat $1 | while read line
+		do
+			dastampare=()
+			IFS=$':' DIRS=(${line//$'\t'/:})
+
+			for (( i=0 ; i<${#DIRS[@]} ; i++ ))
+			do
+				FASTQ1=${DIRS[i]}
+				FASTQ2=${DIRS[i+1]}
+				SAMPLE_NAME=${DIRS[i+2]}
+
+
+				BWAMEM $FASTQ1 $FASTQ2
+				SamFormatConverter $INPUT
+				SortSam $INPUT
+				INPUT_CF=$INPUT
+				SAMPLE_NAME_CF=$SAMPLE_NAME
+
+				dastampare+=("$INPUT_CF\t$SAMPLE_NAME_CF")
+				((i+=2))
+			done
+			bar=$(IFS=$'\t' ; echo "${dastampare[*]}")
+			echo -e "$bar">>$CFG
+		done
 	fi
 	cat $LOGHI/logo_cornice.txt
 }

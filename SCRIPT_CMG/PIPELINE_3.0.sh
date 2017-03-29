@@ -28,8 +28,8 @@ VEPFILTER=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 
 ### DATABASES & FILES ###
 LISTAFEATURES_GERMLINE=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_germline.list
-#LISTAFEATURES_SOMATIC=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_somatic.list
-LISTAFEATURES_SOMATIC=/home/jarvis/NGS_ANALYSIS/TARGET/Features_lists/lista_features_somatic_CF_20170315.list
+LISTAFEATURES_SOMATIC=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_somatic.list
+#LISTAFEATURES_SOMATIC=/home/jarvis/NGS_ANALYSIS/TARGET/Features_lists/lista_features_somatic_CF_20170315.list
 ANN_LIST_GERMLINE=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_annotazione.list
 ANN_LIST_SOMATIC=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_annotazione.list
 REF=~/NGS_TOOLS/hg19/ucsc.hg19.fasta
@@ -194,6 +194,43 @@ PIPELINE_SOMATIC () {
 	fi	
 }
 
+PIPELINE_CELLFREE () {
+
+	cat $LOGHI/logo_cmg.txt
+
+	if [[ "$START" == *"A"* ]]
+	then
+		ALLINEAMENTO $CFG
+	fi
+	if [[ "$START" == *"R"* ]] || [[ "$START" == *"M"* ]] || [[ "$START" == *"I"* ]] || [[ "$START" == *"B"* ]]
+	then
+		PREPROCESSING $CFG
+	fi
+	if [[ "$START" == *"V"* ]]
+	then
+		VARIANT_CALLING_CELLFREE $CFG
+	fi
+	if [[ "$START" == *"F"* ]]
+	then
+		Features_extraction_cellfree $CFG
+	fi
+	if [[ "$START" == *"E"* ]]
+	then
+		cat $CFG | while read line
+		do
+			INPUT=$(echo "$line" | cut -f1)
+			ANNOTATION $INPUT.vcf NOCANONICAL
+			SPLIT_TRANSCRIPTS $INPUT $TRANSCR_LIST
+			ANNOTATION $INPUT2 CANONICAL
+			MERGE_2VCF $INPUT1 $INPUT
+			ADD_ANNOTATION $INPUT ${INPUT%.*}.tsv
+			
+		done
+	fi	
+}
+
+
+
 
 
 if [ "$#" == "0" ]
@@ -258,8 +295,8 @@ STARTTIME=$(date +%s)
 
 if [ "$START" == "" ] || [ "$START" == "ALL" ]
 then
-	START=AMIBVF
-	#START=AMIBVFE
+	#START=AMIB
+	START=AMIBVFE
 fi
 
 NGSDIR=~/NGS_ANALYSIS_TEMP
@@ -297,10 +334,10 @@ elif [ "$ANALISI" == "Somatic" ]
 then
 	ANN_LIST=$ANN_LIST_SOMATIC
 	PIPELINE_SOMATIC
-elif [ "$ANALISI" == "Cellfree" ] 
+elif [ "$ANALISI" == "CellFree" ] 
 then
-	echo "cellfree"
-	#PIPELINE_CELLFREE
+	#echo "cellfree"
+	PIPELINE_CELLFREE
 fi
 
 ENDTIME=$(date +%s)
