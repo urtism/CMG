@@ -7,6 +7,7 @@ import plotly
 import matplotlib.pyplot as plt
 import plotly.graph_objs
 from collections import Counter
+from itertools import islice
 
 
 def estrai_stat(tab,out):
