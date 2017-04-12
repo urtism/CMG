@@ -153,7 +153,7 @@ do
 	-stand_call_conf 1 \
 	--doNotRunPhysicalPhasing \
 	-mmq 1 \
-	-rf DuplicateRead \
+	-drf DuplicateRead \
 	-bamout $PROCESSING/6_Variant/GATK/${filename%.*}.g.vcf.bam \
 	-L $TARGET
 
