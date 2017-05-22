@@ -136,31 +136,39 @@ DataRun=20161125
 
 # #---------------GATK
 
-cd $PROCESSING/5_BQSR/
-for filename in *.bam
-do
+# cd $PROCESSING/5_BQSR/
+# for filename in *.bam
+# do
 
-	cat ~/Scrivania/SCRIPT_PIPELINE/logo_variant.txt
-	printf $"\n =========>	Sample ${filename%.*} => Variant Calling: Haplotype Caller\n\n"
+# 	cat ~/Scrivania/SCRIPT_PIPELINE/logo_variant.txt
+# 	printf $"\n =========>	Sample ${filename%.*} => Variant Calling: Haplotype Caller\n\n"
 
-	java -Xmx8g -jar $GATK -T HaplotypeCaller \
-	-R $REF \
-	-I $PROCESSING/5_BQSR/${filename%.*}.bam \
-	-o $PROCESSING/6_Variant/GATK/${filename%.*}.g.vcf \
-	-ERC GVCF \
-	-mbq 1 \
-	-minReadsPerAlignStart 1 \
-	-stand_call_conf 1 \
-	--doNotRunPhysicalPhasing \
-	-mmq 1 \
-	-drf DuplicateRead \
-	-bamout $PROCESSING/6_Variant/GATK/${filename%.*}.g.vcf.bam \
-	-L $TARGET
+# 	java -Xmx8g -jar $GATK -T HaplotypeCaller \
+# 	-R $REF \
+# 	-I $PROCESSING/5_BQSR/${filename%.*}.bam \
+# 	-o $PROCESSING/6_Variant/GATK/${filename%.*}__edr.g.vcf \
+# 	-ERC GVCF \
+# 	-mbq 1 \
+# 	-minReadsPerAlignStart 1 \
+# 	-stand_call_conf 1 \
+# 	--doNotRunPhysicalPhasing \
+# 	-edr \
+# 	-bamout $PROCESSING/6_Variant/GATK/${filename%.*}__edr.g.vcf.bam \
+# 	-L $TARGET
 
-	printf $"\n =========>	Sample ${filename%.*} => Variant Calling: Haplotype Caller: DONE\n\n"
+# 	printf $"\n =========>	Sample ${filename%.*} => Variant Calling: Haplotype Caller: DONE\n\n"
 
 
-done
+# done
+
+
+cat ~/Scrivania/SCRIPT_PIPELINE/logo_multi.txt
+echo $'\n =========>	Variant Calling: Genotype GVCF & Multi-sample variant calling\n\n'
+
+java -jar -Xmx4g $GATK -T GenotypeGVCFs \
+-R $REF \
+-V:VCF /home/minime/NGS_ANALYSIS/PROCESSING/6_Variant/GATK/Sample.list \
+-o $PROCESSING/6_Variant/GATK/$DataRun\_Cardio_GATK.vcf
 
 #-------------FREEB
 
