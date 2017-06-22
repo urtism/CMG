@@ -2,14 +2,11 @@ import argparse
 import re
 import string
 import sys
-from Bio.Seq import Seq
-from Bio import SeqIO, Entrez
 from Bio import SeqUtils
 from pyfasta import Fasta
 from repDNA.nac import Kmer
 import pysam
 import scipy.stats as stats
-
 
 #-----------------------------------------------------FUNCTIONS-----------------------------------------------
 
@@ -47,11 +44,14 @@ def Check_Zero(number):
 def Extract_Variant_Type(variant, H_CHR):
 
 	CHR = variant[H_CHR.index('#CHROM')]
+	POS = variant[H_CHR.index('POS')]
 	REF = variant[H_CHR.index('REF')]
 	ALT = variant[H_CHR.index('ALT')]
 
+	Variant_Class = '.'
+
 	#Per prima cosa vado a definire la classe della variante, se SNV, IN/DEL, INDEL o Sequence Alteration
-	if re.match("[A|T|C|G]*$",REF) and re.match("[A|T|C|G]*$",ALT):
+	if re.match("[A|T|C|G]+$",REF) and re.match("[A|T|C|G]+$",ALT):
 
 		if len(REF) > len(ALT) and len(ALT) == 1:
 			Variant_Class = 'Del'
@@ -59,19 +59,14 @@ def Extract_Variant_Type(variant, H_CHR):
 		elif len(ALT) > len(REF)  and len(REF) == 1:
 			Variant_Class = 'Ins'
 
-		elif len(ALT) == len(REF) or len(REF) == len(ALT) and len(REF) == 1 and len(ALT) == 1:
+		elif len(ALT) == len(REF) and len(REF) == 1 and len(ALT) == 1:
 			Variant_Class = 'snv'
 
-		elif len(ALT) == len(REF) or len(REF) == len(ALT) and len(REF) != 1 and len(ALT) != 1:
+		elif len(ALT) == len(REF) or len(REF) != len(ALT) and len(REF) > 1 and len(ALT) > 1:
 			Variant_Class = 'Alt'
 
 		else:
 			Variant_Class = '.'
-
-	else:
-
-		Variant_Class = '.'
-
 	
 	return Variant_Class
 
@@ -116,18 +111,18 @@ def Extract_Reds_Info(read, Reads_Info):
 		Reads_Info['Alignment_Score'] += read.alignment.get_tag('AS')
 
 		if read.alignment.is_read1:
-		 	Reads_Info['is_read1'] += 1
-		 	if read.alignment.mate_is_reverse:
-		 		Reads_Info['is_read1_forward'] += 1
+			Reads_Info['is_read1'] += 1
+			if read.alignment.mate_is_reverse:
+				Reads_Info['is_read1_forward'] += 1
 			elif read.alignment.is_reverse:
 				Reads_Info['is_read1_reverse'] += 1
-		 	
+			
 		elif read.alignment.is_read2:
 			Reads_Info['is_read2'] += 1
 			if read.alignment.is_reverse:
-		 		Reads_Info['is_read2_reverse'] += 1
-		 	if read.alignment.mate_is_reverse:
-		 		Reads_Info['is_read2_forward'] += 1
+				Reads_Info['is_read2_reverse'] += 1
+			if read.alignment.mate_is_reverse:
+				Reads_Info['is_read2_forward'] += 1
 
 	return Reads_Info
 
@@ -145,10 +140,18 @@ def Check_Bam(Sample_list, bam_list):
 
 	Sample_dict = {}
 
+	File_list = []
+
+	File_match = []
+
 	path_list = open(bam_list, 'r')
 
 	#Apro i bam presenti in bam_list per processare le reads. Per ogni bam estraggo la feature
 	for path in path_list:
+
+		path = path.rstrip()
+
+		File_list += [path]
 		
 		path = path.rstrip()
 		
@@ -166,17 +169,24 @@ def Check_Bam(Sample_list, bam_list):
 
 			Sample_list.remove(Header_Sample_Name)
 
-		else:
+			File_match += [path]
 
+		else:
 			continue
 
 	path_list.close()
+
+	unmatched_file = set(File_list) - set(File_match)
+
+	if len(unmatched_file) != 0:
+		for elem in unmatched_file:
+			print '\n' + "Bam file " + str(elem) + " does not match any sample in SAMPLE vcf field."
 
 	#Se la sample list ha elementi al suo interno alllora non tutti i path del bam sono stati inseriti ed il tool da un Warn
 	if len(Sample_list) != 0:
 		for elem in Sample_list:
 			print '\n' + "Sample " + str(elem) + " will not be annotated. Missing bam file or malformed sample field in vcf file." + '\n'
-			message = ''
+
 	return Sample_dict
 
 
@@ -228,12 +238,12 @@ def SimpleRepeats_Finder(Reference, variant, H_CHR, Variant_Class, WindowSize):
 
 		End_Hom = poly[1]+poly[2]-1
 
-		if poly[1] == WindowSize+1 and Variant_Class is 'Deletion' or poly[1] == WindowSize+1 and Variant_Class is 'Insertion':
+		if poly[1] == WindowSize+1 and Variant_Class is 'Del' or poly[1] == WindowSize+1 and Variant_Class is 'Ins':
 			RepeatSeq = '2'
 			RepeatSeq_Lenght = str(poly[2])
 			break
 		
-		elif poly[1] <= WindowSize and End_Hom >= WindowSize and Variant_Class is 'SNV':
+		elif poly[1] <= WindowSize and End_Hom >= WindowSize and Variant_Class is 'snv':
 			RepeatSeq = '2'
 			RepeatSeq_Lenght = str(poly[2])
 			break
@@ -263,12 +273,12 @@ def SimpleRepeats_Finder(Reference, variant, H_CHR, Variant_Class, WindowSize):
 
 			End_Rep = pattern[1]+pattern[2]-1
 
-			if pattern[1] == WindowSize+1 and Variant_Class is 'Deletion' or pattern[1] == WindowSize+1 and Variant_Class is 'Insertion':
+			if pattern[1] == WindowSize+1 and Variant_Class is 'Del' or pattern[1] == WindowSize+1 and Variant_Class is 'Ins':
 				RepeatSeq = '1'
 				RepeatSeq_Lenght = (pattern[2])
 				break
 			
-			elif pattern[1] <= WindowSize and End_Rep >= WindowSize and Variant_Class is 'SNV':
+			elif pattern[1] <= WindowSize and End_Rep >= WindowSize and Variant_Class is 'snv':
 				RepeatSeq = '1'
 				RepeatSeq_Lenght = str(pattern[2])
 				break
@@ -358,7 +368,7 @@ def Sequence_Annotator(variant, Sample_dict, H_CHR, Reference, Variant_Class, SN
 	for sample in Sample_dict.keys():
 
 		#Skippo le varianti che hanno * in alternativo, le trovo solitamente solo in GATK
-		if '*' in ALT or ',' in ALT:
+		if Variant_Class == '.':
 
 			Variant_Stat = {}
 
@@ -389,6 +399,37 @@ def Sequence_Annotator(variant, Sample_dict, H_CHR, Reference, Variant_Class, SN
 			Variant_Stat['Mapping_Quality_Zero'] = '.'
 
 			Sample_Stat[sample] = Variant_Stat
+
+		if Variant_Class == 'Alt':
+
+			Reads_Info['Total_Reads_No_Dup'] = 0
+			Reads_Info['Total_Reads_Unfilter'] = 0
+			Reads_Info['Total_Reads_Filtered'] = 0
+			Reads_Info['Coverage'] = '.'
+			Reads_Info['Duplicate_reads'] = 0
+			Reads_Info['Not_Paired_Reads'] = 0
+			Reads_Info['Not_Proper_Paired_Reads'] = 0
+			Reads_Info['Dup_Read_Alt'] = '.'
+			Reads_Info['Dup_Read_Ref'] = '.'
+			Reads_Info['Alignment_Score'] = 0
+			Reads_Info['Unmapped_reads'] = 0
+			Reads_Info['Mapping_Quality_Zero'] = 0
+			Reads_Info['Read_Ref'] = '.'
+			Reads_Info['Read_Alt'] = '.'
+			Reads_Info['Base_Alt_Qual'] = '.'
+			Reads_Info['Base_Ref_Qual'] = '.'
+			Reads_Info['Clipped_Reads_Ref'] = '.'
+			Reads_Info['Clipped_Reads_Alt'] = '.'
+			Reads_Info['Supplementary_Align'] = 0
+			Reads_Info['Not_Primary_Align'] = 0
+
+			Reads_Info['is_read1'] = 0
+			Reads_Info['is_read1_forward'] = 0
+			Reads_Info['is_read1_reverse'] = 0
+
+			Reads_Info['is_read2'] = 0
+			Reads_Info['is_read2_forward'] = 0
+			Reads_Info['is_read2_reverse'] = 0
 
 		else:
 
@@ -429,7 +470,7 @@ def Sequence_Annotator(variant, Sample_dict, H_CHR, Reference, Variant_Class, SN
 			bampile = pysam.AlignmentFile(Sample_dict.get(sample), "rb")
 
 
-			if Variant_Class == 'SNV':
+			if Variant_Class == 'snv':
 
 				for pileupcolumn in bampile.pileup(CHR, POS, POS+variant_lenght, stepper='nofilter'):
 
@@ -486,7 +527,8 @@ def Sequence_Annotator(variant, Sample_dict, H_CHR, Reference, Variant_Class, SN
 
 
 
-			if Variant_Class == 'Deletion':
+
+			if Variant_Class == 'Del':
 
 				for pileupcolumn in bampile.pileup(reference=CHR, start=POS, end=POS+variant_lenght-1, stepper='nofilter'):
 
@@ -612,7 +654,7 @@ def Sequence_Annotator(variant, Sample_dict, H_CHR, Reference, Variant_Class, SN
 
 
 
-			if Variant_Class == 'Insertion':
+			if Variant_Class == 'Ins':
 
 				for pileupcolumn in bampile.pileup(reference=CHR, start=POS, end=POS+variant_lenght-1, stepper='nofilter'):
 
@@ -717,6 +759,22 @@ def Sequence_Annotator(variant, Sample_dict, H_CHR, Reference, Variant_Class, SN
 							else:
 								continue
 
+
+
+
+			if Variant_Class == 'Alt':
+
+				for pileupcolumn in bampile.pileup(CHR, POS, POS+variant_lenght, stepper='nofilter'):
+
+					if pileupcolumn.pos == POS:
+
+						for pileupread in pileupcolumn.pileups:
+
+							#Estraggo le feature dal bam con la funzione Extract_Reds_Info
+							Reads_Info = Extract_Reds_Info(pileupread, Reads_Info)
+
+
+
 		#Tutte le features estratte le vado ad inserire in un dict con chiave il la feature e valore il corrispondente risultato.
 		#Il dict verra' poi utilizzato come valore di un'altra dict le cui chiavi sono i campioni. Ad esempio avremo:
 		#{'20161125_02_Cardio': {'SBR': 1.0, 'AS': 0}, '20161125_01_Cardio': {'SBR': 1.0, 'AS': '139.333333333'}}
@@ -732,8 +790,13 @@ def Sequence_Annotator(variant, Sample_dict, H_CHR, Reference, Variant_Class, SN
 			Variant_Stat['Percentage_Unmapped_Reads'] = '.'
 
 		#Calcolo lo strand bias con il Fisher's exact test
+		#print Reads_Info['is_read1_forward']
+		#print Reads_Info['is_read1_reverse']
+		#print Reads_Info['is_read2_forward']
+		#print Reads_Info['is_read2_reverse']
+		#print '\n'
 		try:
-			oddsratio, SBR = stats.fisher_exact([Reads_Info['is_read1_forward'], Reads_Info['is_read1_reverse']], [Reads_Info['is_read2_forward'], Reads_Info['is_read2_reverse']])
+			oddsratio, SBR = stats.fisher_exact([[Reads_Info['is_read1_forward'], Reads_Info['is_read1_reverse']], [Reads_Info['is_read2_forward'], Reads_Info['is_read2_reverse']]])
 		except:
 			SBR = '.'
 
@@ -875,45 +938,45 @@ def main():
 	Required.add_argument('-I','--input',required=True,metavar='path/to/input',help="Input file in vcf format.")
 	Required.add_argument('-Ref','--reference',required=True,metavar='path/to/fasta',help="Reference file in fasta format.")
 	Required.add_argument('-O','--outfile',required=True,metavar='path/to/outfile',help="Output vcf file.")
-	Required.add_argument('-L','--list',metavar='path/to/bamlist',help="REQUIRED only to extract features from bam file. Bam list file, including path, one for each raw. Sample name in SAMPLE column in vcf has to be the same of 'SM' header in bam file. Index file bai in same path of bam file.")
+	Required.add_argument('-L','--list',metavar='path/to/bamlist',help="REQUIRED ONLY TO EXTRACT FEATURES FROM BAM FILE. Bam list file, including path, one for each raw. Sample name in SAMPLE column in vcf has to be the same of Read Group Sample Name (SM) tag in bam file header. Bam Index file required in same path of bam file.")
 
 	
 	Sequence = parser.add_argument_group('Sequence optional arguments')
-	Sequence.add_argument('-WS','--WindowSize',default=40,type=int,metavar='20-600',help="Set window size for -SR -SRL -GC and -PNC command. Default=40, Min=20, Max=600")
-	Sequence.add_argument('-SR','--SimpleRepeat',action="store_true",help="Enable Simple Repeat Finder. Check if a variant fall in a Repeated Sequence. 0 for None, 1 for Simple Repeat Sequence, 2 for Homopolymer sequence.")
-	Sequence.add_argument('-SRL','--SimpleRepeatLength',action="store_true",help="Report length of repeated sequence")
+	Sequence.add_argument('-WS','--WindowSize',default=40,type=int,metavar='[20-600]',help="Set window size for -SR -SRL -GC and -PNC command. Default=40, Min=20, Max=600")
+	Sequence.add_argument('-SR','--SimpleRepeat',action="store_true",help="Enable Simple Repeat Finder. Check if a variant fall in a Simple Repeated Sequence. 0 for None, 1 for Simple Repeat Sequence, 2 for Homopolymer.")
+	Sequence.add_argument('-SRL','--SimpleRepeatLength',action="store_true",help="Length of repeated sequence (expressed as number of nucleotides) in -SR option")
 	Sequence.add_argument('-PNC','--PseudoNucleotidesComposition',action="store_true",help="Describe nucleotide sequence using Pseudo Nucleotide Composition with Kmer size of 2. Values reported as: AA,AC,AG,AT,CA,CC,CG,CT,GA,GC,GG,GT,TA,TC,TG,TT")
-	Sequence.add_argument('-RM','--RepeatMasker',action="store_true",help="Check if variant falls into a repeated sequence found with Repeat Masker tool.")
-	Sequence.add_argument('-GC','--gcContent',action="store_true",help="Sequence GC content.")
-	Sequence.add_argument('-VC','--VariantClass',action="store_true",help="Annotate variant class: SNV (snv), Insertion (Ins), Deletion (Del), SequenceAlteration (Alt)")	
+	Sequence.add_argument('-RM','--RepeatMasker',action="store_true",help="Check from fasta reference if a variant falls in a sequence flagged as repeated sequence by RepeatMasker tool.")
+	Sequence.add_argument('-GC','--gcContent',action="store_true",help="Percentage of sequence GC content.")
+	Sequence.add_argument('-VC','--VariantClass',action="store_true",help="Annotated variant class: SNV (snv), Insertion (Ins), Deletion (Del), Sequence Alteration (Alt)")	
 
 
 	Bam = parser.add_argument_group('Bam optional arguments')
-	Bam.add_argument('-SBR','--StrandBiasReads',action="store_true",help="Strand Baias based on read orientation using Fisher's exact test.")
+	Bam.add_argument('-SBR','--StrandBiasReads',action="store_true",help="Strand Bias based on read orientation using Fisher's exact test.")
 	Bam.add_argument('-UnMap','--UnMappedReads',action="store_true",help="Percentage of unmapped reads for variant position.")
-	Bam.add_argument('-MQ0','--MappingQualityZero',action="store_true",help="Percentage of reads having Mapping Quaility 0.")
-	Bam.add_argument('-NPA','--NotPrimaryAlignment',action="store_true",help="Percentage of reads mapping position where alignment is not primary, i.e. they map also other genomic location. Flagged as NotPrimaryAlignment. Tag in FORMAT field.")
-	Bam.add_argument('-SA','--SupplementaryAlignment',action="store_true",help="Percentage of reads flagged as supplementary alignment. These reads suggest structural a chimeric alignments (i.e. one read fragment map to another location).")
-	Bam.add_argument('-NP','--NotPairedReads',action="store_true",help="Percentage of non paired reads.")
-	Bam.add_argument('-NPP','--NotProperPairedReads',action="store_true",help="Percentage of non proper paired reads, like ambiguous pairing.")
+	Bam.add_argument('-MQ0','--MappingQualityZero',action="store_true",help="Percentage of reads with Mapping Quaility=0.")
+	Bam.add_argument('-NPA','--NotPrimaryAlignment',action="store_true",help="Percentage of reads mapping position flagged as not primary alignment.")
+	Bam.add_argument('-SA','--SupplementaryAlignment',action="store_true",help="Percentage of reads mapping position flagged as supplementary alignment.")
+	Bam.add_argument('-NP','--NotPairedReads',action="store_true",help="Percentage of reads mapping position flagged as not paired.")
+	Bam.add_argument('-NPP','--NotProperPairedReads',action="store_true",help="Percentage of reads mapping position flagged as not proper paired.")
 	Bam.add_argument('-AS','--AlignmentScore',action="store_true",help="Mean Alignment Score of reads mapping position.")
-	Bam.add_argument('-NDT','--NumberTotalDupReads',action="store_true",help="Total number of duplicate reads mapping position.")
-	Bam.add_argument('-NDR','--NumberReadDupRef',action="store_true",help="Number of duplicate reads mapping REF allele.")
-	Bam.add_argument('-NDA','--NumberReadDupAlt',action="store_true",help="Number of duplicate reads mapping ALT allele.")
-	Bam.add_argument('-DR','--DuplicateReference',action="store_true",help="Percentage of REF reads marked as duplicates.")
-	Bam.add_argument('-DA','--DuplicateAlternate',action="store_true",help="Percentage of ALT reads marked as duplicates.")
-	Bam.add_argument('-DDup','--DeltaDuplicate',action="store_true",help="Difference for percentage duplicates in REF and ALT (REF-ALT). Negative values show preference in duplicate for REF allele, positive for ALT.")
-	Bam.add_argument('-SNVmbq','--SNVMinBaseQuality',default=12,type=int,metavar='0-66',help="Minimum Base Quality treshold for base supporting SNV position. Default=12")
-	Bam.add_argument('-SNVmmq','--SNVMinMappingQuality',default=30,type=int,metavar='0-60',help="Minimum Mapping Quality treshold for reads supporting SNV position. Default=30")
-	Bam.add_argument('-INDELmbq','--IndelMinBaseQuality',default=10,type=int,metavar='0-66',help="Minimum Base Quality treshold for base supporting InDel position. Default=10")
-	Bam.add_argument('-INDELmmq','--IndelMinMappingQuality',default=20,type=int,metavar='0-60',help="Minimum Mapping Quality treshold for reads supporting InDel position. Default=20")
-	Bam.add_argument('-iDP','--iEvaDepth',action="store_true",help="iEVA Depth for variant position. Only proper paired and proper mapped reads will be included.")
-	Bam.add_argument('-iAD','--iAlleleDepth',action="store_true",help="iEVA Allele Depth reported as: Ref,Alt")
+	Bam.add_argument('-NDT','--NumberTotalDupReads',action="store_true",help="Total number of reads mapping position marked as duplicate.")
+	Bam.add_argument('-NDR','--NumberReadDupRef',action="store_true",help="Number of reads mapping position marked as duplicate on REF allele.")
+	Bam.add_argument('-NDA','--NumberReadDupAlt',action="store_true",help="Number of reads mapping position marked as duplicate on ALT allele.")
+	Bam.add_argument('-DR','--DuplicateReference',action="store_true",help="Percentage of reads mapping position marked as duplicate on REF allele.")
+	Bam.add_argument('-DA','--DuplicateAlternate',action="store_true",help="Percentage of reads mapping position marked as duplicate on ALT allele.")
+	Bam.add_argument('-DDup','--DeltaDuplicate',action="store_true",help="Difference of percentage duplicate reads in REF and ALT alleles (REF-ALT). Negative values show preference in duplicate for REF allele, positive for ALT.")
+	Bam.add_argument('-SNVmbq','--SNVMinBaseQuality',default=12,type=int,metavar='[0-66]',help="Minimum Base Quality threshold for base supporting SNV position. Used on allele specific annotation. Default=12")
+	Bam.add_argument('-SNVmmq','--SNVMinMappingQuality',default=30,type=int,metavar='[0-60]',help="Minimum Mapping Quality threshold for reads supporting SNV position. Used on allele specific annotation. Default=30")
+	Bam.add_argument('-INDELmbq','--IndelMinBaseQuality',default=10,type=int,metavar='[0-66]',help="Minimum Base Quality threshold for base supporting InDel position. Used on allele specific annotation. Default=10")
+	Bam.add_argument('-INDELmmq','--IndelMinMappingQuality',default=20,type=int,metavar='[0-60]',help="Minimum Mapping Quality threshold for reads supporting InDel position. Used on allele specific annotation. Default=20")
+	Bam.add_argument('-iDP','--iEvaDepth',action="store_true",help="iEVA read depth for variant position. Only proper paired, proper mapped and not duplicate reads are included.")
+	Bam.add_argument('-iAD','--iAlleleDepth',action="store_true",help="iEVA Allele Depth reported as Ref,Alt")
 	Bam.add_argument('-RR','--ReadRef',action="store_true",help="Number of reads mapping REF allele.")
 	Bam.add_argument('-RA','--ReadAlt',action="store_true",help="Number of reads mapping ALT allele.")
-	Bam.add_argument('-QR','--MeanRefQscore',action="store_true",help="Mean Q-score for REF reads.")
-	Bam.add_argument('-QA','--MeanAltQscore',action="store_true",help="Mean Q-score for ALT reads.")
-	Bam.add_argument('-TDP','--TotalDPUnfilter',action="store_true",help="Total number of reads mapping position. No filter is applied. Look at -iDP option for filtered DP.")
+	Bam.add_argument('-QR','--MeanRefQscore',action="store_true",help="Mean Q-score for REF allele.")
+	Bam.add_argument('-QA','--MeanAltQscore',action="store_true",help="Mean Q-score for ALT allele.")
+	Bam.add_argument('-TDP','--TotalDPUnfilter',action="store_true",help="Total read depth. No filter applied, include duplicate reads. Look at -iDP option for filtered iDP.")
 	Bam.add_argument('-NCR','--NumberClippedReadsRef',action="store_true",help="Number of clipped reads mapping REF allele.")
 	Bam.add_argument('-NCA','--NumberClippedReadsAlt',action="store_true",help="Number of clipped reads mapping ALT allele.")
 	Bam.add_argument('-CR','--ClippedReadsRef',action="store_true",help="Percentage of clipped reads mapping REF allele.")
@@ -931,7 +994,7 @@ def main():
 
 
 	out = open(opts.outfile,'w')
- 	Reference = opts.reference
+	Reference = opts.reference
 	bam_list = opts.list
 	Header_File = []
 	H_CHR = []
@@ -953,106 +1016,99 @@ def main():
 
 
 	#Da sys.argv estraggo le opzioni date nella command line. Per ognuna di queste, scrivo il campo da inserire nell'header
-	for option in sys.argv:
 
-		if '-SR' in option:
-			Header_File += ['##INFO=<ID=SR,Number=1,Type=String,Description="Variant falls into repeated sequence. None=0, SimpleRepeat=1, Homopolymer=2.">']
-		
-		elif '-SRL' in option:
-			Header_File += ['##INFO=<ID=SRL,Number=1,Type=Integer,Description="Length of repeat sequence for SR tag">']
+	if opts.SimpleRepeat:
+		Header_File += ['##INFO=<ID=SR,Number=1,Type=String,Description="Variant falls in a repeated sequence. None=0, SimpleRepeat=1, Homopolymer=2.">']
+	
+	if opts.SimpleRepeatLength:
+		Header_File += ['##INFO=<ID=SRL,Number=1,Type=Integer,Description="Length of repeated sequence (expressed as number of nucleotides) for SR tag">']
 
-		elif '-PNC' in option:
-			Header_File += ['##INFO=<ID=PNC,Number=1,Type=Float,Description="Pseudo Nucleotide Composition using Kmer size of 2. Reported as: AA,AC,AG,AT,CA,CC,CG,CT,GA,GC,GG,GT,TA,TC,TG,TT">']
-		
-		elif '-RM' in option:
-			Header_File += ['##INFO=<ID=RM,Number=1,Type=Integer,Description="Variant falls into repeated sequence computed with RepeatMasker tool. True=1, False=0">']
-		
-		elif '-PNC' in option:
-			Header_File += ['##INFO=<ID=PNC,Number=1,Type=Float,Description="Describe nucleotide sequence in a window size of 40 using Pseudo Nucleotide Composition. Values reported as: ">']
+	if opts.PseudoNucleotidesComposition:
+		Header_File += ['##INFO=<ID=PNC,Number=16,Type=Float,Description="Pseudo Nucleotide sequence Composition using Kmer size of 2. Reported as: AA,AC,AG,AT,CA,CC,CG,CT,GA,GC,GG,GT,TA,TC,TG,TT">']
+	
+	if opts.RepeatMasker:
+		Header_File += ['##INFO=<ID=RM,Number=1,Type=Integer,Description="Variant falls in a repeated sequence according to RepeatMasker tool. True=1, False=0">']
+	
+	if opts.gcContent:
+		Header_File += ['##INFO=<ID=GC,Number=1,Type=Float,Description="Percentage of GC content in sequence">']
 
-		elif '-GC' in option:
-			Header_File += ['##INFO=<ID=GC,Number=1,Type=Float,Description="GC content in sequence">']
+	if opts.VariantClass:
+		Header_File += ['##INFO=<ID=VC,Number=1,Type=String,Description="Annotated variant class: SNV=snv, Insertion=Ins, Deletion=Del, SequenceAlteration=Alt">']
+	
+	if opts.StrandBiasReads:
+		Header_File += ['##FORMAT=<ID=SBR,Number=1,Type=Float,Description="Strand bias based on read orientation (R1+,R1-,R2+,R2-)">']
+	
+	if opts.UnMappedReads:
+		Header_File += ['##FORMAT=<ID=UnMap,Number=1,Type=Float,Description="Percentage of unmapped reads">']
 
-		elif '-VC' in option:
-			Header_File += ['##FORMAT=<ID=VC,Number=1,Type=String,Description="Annotate variant class: SNV=snv, Insertion=Ins, Deletion=Del, SequenceAlteration=Alt">']
-		
-		elif '-SBR' in option:
-			Header_File += ['##FORMAT=<ID=SBR,Number=1,Type=Float,Description="Strand bias based on read orientation (R1+,R1-,R2+,R2-)">']
-		
-		elif '-AS' in option:
-			Header_File += ['##FORMAT=<ID=AS,Number=1,Type=Float,Description="Reads mean alignment score">']
-		
-		elif '-UnMap' in option:
-			Header_File += ['##FORMAT=<ID=UnMap,Number=1,Type=Float,Description="Percentage of unmapped reads">']
+	if opts.MappingQualityZero:
+		Header_File += ['##FORMAT=<ID=MQ0,Number=1,Type=Float,Description="Percentage of reads mapping position with Mapping Quaility=0">']
 
-		elif '-MQ0' in option:
-			Header_File += ['##FORMAT=<ID=MQ0,Number=1,Type=Float,Description="Percentage of reads having Mapping Quaility=0">']
+	if opts.NotPrimaryAlignment:
+		Header_File += ['##FORMAT=<ID=NPA,Number=1,Type=Float,Description="Percentage of reads mapping position flagged as not primary alignment">']
+	
+	if opts.SupplementaryAlignment:
+		Header_File += ['##FORMAT=<ID=SA,Number=1,Type=Float,Description="Percentage of reads mapping position flagged as supplementary alignment">']
+	
+	if opts.NotPairedReads:
+		Header_File += ['##FORMAT=<ID=NP,Number=1,Type=Float,Description="Percentage of reads mapping position flagged as not paired">']
+	
+	if opts.NotProperPairedReads:
+		Header_File += ['##FORMAT=<ID=NPP,Number=1,Type=Float,Description="Percentage of reads mapping position flagged as not proper paired">']
 
-		elif '-NPA' in option:
-			Header_File += ['##FORMAT=<ID=NPA,Number=1,Type=Float,Description="Percentage of reads flagged as not primary alignment">']
-		
-		elif '-SA' in option:
-			Header_File += ['##FORMAT=<ID=SA,Number=1,Type=Float,Description="Percentage of reads flagged as supplementary alignment">']
-		
-		elif '-NP' in option:
-			Header_File += ['##FORMAT=<ID=NP,Number=1,Type=Float,Description="Percentage of not paired reads">']
-		
-		elif '-NPP' in option:
-			Header_File += ['##FORMAT=<ID=NPP,Number=1,Type=Float,Description="Percentage of not proper paired reads">']
+	if opts.AlignmentScore:
+		Header_File += ['##FORMAT=<ID=AS,Number=1,Type=Float,Description="Reads mean alignment score">']
 
-		elif '-NDT' in option:
-			Header_File += ['##FORMAT=<ID=NDT,Number=1,Type=Integer,Description="Total number of duplicate reads">']
+	if opts.NumberTotalDupReads:
+		Header_File += ['##FORMAT=<ID=NDT,Number=1,Type=Integer,Description="Total number of reads mapping position marked as duplicate">']
 
-		elif '-NDR' in option:
-			Header_File += ['##FORMAT=<ID=NDR,Number=1,Type=Integer,Description="Number of duplicate reads mapping REF allele">']
+	if opts.NumberReadDupRef:
+		Header_File += ['##FORMAT=<ID=NDR,Number=1,Type=Integer,Description="Number of duplicate reads mapping REF allele">']
 
-		elif '-NDA' in option:
-			Header_File += ['##FORMAT=<ID=NDA,Number=1,Type=Integer,Description="Number of duplicate reads mapping ALT allele">']	
-		
-		elif '-DR' in option:
-			Header_File += ['##FORMAT=<ID=DR,Number=1,Type=Float,Description="Percentage of REF reads marked as duplicates">']
-		
-		elif '-DA' in option:
-			Header_File += ['##FORMAT=<ID=DA,Number=1,Type=Float,Description="Percentage of ALT reads marked as duplicates">']
-		
-		elif '-DDup' in option:
-			Header_File += ['##FORMAT=<ID=DDup,Number=1,Type=Float,Description="Difference for duplicate reads in REF and ALT (DupREF-DupALT)">']
-		
-		elif '-iDP' in option:
-			Header_File += ['##FORMAT=<ID=iDP,Number=1,Type=Integer,Description="iEVA read depth. Only proper paired and proper mapped reads will be included.">']
+	if opts.NumberReadDupAlt:
+		Header_File += ['##FORMAT=<ID=NDA,Number=1,Type=Integer,Description="Number of duplicate reads mapping ALT allele">']	
+	
+	if opts.DuplicateReference:
+		Header_File += ['##FORMAT=<ID=DR,Number=1,Type=Float,Description="Percentage of duplicate reads mapping REF allele">']
+	
+	if opts.DuplicateAlternate:
+		Header_File += ['##FORMAT=<ID=DA,Number=1,Type=Float,Description="Percentage of duplicate reads mapping ALT allele">']
+	
+	if opts.DeltaDuplicate:
+		Header_File += ['##FORMAT=<ID=DDup,Number=1,Type=Float,Description="Difference for duplicate reads between REF and ALT alleles (DupREF-DupALT)">']
+	
+	if opts.iEvaDepth:
+		Header_File += ['##FORMAT=<ID=iDP,Number=1,Type=Integer,Description="iEVA read depth. Only proper paired, proper mapped and not duplicate reads are included.">']
 
-		elif '-iAD' in option:
-			Header_File += ['##FORMAT=<ID=iAD,Number=R,Type=Integer,Description="Allelic depths reported by iEVA as Ref,Alt">']
+	if opts.iAlleleDepth:
+		Header_File += ['##FORMAT=<ID=iAD,Number=R,Type=Integer,Description="Allelic depth reported by iEVA as Ref,Alt">']
 
-		elif '-RR' in option:
-			Header_File += ['##FORMAT=<ID=RR,Number=1,Type=Integer,Description="Number of reads mapping REF allele">']
-		
-		elif '-RA' in option:
-			Header_File += ['##FORMAT=<ID=RA,Number=1,Type=Integer,Description="Number of reads mapping ALT allele">']
+	if opts.ReadRef:
+		Header_File += ['##FORMAT=<ID=RR,Number=1,Type=Integer,Description="Number of reads mapping REF allele">']
+	
+	if opts.ReadAlt:
+		Header_File += ['##FORMAT=<ID=RA,Number=1,Type=Integer,Description="Number of reads mapping ALT allele">']
 
-		elif '-QR' in option:
-			Header_File += ['##FORMAT=<ID=QR,Number=1,Type=Float,Description="Mean Q-score for reads supporting REF allele">']
-		
-		elif '-QA' in option:
-			Header_File += ['##FORMAT=<ID=QA,Number=1,Type=Float,Description="Mean Q-score for reads supporting ALT allele">']
-		
-		elif '-TDP' in option:
-			Header_File += ['##FORMAT=<ID=TDP,Number=1,Type=Integer,Description="Total read depth. No filter applied">']
-		
-		elif '-NCR' in option:
-			Header_File += ['##FORMAT=<ID=NCR,Number=1,Type=Integer,Description="Number of clipped reads mapping REF allele">']
-		
-		elif '-NCA' in option:
-			Header_File += ['##FORMAT=<ID=NCA,Number=1,Type=Integer,Description="Number of clipped reads mapping ALT allele">']
+	if opts.MeanRefQscore:
+		Header_File += ['##FORMAT=<ID=QR,Number=1,Type=Float,Description="Mean Q-score for REF allele">']
+	
+	if opts.MeanAltQscore:
+		Header_File += ['##FORMAT=<ID=QA,Number=1,Type=Float,Description="Mean Q-score for ALT allele">']
+	
+	if opts.TotalDPUnfilter:
+		Header_File += ['##FORMAT=<ID=TDP,Number=1,Type=Integer,Description="Total read depth. No filter applied">']
+	
+	if opts.NumberClippedReadsRef:
+		Header_File += ['##FORMAT=<ID=NCR,Number=1,Type=Integer,Description="Number of clipped reads mapping REF allele">']
+	
+	if opts.NumberClippedReadsAlt:
+		Header_File += ['##FORMAT=<ID=NCA,Number=1,Type=Integer,Description="Number of clipped reads mapping ALT allele">']
 
-		elif '-ClipRef' in option:
-			Header_File += ['##FORMAT=<ID=ClipRef,Number=1,Type=Float,Description="Percentage of clipped reads supporting REF">']
-		
-		elif '-ClipAlt' in option:
-			Header_File += ['##FORMAT=<ID=ClipAlt,Number=1,Type=Float,Description="Percentage of clipped reads supporting ALT">']
-
-		else:
-			continue
+	if opts.ClippedReadsRef:
+		Header_File += ['##FORMAT=<ID=ClipRef,Number=1,Type=Float,Description="Percentage of clipped reads supporting REF">']
+	
+	if opts.ClippedReadsAlt:
+		Header_File += ['##FORMAT=<ID=ClipAlt,Number=1,Type=Float,Description="Percentage of clipped reads supporting ALT">']
 
 	if opts.AlignmentScore or opts.StrandBiasReads or opts.UnMappedReads or opts.NotPrimaryAlignment \
 	or opts.SupplementaryAlignment or opts.NotPairedReads or opts.NotProperPairedReads \
@@ -1064,7 +1120,7 @@ def main():
 		if opts.list:
 			pass
 		else:
-			sys.exit('To Enable bam features insert path to bam list with command -L (--list)')
+			sys.exit('\n' + 'To Enable bam features insert path to bam list with command -L (--list)' + '\n')
 
 	#Scrivo in output la nuova header
 	out.write('\n'.join(Header_File) + '\n' + '\n'.join(H_CHR) + '\n')
@@ -1115,7 +1171,7 @@ def main():
 					variant[H_CHR.index('INFO')] += ';' + 'RM=' + RM
 
 				if opts.gcContent:
-					GC = GC_content(Reference, variant, H_CHR, WindowSize)
+					GC = GC_content(Reference, variant, H_CHR, opts.WindowSize)
 					variant[H_CHR.index('INFO')] += ';' + 'GC=' + GC
 
 				if opts.VariantClass:
