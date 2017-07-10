@@ -72,6 +72,6 @@ def main():
 	tab = open(opts.input,'r')
 	hum = open(opts.file,'r')
 
-	add_hum(tab,hum)
+	zzadd_hum(tab,hum)
 
 main()

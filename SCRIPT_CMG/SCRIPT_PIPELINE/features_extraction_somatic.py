@@ -141,27 +141,27 @@ class Features():
 	DP_t_Mutect='.'
 
 	DP_tum_media='.'
-	DP_tum_median='.'
+	DP_tum_mediana='.'
 
 	DP_n_Varscan='.'
 	DP_n_Vardict='.'
 	DP_n_Mutect='.'
 
 	DP_norm_media='.'
-	DP_norm_median='.'
+	DP_norm_mediana='.'
 
 	QB_t_Mutect='.'
 	QB_t_Varscan='.'
 	QB_t_Vardict='.'
 
 	MBQT_media='.'
-	MBQT_median='.'
+	MBQT_mediana='.'
 
 	QB_n_Mutect='.'
 	QB_n_Varscan='.'
 	QB_n_Vardict='.'
 
-	MBQN_median='.'
+	MBQN_mediana='.'
 	MBQN_media='.'    
 	   
 	AF_t_Mutect='0'
@@ -169,14 +169,14 @@ class Features():
 	AF_t_Vardict='0'
 
 	AF_tum_media='.'
-	AF_tum_median='.'
+	AF_tum_mediana='.'
 
 	AF_n_Mutect='.'
 	AF_n_Varscan='.'
 	AF_n_Vardict='.'
 
 	AF_norm_media='.'
-	AF_norm_median='.'
+	AF_norm_mediana='.'
 
 
 	Delta_Mutect='.'
@@ -188,10 +188,10 @@ class Features():
 	Delta_perc_Vardict='.'
 
 	Delta_media='.'
-	Delta_median='.'
+	Delta_mediana='.'
 
 	Delta_perc_media='.'
-	Delta_perc_median='.'
+	Delta_perc_mediana='.'
 
 	SomaticMutect='.'
 	SomaticVarscan='.'
@@ -211,25 +211,25 @@ class Features():
 
 	AO_tum_media='.'
 	RO_tum_media='.'
-	AO_tum_median='.'
-	RO_tum_median='.'
+	AO_tum_mediana='.'
+	RO_tum_mediana='.'
 
 	AO_norm_media='.'
 	RO_norm_media='.'
-	AO_norm_median='.'
-	RO_norm_median='.'
+	AO_norm_mediana='.'
+	RO_norm_mediana='.'
 
 	FILTER_Mutect='.'     
 	STATUS_Vardict='.'
 
 	STRBIAS_media='.'
-	STRBIAS_median= '.'
+	STRBIAS_mediana= '.'
 
 	DP_n_t_Mutect='.'
 	DP_n_t_Varscan='.'
 	DP_n_t_Vardict='.'
 
-	DPn_t_median='.'
+	DPn_t_mediana='.'
 	DPn_t_media='.'
 
 	Delta_perc_Mutect='.'
@@ -271,21 +271,21 @@ class Features():
 	INFO_Vardict='.'
 
 	DP_n='.'
-	DP_Norm_median='.'
+	DP_Norm_mediana='.'
 
 
 	STRBIAS_norm_media='.'
-	STRBIAS_norm_median= '.'
+	STRBIAS_norm_mediana= '.'
 
 	AO_tum_media='.'
 	RO_tum_media='.'
-	AO_tum_median='.'
-	RO_tum_median='.'
+	AO_tum_mediana='.'
+	RO_tum_mediana='.'
 
 	AO_norm_media='.'
 	RO_norm_media='.'
-	AO_norm_median='.'
-	RO_norm_median='.'
+	AO_norm_mediana='.'
+	RO_norm_mediana='.'
 
 	#features solo di Mutect
 	ALT_F1R2_Mutect='.'
@@ -776,13 +776,13 @@ def set_features_snp(dictionary):
 
 		AO_tum_media='.'
 		RO_tum_media='.'
-		AO_tum_median='.'
-		RO_tum_median='.'
+		AO_tum_mediana='.'
+		RO_tum_mediana='.'
 
 		AO_norm_media='.'
 		RO_norm_media='.'
-		AO_norm_median='.'
-		RO_norm_median='.'
+		AO_norm_mediana='.'
+		RO_norm_mediana='.'
 
 		i=0
 		v=[]
@@ -796,9 +796,9 @@ def set_features_snp(dictionary):
 		except:
 			features.DP_tum_media='.'
 		try:
-			features.DP_tum_median= int(statistics.median(v))
+			features.DP_tum_mediana= int(statistics.mediana(v))
 		except:
-			features.DP_tum_median='.'
+			features.DP_tum_mediana='.'
 
 		i=0
 		nDP=0
@@ -813,9 +813,9 @@ def set_features_snp(dictionary):
 		except:
 			features.DP_norm_media='.'
 		try:
-			features.DP_norm_median= int(statistics.median(v))
+			features.DP_norm_mediana= int(statistics.mediana(v))
 		except:
-			features.DP_norm_median='.'
+			features.DP_norm_mediana='.'
 		
 		i=0
 		v=[]
@@ -830,9 +830,9 @@ def set_features_snp(dictionary):
 		except:
 			features.AO_tum_media='.'
 		try:
-			features.AO_tum_median= int(statistics.median(v))
+			features.AO_tum_mediana= int(statistics.mediana(v))
 		except:
-			features.AO_tum_median='.'
+			features.AO_tum_mediana='.'
 
 		i=0
 		v=[]
@@ -849,9 +849,9 @@ def set_features_snp(dictionary):
 		except:
 			features.AO_norm_media='.'
 		try:
-			features.AO_norm_median= int(statistics.median(v))
+			features.AO_norm_mediana= int(statistics.mediana(v))
 		except:
-			features.AO_norm_median='.'
+			features.AO_norm_mediana='.'
 		i=0
 		v=[]
 		nRO=0
@@ -865,9 +865,9 @@ def set_features_snp(dictionary):
 		except:
 			features.RO_tum_media='.'
 		try:
-			features.RO_tum_median= statistics.median(v)
+			features.RO_tum_mediana= statistics.mediana(v)
 		except:
-			features.RO_tum_median='.'
+			features.RO_tum_mediana='.'
 
 		i=0
 		v=[]
@@ -882,9 +882,9 @@ def set_features_snp(dictionary):
 		except:
 			features.RO_norm_media='.'
 		try:
-			features.RO_norm_median= statistics.median(v)
+			features.RO_norm_mediana= statistics.mediana(v)
 		except:
-			features.RO_norm_median='.'
+			features.RO_norm_mediana='.'
 
 		i=0
 		nMBQT=0
@@ -900,9 +900,9 @@ def set_features_snp(dictionary):
 		except:
 			features.MBQT_media='.'
 		try:
-			features.MBQT_median=round(statistics.median(v))
+			features.MBQT_mediana=round(statistics.mediana(v))
 		except:
-			features.MBQT_median='.'	
+			features.MBQT_mediana='.'	
 
 		i=0
 		nMBQN=0
@@ -922,9 +922,9 @@ def set_features_snp(dictionary):
 		except:
 			features.MBQN_media='.'
 		try:
-			features.MBQN_median=round(statistics.median(v))
+			features.MBQN_mediana=round(statistics.mediana(v))
 		except:
-			features.MBQN_median='.'
+			features.MBQN_mediana='.'
 
 		i=0
 		v=[]
@@ -938,9 +938,9 @@ def set_features_snp(dictionary):
 		except:
 			features.Delta_media='.'
 		try:
-			features.Delta_median=statistics.median(v)
+			features.Delta_mediana=statistics.mediana(v)
 		except:
-			features.Delta_median='.'
+			features.Delta_mediana='.'
 		
 		i=0
 		v=[]
@@ -955,9 +955,9 @@ def set_features_snp(dictionary):
 		except:
 			features.Delta_perc_media='.'
 		try:
-			features.Delta_perc_median= statistics.median(v)
+			features.Delta_perc_mediana= statistics.mediana(v)
 		except:
-			features.Delta_perc_median='.'
+			features.Delta_perc_mediana='.'
 
 		i=0
 		v=[]
@@ -971,9 +971,9 @@ def set_features_snp(dictionary):
 		except:
 			features.AF_tum_media='.'
 		try:
-			features.AF_tum_median= statistics.median(v)
+			features.AF_tum_mediana= statistics.mediana(v)
 		except:
-			features.AF_tum_median='.'
+			features.AF_tum_mediana='.'
 
 		i=0
 		AF_med=0
@@ -988,9 +988,9 @@ def set_features_snp(dictionary):
 		except:
 			features.AF_norm_media='.'
 		try:
-			features.AF_norm_median= statistics.median(v)
+			features.AF_norm_mediana= statistics.mediana(v)
 		except:
-			features.AF_norm_median='.'
+			features.AF_norm_mediana='.'
 
 		i=0
 		v=[]
@@ -1000,15 +1000,15 @@ def set_features_snp(dictionary):
 				SB_media=float(SB_media) + float(strb)
 				v=v+[float(strb)]
 				i=i+1
-		#print v,statistics.median(v)
+		#print v,statistics.mediana(v)
 		try:
 			features.STRBIAS_media= SB_media/i
 		except:
 			features.STRBIAS_media='.'
 		try:
-			features.STRBIAS_median = statistics.median(v)
+			features.STRBIAS_mediana = statistics.mediana(v)
 		except:
-			features.STRBIAS_median='.'
+			features.STRBIAS_mediana='.'
 
 		i=0
 		v=[]
@@ -1022,9 +1022,9 @@ def set_features_snp(dictionary):
 		except:
 			features.DPn_t_media='.'
 		try:
-			features.DPn_t_median= statistics.median(v)
+			features.DPn_t_mediana= statistics.mediana(v)
 		except:
-			features.DPn_t_median='.'
+			features.DPn_t_mediana='.'
 
 		#print vett_delta,"\tdeltamedia",features.delta_media,"\n",vett_delta_perc,"\tdelta_perc_media",features.Delta_perc_media,"\n",vett_AF_tum_media,"\taf_media",features.AF_media,"\n",vett_STRB_media,"\tstrb",features.STRBIAS_media
 		dictionary[variante]= varc_array + [features]
@@ -1163,15 +1163,15 @@ def print_var_snp_complete(dictionary):
 	varianti_tsv=open(opts.out+ '.tsv','w')
 	varianti_tsv.write('\t'.join(["SAMPLE_NORMAL_ID","SAMPLE_TUMOR_ID","CHROM","POS","REF","ALT","CallMutect","CallVarscan","CallVardict",
 			"SomaticMutect","SomaticVarscan","SomaticVardict",
-			"GT_Mutect","GT_Varscan","GT_Vardict","DP_tum_median","BQ_Mutect","BQ_Vardict","MBQT_media","MBQT_mediana",
-			"AF_Mutect","AF_Varscan","AF_Vardict","AF_media","AF_median",
-			"Delta_Mutect","Delta_Varscan","Delta_Vardict","Delta_media","Delta_median",
-			"Delta_perc_Mutect","Delta_perc_Varscan","Delta_perc_Vardict","Delta_perc_media","Delta_perc_median",
-			"DP_n/t_Mutect","DP_n/t_varscan","DP_n/t_vardict","DP_n/t_media","DP_n/t_median",
+			"GT_Mutect","GT_Varscan","GT_Vardict","DP_tum_mediana","BQ_Mutect","BQ_Vardict","MBQT_media","MBQT_medianaa",
+			"AF_Mutect","AF_Varscan","AF_Vardict","AF_media","AF_mediana",
+			"Delta_Mutect","Delta_Varscan","Delta_Vardict","Delta_media","Delta_mediana",
+			"Delta_perc_Mutect","Delta_perc_Varscan","Delta_perc_Vardict","Delta_perc_media","Delta_perc_mediana",
+			"DP_n/t_Mutect","DP_n/t_varscan","DP_n/t_vardict","DP_n/t_media","DP_n/t_mediana",
 			"T_lod_Mutect","N_lod_Mutect","Delta_lod_Mutect","T/N_lod_Mutect",
 			"FOXOG_Mutect","GQ_Mutect","PGT_Mutect","PID_Mutect","PL_Mutect","HCNT_Mutect",
 			"MAX_ED_Mutect","MIN_ED_Mutect","PON_Mutect","RPA_Mutect","RU_Mutect","STR_Mutect",
-			"STRBIAS_Mutect","STRBIAS_Varscan","STRBIAS_Vardict","STRBIAS_medio","STRBIAS_median",
+			"STRBIAS_Mutect","STRBIAS_Varscan","STRBIAS_Vardict","STRBIAS_medio","STRBIAS_mediana",
 			"ODDRATIO_Vardict","SBF_Vardict","SHIFT3_Vardict","MSI_Vardict","MSILEN_Vardict","SOR_Vardict",
 			"LSEQ_Vardict","RSEQ_Vardict","STATUS_Vardict","PMEAN_Vardict","PSTD_Vardict","QSTD_Vardict",
 			"MQ_Vardict","SN_Vardict","HIAF_Vardict","NM_Vardict",
@@ -1184,15 +1184,15 @@ def print_var_snp_complete(dictionary):
 		varianti_tsv.write('\t'.join([opts.normal,opts.tumor,variante,str(features.CallMutect),str(features.CallVarscan),str(features.CallVardict),
 			str(features.SomaticMutect),str(features.SomaticVarscan),str(features.SomaticVardict),
 			str(features.GT_t_Mutect),str(features.GT_t_Varscan),str(features.GT_t_Vardict),
-			str(features.DP_median),str(features.QB_Mutect),str(features.QB_Vardict),str(features.MBQT),str(features.MBQT_median),
-			str(features.AF_t_Mutect),str(features.AF_t_Varscan),str(features.AF_t_Vardict),str(features.AF_media),str(features.AF_median),
-			str(features.Delta_Mutect),str(features.Delta_Varscan),str(features.Delta_Vardict),str(features.delta_media),str(features.delta_median),
-			str(features.Delta_perc_Mutect),str(features.Delta_perc_Varscan),str(features.Delta_perc_Vardict),str(features.Delta_perc_media),str(features.Delta_perc_median),
-			str(features.DP_n_t_Mutect),str(features.DP_n_t_Varscan),str(features.DP_n_t_Vardict),str(features.DPn_t_media),str(features.DPn_t_median),
+			str(features.DP_mediana),str(features.QB_Mutect),str(features.QB_Vardict),str(features.MBQT),str(features.MBQT_mediana),
+			str(features.AF_t_Mutect),str(features.AF_t_Varscan),str(features.AF_t_Vardict),str(features.AF_media),str(features.AF_mediana),
+			str(features.Delta_Mutect),str(features.Delta_Varscan),str(features.Delta_Vardict),str(features.delta_media),str(features.delta_mediana),
+			str(features.Delta_perc_Mutect),str(features.Delta_perc_Varscan),str(features.Delta_perc_Vardict),str(features.Delta_perc_media),str(features.Delta_perc_mediana),
+			str(features.DP_n_t_Mutect),str(features.DP_n_t_Varscan),str(features.DP_n_t_Vardict),str(features.DPn_t_media),str(features.DPn_t_mediana),
 			str(features.tumor_lod_Mutect),str(features.normal_lod_Mutect),str(features.delta_lod_Mutect),str(features.t_n_lod_Mutect),
 			str(features.FOXOG_Mutect),str(features.GQ_Mutect),str(features.PGT_Mutect),str(features.PID_Mutect),str(features.PL_Mutect),str(features.HCNT_Mutect),
 			str(features.MAX_ED_Mutect),str(features.MIN_ED_Mutect),str(features.PON_Mutect),str(features.RPA_Mutect),str(features.RU_Mutect),str(features.STR_Mutect),
-			str(features.STRBIAS_Mutect),str(features.STRBIAS_Varscan),str(features.STRBIAS_Vardict),str(features.STRBIAS_media),str(features.STRBIAS_median),
+			str(features.STRBIAS_Mutect),str(features.STRBIAS_Varscan),str(features.STRBIAS_Vardict),str(features.STRBIAS_media),str(features.STRBIAS_mediana),
 			str(features.ODDRATIO_Vardict),str(features.SBF_Vardict),str(features.SHIFT3_Vardict),str(features.MSI_Vardict),str(features.MSILEN_Vardict),str(features.SOR_Vardict),
 			str(features.LSEQ_Vardict),str(features.RSEQ_Vardict),str(features.STATUS_Vardict),str(features.PMEAN_Vardict),str(features.PSTD_Vardict),str(features.QSTD_Vardict),
 			str(features.MQ_Vardict),str(features.SN_Vardict),str(features.HIAF_Vardict),str(features.NM_Vardict),
@@ -1208,8 +1208,8 @@ def print_var_snp_reduced(dictionary):
 			"GT_Mutect","GT_Varscan","GT_Vardict",
 			"DP_TUM","AF_TUM","AO_TUM","RO_TUM","MBQ_TUM",
 			"DP_NORM","AF_NORM","AO_NORM","RO_NORM","MBQ_NORM",
-			"Delta_mediana","Delta_perc_median",
-			"STRBIAS_mediana","HCNT_Mutect","MAX_ED_Mutect","MIN_ED_Mutect","STR_Mutect",
+			"Delta_medianaa","Delta_perc_mediana",
+			"STRBIAS_medianaa","HCNT_Mutect","MAX_ED_Mutect","MIN_ED_Mutect","STR_Mutect",
 			"SHIFT3_Vardict","MSI_Vardict","MSILEN_Vardict","SOR_Vardict",
 			"LSEQ_Vardict","RSEQ_Vardict","PMEAN_Vardict",
 			"MQ_Vardict","SN_Vardict","NM_Vardict",
@@ -1223,10 +1223,10 @@ def print_var_snp_reduced(dictionary):
 			str(features.SomaticMutect),str(features.SomaticVarscan),str(features.SomaticVardict),
 			str(features.FILTER_Mutect),str(features.STATUS_Vardict),
 			str(features.GT_t_Mutect),str(features.GT_t_Varscan),str(features.GT_t_Vardict),
-			str(features.DP_tum_median),str(features.AF_median),str(features.AO_tum_media),str(features.RO_tum_media),str(features.MBQT_median),
-			str(features.DP_norm_median),str(features.AF_norm_median),str(features.AO_norm_media),str(features.RO_norm_media),str(features.MBQN_median),
-			str(features.delta_median),str(features.Delta_perc_median),
-			str(features.STRBIAS_median),str(features.HCNT_Mutect),str(features.MAX_ED_Mutect),str(features.MIN_ED_Mutect),str(features.STR_Mutect),
+			str(features.DP_tum_mediana),str(features.AF_mediana),str(features.AO_tum_media),str(features.RO_tum_media),str(features.MBQT_mediana),
+			str(features.DP_norm_mediana),str(features.AF_norm_mediana),str(features.AO_norm_media),str(features.RO_norm_media),str(features.MBQN_mediana),
+			str(features.delta_mediana),str(features.Delta_perc_mediana),
+			str(features.STRBIAS_mediana),str(features.HCNT_Mutect),str(features.MAX_ED_Mutect),str(features.MIN_ED_Mutect),str(features.STR_Mutect),
 			str(features.SHIFT3_Vardict),str(features.MSI_Vardict),str(features.MSILEN_Vardict),str(features.SOR_Vardict),
 			str(features.LSEQ_Vardict),str(features.RSEQ_Vardict),str(features.PMEAN_Vardict),
 			str(features.MQ_Vardict),str(features.SN_Vardict),str(features.NM_Vardict),

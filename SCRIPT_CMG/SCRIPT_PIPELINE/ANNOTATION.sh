@@ -6,11 +6,13 @@ ANNOTATION () {
 	printf "\n\n"
 	cat $LOGHI/logo_annotation.txt
 	printf $"\n\n\n"
+
+	sort -c $1 > ${1%.*}.sort.vcf
 	
 	if [[ "$2" == "CANONICAL" ]]
 		then
-		perl $VEPANN -i $1 \
-		-o ${1%.*}.ANN.nosort.vcf \
+		perl $VEPANN -i ${1%.*}.sort.vcf \
+		-o ${1%.*}.ANN.vcf \
 		--stats_file ${1%.*}.ANN.html \
 		--cache \
 		--assembly GRCh37 \
@@ -35,8 +37,8 @@ ANNOTATION () {
 
 	else
 
-		perl $VEPANN -i $1 \
-		-o ${1%.*}.ANN.nosort.vcf \
+		perl $VEPANN -i ${1%.*}.sort.vcf \
+		-o ${1%.*}.ANN.vcf \
 		--stats_file ${1%.*}.ANN.html \
 		--cache \
 		--assembly GRCh37 \
@@ -59,14 +61,12 @@ ANNOTATION () {
 		--vcf
 	fi
 
-	vcf-sort -c ${1%.*}.ANN.nosort.vcf > ${1%.*}.ANN.vcf
 	mv $1 $DELETE
-	mv ${1%.*}.ANN.nosort.vcf $DELETE
+	#mv ${1%.*}.ANN.nosort.vcf $DELETE
 	INPUT=${1%.*}.ANN.vcf
 	printf $'\n =========>	ANNOTATION: DONE\n'
 
 }
-
 
 ADD_ANNOTATION() {
 
@@ -89,7 +89,6 @@ ADD_ANNOTATION() {
   	mv ${2%.*}.ANN.tsv $DELETE
   	printf $'\n =========>	ADD ANNOTATION: DONE\n'
 }
-
 
 SPLIT_TRANSCRIPTS () {
 
@@ -163,7 +162,6 @@ MERGE_2VCF () {
 #  	INPUT=${1%.*}.ANN.vcf
 #  	printf $'\n =========>	ANNOTATION: DONE\n'
 # }
-
 
 ADD_ANNOTATION_somatic () {
 	

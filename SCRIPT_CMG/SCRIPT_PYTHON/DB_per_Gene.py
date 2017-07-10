@@ -1,6 +1,11 @@
 import os
 import glob2
 import argparse
+import shutil
+from openpyxl import Workbook
+from openpyxl.compat import range
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
 
 def extract_info(varianti,hash_var,pazienti):
 	index_of_gene = 0
@@ -49,6 +54,7 @@ def extract_info(varianti,hash_var,pazienti):
 
 			if var_id in hash_var.keys():
 				if variante[index_of_gen].split('/')[0] == variante[index_of_gen].split('/')[1]:
+					#print "gia presente",hash_var[var_id],AC,AN
 					hash_var[var_id][1] = hash_var[var_id][1] + 1
 				else: 
 					
@@ -76,13 +82,16 @@ def extract_info(varianti,hash_var,pazienti):
 						hash_var[var_id] = [1,0,[pazienti[id][0]],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
 					except:
 						hash_var[var_id] = [0,1,[id],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
+				#print "nuova variante",hash_var[var_id],AC,AN
 
 
 def extract_var_from_gene(varianti,vc):
 	var_list = open(opts.out + '/lista_varianti_' + opts.gene + '_' + vc + '.list','a+')
 	var_array = var_list.readlines()
 	index_of_gene = 0
+	
 	for line in varianti:
+		#print line
 		line = line.rstrip()
 		line_split= line.split('\t')
 		if line.startswith('CHROM'):
@@ -101,10 +110,11 @@ def extract_var_from_gene(varianti,vc):
 				var_list.write(header)
 			
 		else:
-			if line_split[index_of_gene] == opts.gene:
+			if line_split[index_of_gene].rstrip() == opts.gene.rstrip():
+				#print "si"
 				var_id = line_split[0:5]
 				var_list.write('\t'.join(var_id + [line_split[index_of_HGVSc],line_split[index_of_HGVSp],line_split[index_of_conseq],line_split[index_of_gene],line_split[index_of_gen],line_split[index_of_ac],line_split[index_of_an]]) + '\n')
-
+			
 def extract_paz_name(pazienti):
 	id_info={}
 	for paz in pazienti:
@@ -136,20 +146,24 @@ def main():
 	global opts
 	opts = parser.parse_args()
 	global pazienti
+	opts.out=opts.out.rstrip()
+	opts.gene=opts.gene.rstrip()
 
 	pazienti = extract_paz_name(open(opts.paz_list,'r'))
 	
 	try:
 		os.mkdir(opts.out)
 	except:
-		print opts.out,"directory esistente"
+		#print opts.out,"directory esistente"
+		shutil.rmtree(opts.out)
+		os.mkdir(opts.out)
 
 	hash_var = {}
 	num_paz = 0
 
 	for filename in glob2.glob(os.path.join(opts.path,'*.tsv')):
 		num_paz = num_paz + 1
-		#print filename
+		print filename
 		if 'FREEBAYES' in filename:
 			vc = 'FREEBAYES'
 		elif 'GATK_Other' in filename:
@@ -169,17 +183,37 @@ def main():
 			continue
 		else:
 			extract_info(open(filename,'r'),hash_var,pazienti)
+		#os.remove(filename)
 
 	statistiche = open(opts.out + '/lista_varianti_' + opts.gene + '_STATS.tsv','w')
+	wb = Workbook()
+	dest_filename = opts.out + '/lista_varianti_' + opts.gene + '_STATS.xlsx'
+	ws1 = wb.active
+	ws1.title = "range names"
+
+
 	statistiche.write('CHROM'+'\t' + 'POS'+'\t' + 'REF'+'\t' + 'ALT' +'\t' +'HGVSc'+'\t' + 'HGVSp'+'\t'+'CONSEQUENCE'+'\t'+ 'FRAZ_ALLELICA'+'\t' + 'FRAZ_PERC'+'\t' + 'MAF'+'\t'+'ETERO'+'\t'+ 'OMO'+'\t'+'NUM_PAZ_MUTATI'+'\t'+'PAZIENTI'+'\n')
-	
+	header=['CHROM','POS','REF','ALT','HGVSc','HGVSp','CONSEQUENCE','FRAZ_ALLELICA','FRAZ_PERC','MAF','ETERO','OMO','NUM_PAZ_MUTATI','PAZIENTI']
+	ws1.append(header)
+
 	for var in hash_var.keys():
 		maf = float("{0:.4f}".format(float(hash_var[var][-2])/float(hash_var[var][-1])))
 		fraz = str(hash_var[var][-2]) + '/' + str(hash_var[var][-1])
 		perc = str(maf*100) + '%'
-		paz_mut = str(int(hash_var[var][0]) + int(hash_var[var][1])) + '/' + str((num_paz/2))
+		paz_mut = str(int(hash_var[var][0]) + int(hash_var[var][1])) + '/' + str((num_paz))
 		info_var = str(hash_var[var][3]) + '\t' + str(hash_var[var][4])+ '\t' + str(hash_var[var][5])
 		stats = fraz + '\t' + perc + '\t' +  str(maf) + '\t' + str(hash_var[var][0]) + '\t' + str(hash_var[var][1]) + '\t' + str(paz_mut) + '\t' + ';'.join(hash_var[var][2])
 		statistiche.write(var + '\t' +info_var + '\t' + stats + '\n')
+
+		var_split1 = var.split('\t')
+		info_var1 = [str(hash_var[var][3]),str(hash_var[var][4]),str(hash_var[var][5])]
+		stats1 = [fraz,perc, str(maf),str(hash_var[var][0]),str(hash_var[var][1]),str(paz_mut),';'.join(hash_var[var][2])]
+		to_print=var_split1+info_var1+stats1
+		ws1.append(to_print)
+	
+	for col in ws1.columns:
+		for cell in col:
+			cell.alignment = Alignment(horizontal="center", vertical="center")
+	wb.save(filename = dest_filename)
 
 main()

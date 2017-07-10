@@ -29,6 +29,41 @@ class Caller():
 	STRBIAS_TOT=''
 	RF=''
 
+class iEVA():
+
+	SimpleRepeat=''
+	SimpleRepeatLength=''
+	PseudoNucleotidesComposition=''
+	RepeatMasker=''
+	gcContent=''
+	VariantClass=''
+	StrandBiasReads=''
+	UnMappedReads=''
+	MappingQualityZero=''
+	NotPrimaryAlignment=''
+	SupplementaryAlignment=''
+	NotPairedReads=''
+	NotProperPairedReads=''
+	AlignmentScore=''
+	NumberTotalDupReads=''
+	NumberReadDupRef=''
+	NumberReadDupAlt=''
+	DuplicateReference=''
+	DuplicateAlternate=''
+	DeltaDuplicate=''
+	iEvaDepth=''
+	iAlleleDepth=''
+	ReadRef=''
+	ReadAlt=''
+	MeanRefQscore=''
+	MeanAltQscore=''
+	TotalDPUnfilter=''
+	NumberClippedReadsRef=''
+	NumberClippedReadsAlt=''
+	ClippedReadsRef=''
+	ClippedReadsAlt=''
+
+
 class Freebayes(Caller):
 	
 	#PROVENIENTI DALLE INFO
@@ -249,21 +284,132 @@ class Features():
 	SDP_Varscan=''
 
 
+	#features di iEVA
+
+	SimpleRepeat_iEVA='.'
+	SimpleRepeatLength_iEVA='.'
+	PseudoNucleotidesComposition_iEVA='.'
+	RepeatMasker_iEVA='.'
+	gcContent_iEVA='.'
+	VariantClass_iEVA='.'
+	StrandBiasReads_iEVA='.'
+	UnMappedReads_iEVA='.'
+	MappingQualityZero_iEVA='.'
+	NotPrimaryAlignment_iEVA='.'
+	SupplementaryAlignment_iEVA='.'
+	NotPairedReads_iEVA='.'
+	NotProperPairedReads_iEVA='.'
+	AlignmentScore_iEVA='.'
+	NumberTotalDupReads_iEVA='.'
+	NumberReadDupRef_iEVA='.'
+	NumberReadDupAlt_iEVA='.'
+	DuplicateReference_iEVA='.'
+	DuplicateAlternate_iEVA='.'
+	DeltaDuplicate_iEVA='.'
+	iEvaDepth_iEVA='.'
+	iAlleleDepth_iEVA='.'
+	ReadRef_iEVA='.'
+	ReadAlt_iEVA='.'
+	MeanRefQscore_iEVA='.'
+	MeanAltQscore_iEVA='.'
+	TotalDPUnfilter_iEVA='.'
+	NumberClippedReadsRef_iEVA='.'
+	NumberClippedReadsAlt_iEVA='.'
+	ClippedReadsRef_iEVA='.'
+	ClippedReadsAlt_iEVA='.'
+
+
 ''' //////////// FUNZIONI ////////////'''
 
-def get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes):
+
+def get_info_iEVA(chrom,pos,ref,alt,filter,info,format,sample,ieva):
+
+	if "SBR" in format:
+		ieva.StrandBiasReads=sample[format.index("SBR")]
+	if "UnMap" in format:
+		ieva.UnMappedReads=sample[format.index("UnMap")]
+	if "MQ0" in format:
+		ieva.MappingQualityZero=sample[format.index("MQ0")]
+	if "NPA" in format:
+		ieva.NotPrimaryAlignment=sample[format.index("NPA")]
+	if "SA" in format:
+		ieva.SupplementaryAlignment=sample[format.index("SA")]
+	if "NP" in format:
+		ieva.NotPairedReads=sample[format.index("NP")]
+	if "NPP" in format:
+		ieva.NotProperPairedReads=sample[format.index("NPP")]
+	if "AS" in format:
+		ieva.AlignmentScore=sample[format.index("AS")]
+	if "NDT" in format:
+		ieva.NumberTotalDupReads=sample[format.index("NDT")]
+	if "NDR" in format:
+		ieva.NumberReadDupRef=sample[format.index("NDR")]
+	if "NDA" in format:
+		ieva.NumberReadDupAlt=sample[format.index("NDA")]
+	if "DR" in format:
+		ieva.DuplicateReference=sample[format.index("DR")]
+	if "DA" in format:
+		ieva.DuplicateAlternate=sample[format.index("DA")]
+	if "DDup" in format:
+		ieva.DeltaDuplicate=sample[format.index("DDup")]
+	if "iDP" in format:
+		ieva.iEvaDepth=sample[format.index("iDP")]
+	if "iAD" in format:
+		ieva.iAlleleDepth=sample[format.index("iAD")]
+	if "RR" in format:
+		ieva.ReadRef=sample[format.index("RR")]
+	if "RA" in format:
+		ieva.ReadAlt=sample[format.index("RA")]
+	if "QR" in format:
+		ieva.MeanRefQscore=sample[format.index("QR")]
+	if "QA" in format:
+		ieva.MeanAltQscore=sample[format.index("QA")]
+	if "TDP" in format:
+		ieva.TotalDPUnfilter=sample[format.index("TDP")]
+	if "NCR" in format:
+		ieva.NumberClippedReadsRef=sample[format.index("NCR")]
+	if "NCA" in format:
+		ieva.NumberClippedReadsAlt=sample[format.index("NCA")]
+	if "CR" in format:
+		ieva.ClippedReadsRef=sample[format.index("CR")]
+	if "CA" in format:
+		ieva.ClippedReadsAlt=sample[format.index("CA")]
+
+	for el in info:
+		if el.startswith('SRL='):
+			ieva.SimpleRepeatLength=el.split('=')[1]
+		elif el.startswith('SR='):
+			ieva.SimpleRepeat=el.split('=')[1]
+		elif el.startswith('PNC='):
+			ieva.PseudoNucleotidesComposition=el.split('=')[1]
+		elif el.startswith('RM='):
+			ieva.RepeatMasker=el.split('=')[1]
+		elif el.startswith('GC='):
+			ieva.gcContent=el.split('=')[1]
+		elif el.startswith('VC='):
+			ieva.VariantClass=el.split('=')[1]
+		
+def get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes,merged):
 	'''estrae le informazioni dal vcf di freebayes'''
-	
-	freebayes.GT=sample[format.index('GT')]
-	if freebayes.GT=='.' :
+	if merged==1:
+		suffisso='_F'
+	else:
+		suffisso=''
+
+	freebayes.GT=sample[format.index('GT'+suffisso)]
+
+	if freebayes.GT=='.':
 		freebayes.GT='./.'
 		#print chrom,pos,ref,alt,freebayes.GT
+	if freebayes.GT=='./.':
+		pass
 	else:
-		freebayes.GQ=sample[format.index('GQ')]
-		freebayes.AO=float(sample[format.index('AO')])
-		freebayes.RO=float(sample[format.index('RO')])
+
+		freebayes.GQ=sample[format.index('GQ'+suffisso)]
+		freebayes.AO=float(sample[format.index('AO'+suffisso)])
+		freebayes.RO=float(sample[format.index('RO'+suffisso)])
 		#freebayes.DP=freebayes.AO+freebayes.RO
-		freebayes.DP=float(sample[format.index('DP')])
+		freebayes.DP=float(sample[format.index('DP'+suffisso)])
 
 		try:
 			freebayes.RF=(freebayes.AO+freebayes.RO)/freebayes.DP
@@ -271,87 +417,87 @@ def get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes):
 			freebayes.RF='.'
 
 		for ind in info:
-			if ind.startswith("SAF="):
+			if ind.startswith("SAF"+suffisso+"="):
 				freebayes.AO_f_TOT=float(ind.split('=')[1])
-			if ind.startswith("SAR="):
+			if ind.startswith("SAR"+suffisso+"="):
 				freebayes.AO_r_TOT=float(ind.split('=')[1])
-			if ind.startswith("SRF="):
+			if ind.startswith("SRF"+suffisso+"="):
 				freebayes.RO_f_TOT=float(ind.split('=')[1])
-			if ind.startswith("SRR="):
+			if ind.startswith("SRR"+suffisso+"="):
 				freebayes.RO_r_TOT=float(ind.split('=')[1])
-			if ind.startswith("AC="):
-				freebayes.AC=float(ind.split('=')[1])
-			if ind.startswith("AB="):
+			if ind.startswith("AC"+suffisso+"="):
+				freebayes.AC=int(ind.split('=')[1])
+			if ind.startswith("AB"+suffisso+"="):
 				freebayes.AB=float(ind.split('=')[1])
-			if ind.startswith("ABP="):
+			if ind.startswith("ABP"+suffisso+"="):
 				freebayes.ABP=float(ind.split('=')[1])
-			if ind.startswith("AN="):
+			if ind.startswith("AN"+suffisso+"="):
 				freebayes.AN=float(ind.split('=')[1])
-			if ind.startswith("AF="):
+			if ind.startswith("AF"+suffisso+"="):
 				freebayes.AF_TOT=float(ind.split('=')[1])
-			if ind.startswith("AO="):
+			if ind.startswith("AO"+suffisso+"="):
 				freebayes.AO_TOT=float(ind.split('=')[1])
-			if ind.startswith("DP="):
+			if ind.startswith("DP"+suffisso+"="):
 				freebayes.DP_TOT=float(ind.split('=')[1])
-			if ind.startswith("DPB="):
+			if ind.startswith("DPB"+suffisso+"="):
 				freebayes.DPB_TOT=float(ind.split('=')[1])
-			if ind.startswith("DPRA="):
+			if ind.startswith("DPRA"+suffisso+"="):
 				freebayes.DPRA_TOT=float(ind.split('=')[1])
-			if ind.startswith("END="):
+			if ind.startswith("END"+suffisso+"="):
 				freebayes.END_TOT=float(ind.split('=')[1])
-			if ind.startswith("EPP="):
+			if ind.startswith("EPP"+suffisso+"="):
 				freebayes.EPP_TOT=float(ind.split('=')[1])
-			if ind.startswith("EPPR="):
+			if ind.startswith("EPPR"+suffisso+"="):
 				freebayes.EPPR_TOT=float(ind.split('=')[1])
-			if ind.startswith("GTI="):
+			if ind.startswith("GTI"+suffisso+"="):
 				freebayes.GTI_TOT=float(ind.split('=')[1])
-			if ind.startswith("LEN="):
+			if ind.startswith("LEN"+suffisso+"="):
 				freebayes.LEN=float(ind.split('=')[1])
-			if ind.startswith("MEANALT="):
+			if ind.startswith("MEANALT"+suffisso+"="):
 				freebayes.MEANALT=float(ind.split('=')[1])
-			if ind.startswith("MIN="):
+			if ind.startswith("MIN"+suffisso+"="):
 				freebayes.MIN=float(ind.split('=')[1])
-			if ind.startswith("MQM="):
+			if ind.startswith("MQM"+suffisso+"="):
 				freebayes.MQ_A=float(ind.split('=')[1])
-			if ind.startswith("MQMR="):
+			if ind.startswith("MQMR"+suffisso+"="):
 				freebayes.MQ_R=float(ind.split('=')[1])
-			if ind.startswith("NS="):
+			if ind.startswith("NS"+suffisso+"="):
 				freebayes.NS=float(ind.split('=')[1])
-			if ind.startswith("NUMALT="):
+			if ind.startswith("NUMALT"+suffisso+"="):
 				freebayes.NUMALT=float(ind.split('=')[1])
-			if ind.startswith("ODDS="):
+			if ind.startswith("ODDS"+suffisso+"="):
 				freebayes.ODDS=float(ind.split('=')[1])
-			if ind.startswith("PAIRED="):
+			if ind.startswith("PAIRED"+suffisso+"="):
 				freebayes.PAIRED=float(ind.split('=')[1])
-			if ind.startswith("PAIREDR="):
+			if ind.startswith("PAIREDR"+suffisso+"="):
 				freebayes.PAIREDR=float(ind.split('=')[1])
-			if ind.startswith("PAO="):
+			if ind.startswith("PAO"+suffisso+"="):
 				freebayes.PAO=float(ind.split('=')[1])
-			if ind.startswith("PQA="):
+			if ind.startswith("PQA"+suffisso+"="):
 				freebayes.PQA=float(ind.split('=')[1])
-			if ind.startswith("PQR="):
+			if ind.startswith("PQR"+suffisso+"="):
 				freebayes.PQR=float(ind.split('=')[1])
-			if ind.startswith("PRO="):
+			if ind.startswith("PRO"+suffisso+"="):
 				freebayes.PRO=float(ind.split('=')[1])
-			if ind.startswith("QA="):
+			if ind.startswith("QA"+suffisso+"="):
 				freebayes.QA=float(ind.split('=')[1])
-			if ind.startswith("QR="):
+			if ind.startswith("QR"+suffisso+"="):
 				freebayes.QR=float(ind.split('=')[1])
-			if ind.startswith("RO="):
+			if ind.startswith("RO"+suffisso+"="):
 				freebayes.RO_TOT=float(ind.split('=')[1])
-			if ind.startswith("RPL="):
+			if ind.startswith("RPL"+suffisso+"="):
 				freebayes.RPL=float(ind.split('=')[1])
-			if ind.startswith("RPP="):
+			if ind.startswith("RPP"+suffisso+"="):
 				freebayes.RPP=float(ind.split('=')[1])
-			if ind.startswith("RPPR="):
+			if ind.startswith("RPPR"+suffisso+"="):
 				freebayes.RPPR=float(ind.split('=')[1])
-			if ind.startswith("RPR="):
+			if ind.startswith("RPR"+suffisso+"="):
 				freebayes.RPR=float(ind.split('=')[1])
-			if ind.startswith("RUN="):
+			if ind.startswith("RUN"+suffisso+"="):
 				freebayes.RUN=float(ind.split('=')[1])
-			if ind.startswith("SAP="):
+			if ind.startswith("SAP"+suffisso+"="):
 				freebayes.SAP=float(ind.split('=')[1])
-			if ind.startswith("SRP="):
+			if ind.startswith("SRP"+suffisso+"="):
 				freebayes.SRP=float(ind.split('=')[1])
 
 
@@ -359,21 +505,21 @@ def get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes):
 		freebayes.DP_r_TOT=float(freebayes.AO_r_TOT)+float(freebayes.RO_r_TOT)
 
 		try:
-			freebayes.A_QB=float(sample[format.index('QA')])/freebayes.AO
+			freebayes.A_QB=float(sample[format.index('QA'+suffisso)])/freebayes.AO
 		except:
 			freebayes.A_QB='.'
 		try:	
-			freebayes.R_QB=float(sample[format.index('QR')])/freebayes.RO
+			freebayes.R_QB=float(sample[format.index('QR'+suffisso)])/freebayes.RO
 		except:
 			freebayes.R_QB='.'
 		try:	
-			freebayes.QB=float(sample[format.index('QA')])/freebayes.AO
+			freebayes.QB=float(sample[format.index('QA'+suffisso)])/freebayes.AO
 		except:
 			freebayes.QB='.'
 
 
 		try:
-			gls = [float(x) for x in sample[format.index("GL")].split(",")]
+			gls = [float(x) for x in sample[format.index("GL"+suffisso)].split(",")]
 			freebayes.lod = max(gls[i] - gls[0] for i in range(1, len(gls)))
 		except:
 			freebayes.lod = -1.0
@@ -395,21 +541,28 @@ def get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes):
 			else:
 				freebayes.STRBIAS_TOT='.'
 
-		freebayes.FILTER=filter
+		try:
+			freebayes.FILTER=filter.split(',')[1]
+		except:
+			freebayes.FILTER=filter
 		#print chrom,pos,ref,alt,freebayes.GT
 	
 	freebayes.Call=1
 
-def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
+def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK,merged):
 	'''estrae le informazioni dal vcf di GATK'''
-	
-	GATK.GT=sample[format.index('GT')]
+	if merged==1:
+		suffisso='_G'
+	else:
+		suffisso=''
+
+	GATK.GT=sample[format.index('GT'+suffisso)]
 	if GATK.GT=='./.':
 		pass
 	else:
-		GATK.AO=float((sample[format.index('AD')]).split(',')[1])
-		GATK.RO=float((sample[format.index('AD')]).split(',')[0])
-		GATK.DP=float(sample[format.index('DP')])
+		GATK.AO=float((sample[format.index('AD'+suffisso)]).split(',')[1])
+		GATK.RO=float((sample[format.index('AD'+suffisso)]).split(',')[0])
+		GATK.DP=float(sample[format.index('DP'+suffisso)])
 		try:
 			GATK.RF=(GATK.AO+GATK.RO)/GATK.DP
 		except:
@@ -421,10 +574,10 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 		GATK.STR='0'
 		
 		try:
-			GATK.AO_r=float((sample[format.index('SB')]).split(',')[3])
-			GATK.AO_f=float((sample[format.index('SB')]).split(',')[2])
-			GATK.RO_r=float((sample[format.index('SB')]).split(',')[1])
-			GATK.RO_f=float((sample[format.index('SB')]).split(',')[0])
+			GATK.AO_r=float((sample[format.index('SB'+suffisso)]).split(',')[3])
+			GATK.AO_f=float((sample[format.index('SB'+suffisso)]).split(',')[2])
+			GATK.RO_r=float((sample[format.index('SB'+suffisso)]).split(',')[1])
+			GATK.RO_f=float((sample[format.index('SB'+suffisso)]).split(',')[0])
 			GATK.DP_r=GATK.AO_r+GATK.RO_r
 			GATK.DP_f=GATK.AO_f+GATK.RO_f
 		except:
@@ -435,49 +588,49 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 			GATK.DP_r='.'
 			GATK.DP_f='.'
 
-		GATK.QB=sample[format.index('SQD')]
+		GATK.QB=sample[format.index('SQD'+suffisso)]
 
 
 		for ind in info:
-			if ind.startswith("AC="):
+			if ind.startswith("AC"+suffisso+"="):
 				GATK.AC=ind.split('=')[1]
-			if ind.startswith("AF="):
+			if ind.startswith("AF"+suffisso+"="):
 				GATK.AF_TOT=ind.split('=')[1]
-			if ind.startswith("AN="):
+			if ind.startswith("AN"+suffisso+"="):
 				GATK.AN=ind.split('=')[1]
-			if ind.startswith("BaseQRankSum="):
+			if ind.startswith("BaseQRankSum"+suffisso+"="):
 				GATK.BaseQRankSum=ind.split('=')[1]
-			if ind.startswith("ClippingRankSum="):
+			if ind.startswith("ClippingRankSum"+suffisso+"="):
 				GATK.ClippingRankSum=ind.split('=')[1]
-			if ind.startswith("DP="):
+			if ind.startswith("DP"+suffisso+"="):
 				GATK.DP_TOT=ind.split('=')[1]
-			if ind.startswith("DS="):
+			if ind.startswith("DS"+suffisso+"="):
 				GATK.DS=ind.split('=')[1]
-			if ind.startswith("END="):
+			if ind.startswith("END"+suffisso+"="):
 				GATK.END=ind.split('=')[1]
-			if ind.startswith("ExcessHet="):
+			if ind.startswith("ExcessHet"+suffisso+"="):
 				GATK.ExcessHet=ind.split('=')[1]
-			if ind.startswith("FS="):
+			if ind.startswith("FS"+suffisso+"="):
 				GATK.FS=ind.split('=')[1]
-			if ind.startswith("HaplotypeScore="):
+			if ind.startswith("HaplotypeScore"+suffisso+"="):
 				GATK.HaplotypeScore=ind.split('=')[1]
-			if ind.startswith("InbreedingCoeff="):
+			if ind.startswith("InbreedingCoeff"+suffisso+"="):
 				GATK.InbreedingCoeff=ind.split('=')[1]
-			if ind.startswith("MLEAC="):
+			if ind.startswith("MLEAC"+suffisso+"="):
 				GATK.MLEAC=ind.split('=')[1]
-			if ind.startswith("MLEAF="):
+			if ind.startswith("MLEAF"+suffisso+"="):
 				GATK.MLEAF=ind.split('=')[1]
-			if ind.startswith("MQ="):
+			if ind.startswith("MQ"+suffisso+"="):
 				GATK.MQ=ind.split('=')[1]
-			if ind.startswith("MQRankSum="):
+			if ind.startswith("MQRankSum"+suffisso+"="):
 				GATK.MQRankSum=ind.split('=')[1]
-			if ind.startswith("QD="):
+			if ind.startswith("QD"+suffisso+"="):
 				GATK.QD=ind.split('=')[1]
-			if ind.startswith("RAW_MQ="):
+			if ind.startswith("RAW_MQ"+suffisso+"="):
 				GATK.RAW_MQ=ind.split('=')[1]
-			if ind.startswith("ReadPosRankSum="):
+			if ind.startswith("ReadPosRankSum"+suffisso+"="):
 				GATK.ReadPosRankSum=ind.split('=')[1]
-			if ind.startswith("SOR="):
+			if ind.startswith("SOR"+suffisso+"="):
 				GATK.SOR=ind.split('=')[1]
 
 		try:
@@ -497,58 +650,63 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 
 
 		try:
-			GATK.GQ=float(sample[format.index('GQ')])
+			GATK.GQ=float(sample[format.index('GQ'+suffisso)])
 		except:
 			GATK.GQ='.'
 		
-		GATK.FILTER=filter
+		try:
+			GATK.FILTER=filter.split(',')[0]
+		except:
+			GATK.FILTER=filter
 		#print chrom,pos,ref,alt,GATK.GT
 		GATK.Call=1
 	
-def get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan):
+def get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan,merged):
 	'''estrae le informazioni dal vcf di varscan'''
-	
-	varscan.GT=sample[format.index('GT')]
+	if merged==1:
+		suffisso='_V'
+	else:
+		suffisso=''
+	varscan.GT=sample[format.index('GT'+suffisso)]
 	if varscan.GT== './.':
 		#print chrom,pos,ref,alt,varscan.GT
 		pass
 	else:
-		varscan.AO=float(sample[format.index('AD')])
-		varscan.RO=float(sample[format.index('RD')])
-		varscan.DP=float(sample[format.index('DP')])
-		varscan.SDP=float(sample[format.index('SDP')])
+		varscan.AO=float(sample[format.index('AD'+suffisso)])
+		varscan.RO=float(sample[format.index('RD'+suffisso)])
+		varscan.DP=float(sample[format.index('DP'+suffisso)])
+		varscan.SDP=float(sample[format.index('SDP'+suffisso)])
 
 		varscan.RF=(varscan.RO + varscan.AO)/varscan.SDP
 	
 	 	for ind in info:
-	 		if ind.startswith("ADP"):
+	 		if ind.startswith("ADP"+suffisso+"="):
 				varscan.ADP=ind.split('=')[1]
-			if ind.startswith("WT"):
+			if ind.startswith("WT"+suffisso+"="):
 				varscan.WT=ind.split('=')[1]
-			if ind.startswith("HET"):
+			if ind.startswith("HET"+suffisso+"="):
 				varscan.HET=ind.split('=')[1]
-			if ind.startswith("HOM"):
+			if ind.startswith("HOM"+suffisso+"="):
 				varscan.HOM=ind.split('=')[1]
-			if ind.startswith("NC"):
+			if ind.startswith("NC"+suffisso+"="):
 				varscan.NC=ind.split('=')[1]
 		
-		varscan.AC=	(varscan.HET+2*varscan.HOM)
+		varscan.AC=	(int(varscan.HET)+int(varscan.HOM)*2)
 		varscan.AN=	2*(varscan.HET+varscan.HOM+varscan.WT)
 					
-		varscan.RO_f=float(sample[format.index('RDF')])
-		varscan.RO_r=float(sample[format.index('RDR')])
-		varscan.AO_f=float(sample[format.index('ADF')])
-		varscan.AO_r=float(sample[format.index('ADR')])
+		varscan.RO_f=float(sample[format.index('RDF'+suffisso)])
+		varscan.RO_r=float(sample[format.index('RDR'+suffisso)])
+		varscan.AO_f=float(sample[format.index('ADF'+suffisso)])
+		varscan.AO_r=float(sample[format.index('ADR'+suffisso)])
 		varscan.DP_f=varscan.RO_f + varscan.AO_f
 		varscan.DP_r=varscan.RO_r + varscan.AO_r
-		varscan.Call=1
-		varscan.QB_R=float(sample[format.index('RBQ')])
-		varscan.QB_A=float(sample[format.index('ABQ')])
+		varscan.QB_R=float(sample[format.index('RBQ'+suffisso)])
+		varscan.QB_A=float(sample[format.index('ABQ'+suffisso)])
 		try:
 			varscan.QB=varscan.QB_A
 		except:
 			varscan.QB='.'
-		Varscan.GQ=float(sample[format.index('GQ')])
+		Varscan.GQ=float(sample[format.index('GQ'+suffisso)])
 		
 		try:
 			varscan.AF=float(varscan.AO/(varscan.DP))
@@ -566,9 +724,12 @@ def get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan):
 			else:
 				varscan.STRBIAS='.'
 
-		Varscan.FILTER=filter
+		try:
+			Varscan.FILTER=filter.split(',')[2]
+		except:
+			Varscan.FILTER=filter
 		#print chrom,pos,ref,alt,varscan.GT
-	Varscan.Call=1
+		Varscan.Call=1
 
 def set_features(dictionary):
 	'''setta i valori delle features in base alle info estratte dai vcf'''
@@ -584,7 +745,7 @@ def set_features(dictionary):
 		index=0
 		#print variante
 		#print varc_array
-		for varcall in varc_array:
+		for varcall in varc_array[:-1]:
 			if varcall is not "":
 				vett_MBQ=vett_MBQ+[varcall.QB]
 				vett_DP=vett_DP+[varcall.DP]
@@ -722,8 +883,42 @@ def set_features(dictionary):
 					features.STRBIAS_TOT_Varscan=varc_array[1].STRBIAS_TOT
 					features.SDP_Varscan=varc_array[1].SDP
 
-
+			
 			index = index + 1	
+
+
+		features.SimpleRepeat_iEVA = varc_array[3].SimpleRepeat
+		features.SimpleRepeatLength_iEVA = varc_array[3].SimpleRepeatLength
+		features.PseudoNucleotidesComposition_iEVA = '\t'.join((varc_array[3].PseudoNucleotidesComposition).split(','))
+		features.RepeatMasker_iEVA = varc_array[3].RepeatMasker
+		features.gcContent_iEVA = varc_array[3].gcContent
+		features.VariantClass_iEVA = varc_array[3].VariantClass
+		features.StrandBiasReads_iEVA = varc_array[3].StrandBiasReads
+		features.UnMappedReads_iEVA = varc_array[3].UnMappedReads
+		features.MappingQualityZero_iEVA = varc_array[3].MappingQualityZero
+		features.NotPrimaryAlignment_iEVA = varc_array[3].NotPrimaryAlignment
+		features.SupplementaryAlignment_iEVA = varc_array[3].SupplementaryAlignment
+		features.NotPairedReads_iEVA = varc_array[3].NotPairedReads
+		features.NotProperPairedReads_iEVA = varc_array[3].NotProperPairedReads
+		features.AlignmentScore_iEVA = varc_array[3].AlignmentScore
+		features.NumberTotalDupReads_iEVA = varc_array[3].NumberTotalDupReads
+		features.NumberReadDupRef_iEVA = varc_array[3].NumberReadDupRef
+		features.NumberReadDupAlt_iEVA = varc_array[3].NumberReadDupAlt
+		features.DuplicateReference_iEVA = varc_array[3].DuplicateReference
+		features.DuplicateAlternate_iEVA = varc_array[3].DuplicateAlternate
+		features.DeltaDuplicate_iEVA = varc_array[3].DeltaDuplicate
+		features.iEvaDepth_iEVA = varc_array[3].iEvaDepth
+		features.iAlleleDepth_iEVA = varc_array[3].iAlleleDepth
+		features.ReadRef_iEVA = varc_array[3].ReadRef
+		features.ReadAlt_iEVA = varc_array[3].ReadAlt
+		features.MeanRefQscore_iEVA = varc_array[3].MeanRefQscore
+		features.MeanAltQscore_iEVA = varc_array[3].MeanAltQscore
+		features.TotalDPUnfilter_iEVA = varc_array[3].TotalDPUnfilter
+		features.NumberClippedReadsRef_iEVA = varc_array[3].NumberClippedReadsRef
+		features.NumberClippedReadsAlt_iEVA = varc_array[3].NumberClippedReadsAlt
+		features.ClippedReadsRef_iEVA = varc_array[3].ClippedReadsRef
+		features.ClippedReadsAlt_iEVA = varc_array[3].ClippedReadsAlt
+
 
 		vett_RF_media=[features.RF_GATK,features.RF_Varscan,features.RF_Freebayes]
 		vett_AF_media=[features.AF_GATK,features.AF_Varscan,features.AF_Freebayes]
@@ -741,7 +936,6 @@ def set_features(dictionary):
 		RO_mediana='.'
 		RF_media='.'
 		RF_mediana='.'
-
 
 		v=[]
 		for dp in vett_DP:
@@ -850,33 +1044,60 @@ def set_features(dictionary):
 
 		dictionary[variante]= varc_array + [features]
 
+
 def switch(dictionary,ID,index,chrom,pos,ref,alt,filter,info,format,sample):
 	'''tramite index richiama la funzione di estrazione delle informazioni del variant caller associato all'indice'''
-	if dictionary.has_key(ID):
-		vettore=dictionary[ID]
-	else:
-		vettore=['','','']
+	if index == None:
+		vettore=['','','','']
 
-	if index==0:
-		# print 'Freebayes'
 		freebayes=Freebayes()
-		get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes)
+		get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes,1)
 		if freebayes.GT != './.':
 			vettore[0]=freebayes
 
-	elif index==2:
-		# print 'gatk'
 		gatk=GATK()
-		get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,gatk)
+		get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,gatk,1)
 		if gatk.GT != './.':
 			vettore[2]=gatk
-	elif index==1 :
-		# print 'varscan'
+
 		varscan=Varscan()
-		get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan)
+		get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan,1)
 		if varscan.GT != './.':
 			vettore[1]=varscan
-	dictionary[ID]=vettore
+
+		ieva=iEVA()
+		get_info_iEVA(chrom,pos,ref,alt,filter,info,format,sample,ieva)
+		vettore[3]=ieva
+
+		dictionary[ID]=vettore
+
+	else:
+		if dictionary.has_key(ID):
+			vettore=dictionary[ID]
+		else:
+			vettore=['','','']
+
+		if index==0:
+			# print 'Freebayes'
+			freebayes=Freebayes()
+			get_info_Freebayes(chrom,pos,ref,alt,filter,info,format,sample,freebayes,0)
+			if freebayes.GT != './.':
+				vettore[0]=freebayes
+
+		elif index==2:
+			# print 'gatk'
+			gatk=GATK()
+			get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,gatk,0)
+			if gatk.GT != './.':
+				vettore[2]=gatk
+
+		elif index==1 :
+			# print 'varscan'
+			varscan=Varscan()
+			get_info_varscan(chrom,pos,ref,alt,filter,info,format,sample,varscan,0)
+			if varscan.GT != './.':
+				vettore[1]=varscan
+		dictionary[ID]=vettore
 
 def read(iterable,index,dictionary):
 	'''legge il vcf e splitta le varie sezioni'''
@@ -901,7 +1122,6 @@ def read(iterable,index,dictionary):
 			SAMPLE = var[-1]
 			sample = SAMPLE.split(':')
 			if alt != '*':
-				#print index,chrom,pos,ref,alt
 				switch(dictionary,ID,index,chrom,pos,ref,alt,filter,info,format,sample)
 				
 def control(dictionary):
@@ -923,8 +1143,13 @@ def print_var(dictionary,out,sample_name):
 		if line.startswith('#'):
 			continue
 		else:
-			header=header+[line]
-			features_variante=features_variante+['features.'+line]
+			if line == 'PseudoNucleotidesComposition_iEVA':
+				header=header+['\t'.join(['AA', 'AC', 'AG', 'AT', 'CA', 'CC', 'CG', 'CT', 'GA', 'GC', 'GG', 'GT', 'TA', 'TC', 'TG', 'TT'])]
+				features_variante=features_variante+['features.'+line]
+			else:
+
+				header=header+[line]
+				features_variante=features_variante+['features.'+line]
 
 	#print features_variante
 	dataset_varianti.write('CHROM\tPOS\tID\tREF\tALT\t' + '\t'.join(header)+ '\n')
@@ -978,11 +1203,13 @@ def split_vcf(vcf_dir,samples):
 	varianti = []
 	
 	if 'FreeB' in vcf_name:
-			variant_caller = 'FreeBayes'
+		variant_caller = 'FreeBayes'
 	elif 'GATK' in vcf_name:
-			variant_caller = 'GATK'
+		variant_caller = 'GATK'
 	elif 'VarScan' in vcf_name:
-			variant_caller = 'VarScan'
+		variant_caller = 'VarScan'
+	else:
+		variant_caller = 'Merged'
 	print '\n'+variant_caller +'\n'
 	for line in vcf:
 		line=line.rstrip()
@@ -1027,7 +1254,11 @@ def split_vcf(vcf_dir,samples):
 			id = variante_split[2]
 			ref = variante_split[3]
 			alt = variante_split[4]
-			if variant_caller == 'GATK':
+			if variant_caller == 'GATK' or variant_caller == 'Merged':
+				if variant_caller == 'Merged':
+					suffisso='_G'
+				else:
+					suffisso=''
 				sSB = '.'
 				sQD = '.'
 				for line in sample_gvcf:
@@ -1060,8 +1291,9 @@ def split_vcf(vcf_dir,samples):
 						except:
 							print 'ci sono problemi',sample,chrom,pos,format,sformat
 		
-				variante_common = variante_split[0:8] + [variante_split[8]+':SB:SQD']
+				variante_common = variante_split[0:8] + [variante_split[8]+':SB'+suffisso+':SQD'+suffisso]
 				format_sample = variante_split[header_chrom.index(sample)]  +':'+ sSB + ':' + str(sQD)
+
 			else:
 				variante_common = variante_split[0:9]
 				format_sample = variante_split[header_chrom.index(sample)   ]
@@ -1076,6 +1308,7 @@ def main():
 	parser.add_argument('-f', '--freebayes', help="Freebayes vcf output file name",default=None)
 	parser.add_argument('-g', '--gatk', help="gatk vcf output file name",default=None)
 	parser.add_argument('-v', '--varscan', help="Varscan vcf output file name",default=None)
+	parser.add_argument('-m', '--merged', help="vcf merged from GATK,Freebayes and Varscan2",default=None)
 	parser.add_argument('-l', '--listaFeatures', help="Lista di features da stampare",default=None)
 	parser.add_argument('-s', '--split', help="Split vcf per samples", action='store_true')
 	parser.add_argument('-F', '--feat_extraction', help="Enable features extraction", action='store_true')
@@ -1086,46 +1319,76 @@ def main():
 
 	global opts 
 	opts = parser.parse_args()
-	callers = [opts.gatk,opts.varscan,opts.freebayes]
-	samples = samples_name_extract(open(opts.freebayes,'r'))
-	print callers
 	try:
 		os.mkdir(opts.out_path)
 	except:
 		pass
-	
-	if opts.split:
-		print 'Splitto le varianti per campione.'
-		for vcf_dir in callers:
-			#print 'Splitto ' + vcf_dir
-			split_vcf(vcf_dir,samples)
-		print'\nSplitto le varianti per campione:Done'
 
-	if opts.feat_extraction:
-		print '\nFEATURES EXTRACTION.'
-		varianti_total = dict()
-		for dir_sample in os.listdir(opts.out_path):
-			varianti = dict()
-			vcf_path = opts.out_path +'/' + dir_sample
-			if os.path.isdir(vcf_path):
-				print "\nAnalizzo le varianti da: " + vcf_path
-				for vcf_name in os.listdir(vcf_path) :
-					print vcf_name
-					if 'FreeB' in vcf_name:
-						index = 0
-					elif 'GATK' in vcf_name:
-						index = 2
-					elif 'VarScan' in vcf_name:
-						index = 1
-					
-					in_file = open(vcf_path + '/' + vcf_name)
-					vcfreader = read(in_file,index,varianti)
+	if opts.merged != None:
+		#print "yeeeee"
+		samples = samples_name_extract(open(opts.merged,'r'))
+		if opts.split:
+			print 'Splitto le varianti per campione.'
+			split_vcf(opts.merged,samples)
+			print'\nSplitto le varianti per campione:Done'
+
+		if opts.feat_extraction:
+			print '\nFEATURES EXTRACTION.'
+			varianti_total = dict()
+			for dir_sample in os.listdir(opts.out_path):
+				varianti = dict()
+				vcf_path = opts.out_path +'/' + dir_sample
+				if os.path.isdir(vcf_path):
+					for vcf_name in os.listdir(vcf_path):
+						in_file = open(vcf_path + '/' + vcf_name)	
+						vcfreader = read(in_file,None,varianti)
+
+					set_features(varianti)
+					print_var(varianti,opts.out_path,dir_sample)
 				
-				set_features(varianti)
-				print_var(varianti,opts.out_path,dir_sample)
-			
-			for var in varianti.keys():
-				#varianti_total[var] = var.split('\t')[0]+'\t'+var.split('\t')[1]+'\t.\t'+var.split('\t')[2]+'\t'+var.split('\t')[3]+'\t.\t.\t.\t.\t.'
-				varianti_total[var] = ''
-		print_vcf(varianti_total,opts.out_path)
+				for var in varianti.keys():
+					#varianti_total[var] = var.split('\t')[0]+'\t'+var.split('\t')[1]+'\t.\t'+var.split('\t')[2]+'\t'+var.split('\t')[3]+'\t.\t.\t.\t.\t.'
+					varianti_total[var] = ''
+			print_vcf(varianti_total,opts.out_path)
+
+	else:
+		callers = [opts.gatk,opts.varscan,opts.freebayes]
+		samples = samples_name_extract(open(opts.freebayes,'r'))
+		print callers
+		
+		
+		if opts.split:
+			print 'Splitto le varianti per campione.'
+			for vcf_dir in callers:
+				#print 'Splitto ' + vcf_dir
+				split_vcf(vcf_dir,samples)
+			print'\nSplitto le varianti per campione:Done'
+
+		if opts.feat_extraction:
+			print '\nFEATURES EXTRACTION.'
+			varianti_total = dict()
+			for dir_sample in os.listdir(opts.out_path):
+				varianti = dict()
+				vcf_path = opts.out_path +'/' + dir_sample
+				if os.path.isdir(vcf_path):
+					print "\nAnalizzo le varianti da: " + vcf_path
+					for vcf_name in os.listdir(vcf_path) :
+						print vcf_name
+						if 'FreeB' in vcf_name:
+							index = 0
+						elif 'GATK' in vcf_name:
+							index = 2
+						elif 'VarScan' in vcf_name:
+							index = 1
+						
+						in_file = open(vcf_path + '/' + vcf_name)
+						vcfreader = read(in_file,index,varianti)
+					
+					set_features(varianti)
+					print_var(varianti,opts.out_path,dir_sample)
+				
+				for var in varianti.keys():
+					#varianti_total[var] = var.split('\t')[0]+'\t'+var.split('\t')[1]+'\t.\t'+var.split('\t')[2]+'\t'+var.split('\t')[3]+'\t.\t.\t.\t.\t.'
+					varianti_total[var] = ''
+			print_vcf(varianti_total,opts.out_path)
 main()

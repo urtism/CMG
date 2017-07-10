@@ -6,7 +6,10 @@ PipeVersion=3.0
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/ALLINEAMENTO.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/PREPROCESSING.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/VARIANT_CALLING.sh
+#source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/VARIANT_CALLING_NOFILTERS.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/ANNOTATION.sh
+
+#/home/jarvis/NGS_ANALYSIS/TARGET/gene_list_HaloPlex.txt
 
 
 
@@ -21,6 +24,8 @@ VARSCAN=~/NGS_TOOLS/VarScan/VarScan.v2.3.9.jar
 FREEBAYES=~/NGS_TOOLS/freebayes/bin/freebayes
 VARDICT=~/NGS_TOOLS/VarDictJava-master/build/install/VarDict/bin/VarDict
 BCFTOOLS=bcftools
+SURECALLTRIMMER=~/NGS_TOOLS/AGeNT/SurecallTrimmer_v3.5.1.46.jar
+LOCATLT=~/NGS_TOOLS/AGeNT/LocatIt_v3.5.1.46.jar
 
 VEP=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 VEPANN=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/variant_effect_predictor.pl
@@ -33,6 +38,7 @@ LISTAFEATURES_SOMATIC=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_somati
 ANN_LIST_GERMLINE=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_annotazione.list
 ANN_LIST_SOMATIC=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_annotazione.list
 REF=~/NGS_TOOLS/hg19/ucsc.hg19.fasta
+REF_DICT=~/NGS_TOOLS/hg19/ucsc.hg19.dict
 MILLS=~/NGS_TOOLS/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf
 DBSNP=~/NGS_TOOLS/hg19/dbsnp_138.hg19.vcf
 LOGHI=~/git/CMG/LOGHI
@@ -54,6 +60,9 @@ TARGET_CF=~/NGS_ANALYSIS/TARGET/ctDNA_2_113416_AmpliconsExport.list
 TARGET_CF_BED=~/NGS_ANALYSIS/TARGET/ctDNA_2_113416_AmpliconsExport.bed
 TARGET_CANCER_1000=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.list
 TARGET_CANCER_1000_BED=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.bed
+TARGET_HALOPLEX=~/NGS_ANALYSIS/TARGET/HaloPlex_Covered.list
+TARGET_HALOPLEX_BED=~/NGS_ANALYSIS/TARGET/HaloPlex_Covered.bed
+AMPLICONS_HALOPLEX_BED=~/NGS_ANALYSIS/TARGET/HaloPlex_target_files/HaloPlex_Amplicons.bed
 
 HELP () {
 
@@ -118,6 +127,19 @@ CHECK_PANNELLO () {
 		DESIGN="AMPLICON"
 		TARGET=$TARGET_CF
 		TARGETBED=$TARGET_CF_BED
+
+	elif [ "$PANNELLO" == "HaloPlex" ]
+	then
+		DESIGN="AMPLICON"
+		TARGET=$TARGET_HALOPLEX
+		TARGETBED=$TARGET_HALOPLEX_BED
+
+	elif [ "$PANNELLO" == "" ] || [ "$PANNELLO" == "Sanger" ]
+	then
+		DESIGN="AMPLICON"
+		TARGET=""
+		TARGETBED=""
+	
 	fi
 }
 
@@ -139,6 +161,7 @@ PIPELINE_GERMLINE () {
 	fi
 	if [[ "$START" == *"F"* ]]
 	then
+		iEVA_germline $CFG
 		Features_extraction_germline $CFG
 	fi
 	if [[ "$START" == *"E"* ]]
@@ -146,8 +169,6 @@ PIPELINE_GERMLINE () {
 		ANNOTATION $INPUT NOCANONICAL
 		SPLIT_TRANSCRIPTS $INPUT $TRANSCR_LIST
 		ANNOTATION $INPUT2 CANONICAL
-		#INPUT1=/home/jarvis/NGS_ANALYSIS_TEMP/20170118_Run_69_Germline_Cancer_4/VARIANT_CALLING/FEATURES_EXTRACTION/20170118_Cancer_TOTAL.Trans.vcf
-		#INPUT=/home/jarvis/NGS_ANALYSIS_TEMP/20170118_Run_69_Germline_Cancer_4/VARIANT_CALLING/FEATURES_EXTRACTION/20170118_Cancer_TOTAL.Trans.other.ANN.vcf
 		MERGE_2VCF $INPUT1 $INPUT
 
 		cat $WORKDIR/Sample_list.txt | while read line
@@ -184,13 +205,41 @@ PIPELINE_SOMATIC () {
 		cat $CFG | while read line
 		do
 			INPUT=$(echo "$line" | cut -f1)
-			ANNOTATION $INPUT.vcf NOCANONICAL
-			SPLIT_TRANSCRIPTS $INPUT $TRANSCR_LIST
-			ANNOTATION $INPUT2 CANONICAL
-			MERGE_2VCF $INPUT1 $INPUT
-			ADD_ANNOTATION $INPUT ${INPUT%.*}.tsv
+			if [ "$PANNELLO" == "HaloPlex" ]
+			then
+				ANNOTATION $INPUT.vcf CANONICAL
+				ADD_ANNOTATION $INPUT ${INPUT%.*.*}.tsv
+			else
+				ANNOTATION $INPUT.vcf NOCANONICAL
+				SPLIT_TRANSCRIPTS $INPUT $TRANSCR_LIST
+				ANNOTATION $INPUT2 CANONICAL
+				MERGE_2VCF $INPUT1 $INPUT
+				ADD_ANNOTATION $INPUT ${INPUT%.*.*}.tsv
+			fi
 			
 		done
+	fi	
+}
+
+PIPELINE_SANGER () {
+
+	cat $LOGHI/logo_cmg.txt
+
+	if [[ "$START" == *"A"* ]]
+	then
+		ALLINEAMENTO $CFG
+	fi
+	if [[ "$START" == *"R"* ]] || [[ "$START" == *"M"* ]] || [[ "$START" == *"I"* ]] || [[ "$START" == *"B"* ]]
+	then
+		PREPROCESSING $CFG
+	fi
+	if [[ "$START" == *"V"* ]]
+	then
+		VARIANT_CALLING_SANGER $CFG
+	fi
+	if [[ "$START" == *"F"* ]]
+	then
+		Features_extraction_sanger $CFG
 	fi	
 }
 
@@ -326,6 +375,8 @@ LOG=$WORKDIR/$DATA\_Run_$RUN\_$ANALISI\_$PANNELLO.log
 
 CHECK_PANNELLO
 
+cp $CFG $WORKDIR/original.cfg
+
 if [ "$ANALISI" == "Germline" ]
 then
 	ANN_LIST=$ANN_LIST_GERMLINE
@@ -336,13 +387,16 @@ then
 	PIPELINE_SOMATIC
 elif [ "$ANALISI" == "CellFree" ] 
 then
-	#echo "cellfree"
 	PIPELINE_CELLFREE
+
+elif [ "$ANALISI" == "Sanger" ] 
+then
+	PIPELINE_SANGER
 fi
 
 ENDTIME=$(date +%s)
 echo "TEMPO TOTALE DI PROCESSING: $(($ENDTIME - $STARTTIME)) sec"
-printf "\nINVIO LE MAIL DI AVVISO"
+#printf "\nINVIO LE MAIL DI AVVISO\n"
 #nome_analisi=$DATA\_Run_$RUN\_$ANALISI\_$PANNELLO\_$var
 #echo -e "Ciao Valentina,\nl'analisi $nome_analisi e' completa. Speriamo sia andato tutto bene.\n\nBioinfo Alert" | mutt -s "BIOALERT" valentinafavalli@gmail.com
 #echo -e "Ciao Matteo,\nl'analisi $nome_analisi e' completa. Speriamo sia andato tutto bene.\n\nBioinfo Alert" | mutt -s "BIOALERT" matteodeg@gmail.com

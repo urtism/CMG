@@ -1,3 +1,4 @@
+
 AddOrReplaceReadGroups () {
 
 	printf $"\n~~~>	Sample $SAMPLE_NAME => Add Or Replace Read Groups\n\n"
@@ -22,13 +23,20 @@ MarkDuplicates () {
 	
 	printf $"\n~~~>	Sample $SAMPLE_NAME => Mark Duplicates\n\n"
 
+	# java -Xmx64g -jar $PICARD MarkDuplicates \
+	# I=$1 \
+	# O=${1%.*.*}.mark.bam \
+	# METRICS_FILE=${1%.*.*}.Metrics.txt \
+	# READ_NAME_REGEX=null \
+	# VALIDATION_STRINGENCY=LENIENT \
+	# REMOVE_DUPLICATES=true \
+	# ASSUME_SORTED=true
 	java -Xmx64g -jar $PICARD MarkDuplicates \
 	I=$1 \
 	O=${1%.*.*}.mark.bam \
 	METRICS_FILE=${1%.*.*}.Metrics.txt \
 	READ_NAME_REGEX=null \
 	VALIDATION_STRINGENCY=LENIENT \
-	REMOVE_DUPLICATES=true \
 	ASSUME_SORTED=true
 
 	mv ${1%.*.*}.Metrics.txt $DELETE
@@ -121,7 +129,7 @@ PREPROCESSING () {
 	rm -f $WORKDIR/PostPreprocessing.cfg
 	CFG=$WORKDIR/PostPreprocessing.cfg
 
-	if [ "$ANALISI" == "Germline" ]
+	if [ "$ANALISI" == "Germline" ] ||  [ "$ANALISI" == "Sanger" ] 
 		then
 		cat $1 | while read line
 		do
@@ -147,6 +155,7 @@ PREPROCESSING () {
 
 				mv $INPUT $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
 				mv ${INPUT%.*}.bai $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bai
+				BuildBamIndex $WORKDIR/PREPROCESSING/$SAMPLE_NAME.bam
 
 			elif [ "$DESIGN" == "AMPLICON" ]
 			then
