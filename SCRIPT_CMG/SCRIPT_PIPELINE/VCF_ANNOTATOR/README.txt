@@ -19,3 +19,5 @@ Con vcf annotator puoi aggiungere i campi che vuoi dai database. Ad esempio, in 
 python vcf_Annotator -i input.vcf -o output.vcf -clnv path/to/clinvar.vcf,CLNSIG,CLNDB
 
 In questo caso, annoto il vcf con gli attributi richiesti in ingresso a clinvar, cioè CLNSIG e CLNDB
+
+Vedi --help per info
