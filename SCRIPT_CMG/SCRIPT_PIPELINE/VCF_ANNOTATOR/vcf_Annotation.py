@@ -103,7 +103,7 @@ def Add_ClinVar(line):
 						stat = stat.split('=')[-1]
 							#print val
 
-							#Sostituisco ai numeri i valori del dizionario
+							#Sostituisco ai numeri i valori del dict
 
 						if 'CLNSIG' in elem:
 							stat = stat.replace('255', 'Other')
@@ -408,14 +408,6 @@ def Add_phyloP(line,pan):
 
 
 
-
-
-
-
-
-
-
-
 def main():
 	
 	parser = argparse.ArgumentParser('aggiunge le annotazioni fornite nel file -f (una per riga) al file di input -i in un formato tab delimited in output -o')
@@ -424,10 +416,10 @@ def main():
 	parser.add_argument('-ESP','--exome_variant_server',default=None,help="path database ESP. Utilizzo: path/ESP.vcf,ESP_EU")
 	parser.add_argument('-hvar','--Humsavar',default=None,help="path database Humsavar. Utilizzo: path/Humsavar.txt,Variant_type")
 	parser.add_argument('-gerp','--gerp',default=None,help="path database Gerp++. Utilizzo: path_to_GERP_folder,RS_Score")
-	parser.add_argument('-phastCons','--phastCons',default=None,help="path database phastCons. Utilizzo: path_to_folder,species,species ---> es: ~/phastCons/,primate,vertebrate,")
+	parser.add_argument('-phastCons','--phastCons',default=None,help="path database phastCons. Utilizzo: path_to_folder,species,species ---> es: ~/phastCons/primate,vertebrate,")
 	parser.add_argument('-phyloP','--phyloP',default=None,help="path database phyloP46way_placental. Utilizzo: path_to_folder,species ---> es: ~/phyloP/placental,vertebrate,")
 	parser.add_argument('-P','--pannello',help="Specificare il pannello utilizzato nell'analisi: Cancer | Cardio | Exome | BRCA")
-	parser.add_argument('-o','--outfile',help="file di output tab delimited")
+	parser.add_argument('-o','--outfile',help="file di output in vcf format")
 
 	global opts
 	
