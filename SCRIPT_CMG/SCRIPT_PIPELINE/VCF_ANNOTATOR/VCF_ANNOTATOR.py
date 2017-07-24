@@ -406,8 +406,6 @@ def Add_phyloP(line,pan):
 
 
 
-
-
 def main():
 	
 	parser = argparse.ArgumentParser('aggiunge le annotazioni fornite nel file -f (una per riga) al file di input -i in un formato tab delimited in output -o')
