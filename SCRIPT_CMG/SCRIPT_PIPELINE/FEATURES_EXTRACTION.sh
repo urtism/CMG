@@ -12,7 +12,7 @@ iEVA_germline(){
 		VCF_MERGED=$(echo "$line" | cut -f1)
 		VCF_iEVA=${VCF_MERGED%.*}.iEVA.vcf
 
-		python $SCRIPT_PIPELINE/iEVA.py \
+		python iEVA \
 		--input $VCF_MERGED \
 		--reference $REF \
 		--list $WORKDIR/Bam_list.txt \
@@ -106,6 +106,58 @@ Features_extraction_germline () {
 		mv $VCF_GATK $STORAGE
 		mv $VCF_FREEBAYES $STORAGE
 		mv $VCF_VARSCAN $STORAGE
+		
+		save_in_storage $WORKDIR/gvcf.list
+
+		#printf $"$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf\n" >> $CFG
+		printf $"\n=========> Features extraction: DONE"
+	done
+	INPUT=$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf
+
+
+}
+
+
+features_extraction_germline_iEVA () {
+
+	rm -f $WORKDIR/PostFeatureExtraction.cfg
+	CFG=$WORKDIR/PostFeatureExtraction.cfg
+	
+	cat $1 | while read line
+	do
+		VCF=$(echo "$line" | cut -f1)
+		
+		printf $"\n=========> Features extraction\n\n"
+
+		if [ "$DESIGN" == "ENRICHMENT" ]
+		then
+
+			python $SCRIPT_PIPELINE/features_extraction_germline_iEVA.py \
+		 	-m $VCF \
+		 	-l $LISTAFEATURES_GERMLINE \
+		 	-F -s \
+		 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION \
+		    -G $WORKDIR/VARIANT_CALLING/GVCF
+
+		elif [ "$DESIGN" == "AMPLICON" ]
+		then
+
+			python $SCRIPT_PIPELINE/features_extraction_germline_iEVA.py \
+		 	-m $VCF \
+		 	-l $LISTAFEATURES_GERMLINE \
+		 	-F -a -s \
+		 	-o $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION \
+		    -G $WORKDIR/VARIANT_CALLING/GVCF
+
+		fi
+
+		mv $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/TOTAL.vcf $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf
+		#cp $VCF_GATK $OUT
+		#cp $VCF_FREEBAYES $OUT
+		#cp $VCF_VARSCAN $OUT
+		#mv $VCF_GATK $STORAGE
+		#mv $VCF_FREEBAYES $STORAGE
+		#mv $VCF_VARSCAN $STORAGE
 		
 		save_in_storage $WORKDIR/gvcf.list
 

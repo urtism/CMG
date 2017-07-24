@@ -53,17 +53,23 @@ def extract_info(varianti,hash_var,pazienti):
 
 
 			if var_id in hash_var.keys():
+
 				if variante[index_of_gen].split('/')[0] == variante[index_of_gen].split('/')[1]:
 					#print "gia presente",hash_var[var_id],AC,AN
 					hash_var[var_id][1] = hash_var[var_id][1] + 1
+					try:
+						hash_var[var_id][2][1] = hash_var[var_id][2][1] + [pazienti[id][0]]
+					except:
+						hash_var[var_id][2][1] = hash_var[var_id][2][1] + [id]
 				else: 
 					
 					hash_var[var_id][0] = hash_var[var_id][0] + 1
-				try:
-					hash_var[var_id][2] = hash_var[var_id][2] + [pazienti[id][0]]
-				except:
-					hash_var[var_id][2] = hash_var[var_id][2] + [id]
-				
+
+					try:
+						hash_var[var_id][2][0] = hash_var[var_id][2][0] + [pazienti[id][0]]
+					except:
+						hash_var[var_id][2][0] = hash_var[var_id][2][0] + [id]
+
 				hash_var[var_id][3] = HGVSc
 				hash_var[var_id][4] = HGVSp
 				hash_var[var_id][5] = CONSEQUENCE
@@ -72,16 +78,18 @@ def extract_info(varianti,hash_var,pazienti):
 
 			else:
 				if variante[index_of_gen].split('/')[0] == variante[index_of_gen].split('/')[1]:
+					if '22014162' in var_id: 
+						print [pazienti[id][0]]
 					try:
-						hash_var[var_id] = [0,1,[pazienti[id][0]],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
+						hash_var[var_id] = [0,1,[[],[pazienti[id][0]]],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
 					except:
-						hash_var[var_id] = [0,1,[id],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
+						hash_var[var_id] = [0,1,[[],[id]],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
 							
 				else:
 					try:
-						hash_var[var_id] = [1,0,[pazienti[id][0]],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
+						hash_var[var_id] = [1,0,[[pazienti[id][0]],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
 					except:
-						hash_var[var_id] = [0,1,[id],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
+						hash_var[var_id] = [0,1,[[id],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
 				#print "nuova variante",hash_var[var_id],AC,AN
 
 
@@ -192,22 +200,26 @@ def main():
 	ws1.title = "range names"
 
 
-	statistiche.write('CHROM'+'\t' + 'POS'+'\t' + 'REF'+'\t' + 'ALT' +'\t' +'HGVSc'+'\t' + 'HGVSp'+'\t'+'CONSEQUENCE'+'\t'+ 'FRAZ_ALLELICA'+'\t' + 'FRAZ_PERC'+'\t' + 'MAF'+'\t'+'ETERO'+'\t'+ 'OMO'+'\t'+'NUM_PAZ_MUTATI'+'\t'+'PAZIENTI'+'\n')
-	header=['CHROM','POS','REF','ALT','HGVSc','HGVSp','CONSEQUENCE','FRAZ_ALLELICA','FRAZ_PERC','MAF','ETERO','OMO','NUM_PAZ_MUTATI','PAZIENTI']
+	statistiche.write('CHROM'+'\t' + 'POS'+'\t' + 'REF'+'\t' + 'ALT' +'\t' +'HGVSc'+'\t' + 'HGVSp'+'\t'+'CONSEQUENCE'+'\t'+ 'FRAZ_ALLELICA'+'\t' + 'FRAZ_PERC'+'\t' + 'MAF'+'\t'+'ETERO'+'\t'+ 'OMO'+'\t'+'NUM_PAZ_MUTATI'+'\t'+'PAZIENTI_HET'+'\t'+'PAZIENTI_HOM'+'\n')
+	header=['CHROM','POS','REF','ALT','HGVSc','HGVSp','CONSEQUENCE','FRAZ_ALLELICA','FRAZ_PERC','MAF','ETERO','OMO','NUM_PAZ_MUTATI','PAZIENTI_HET','PAZIENTI_HOM']
 	ws1.append(header)
 
 	for var in hash_var.keys():
+		if hash_var[var][2][0] ==[]:
+			hash_var[var][2][0] =['-']
+		if hash_var[var][2][1] ==[]:
+			hash_var[var][2][1] =['-']
 		maf = float("{0:.4f}".format(float(hash_var[var][-2])/float(hash_var[var][-1])))
 		fraz = str(hash_var[var][-2]) + '/' + str(hash_var[var][-1])
 		perc = str(maf*100) + '%'
 		paz_mut = str(int(hash_var[var][0]) + int(hash_var[var][1])) + '/' + str((num_paz))
 		info_var = str(hash_var[var][3]) + '\t' + str(hash_var[var][4])+ '\t' + str(hash_var[var][5])
-		stats = fraz + '\t' + perc + '\t' +  str(maf) + '\t' + str(hash_var[var][0]) + '\t' + str(hash_var[var][1]) + '\t' + str(paz_mut) + '\t' + ';'.join(hash_var[var][2])
+		stats = fraz + '\t' + perc + '\t' +  str(maf) + '\t' + str(hash_var[var][0]) + '\t' + str(hash_var[var][1]) + '\t' + str(paz_mut) + '\t' + ';'.join(hash_var[var][2][0])+ '\t' + ';'.join(hash_var[var][2][1])
 		statistiche.write(var + '\t' +info_var + '\t' + stats + '\n')
 
 		var_split1 = var.split('\t')
 		info_var1 = [str(hash_var[var][3]),str(hash_var[var][4]),str(hash_var[var][5])]
-		stats1 = [fraz,perc, str(maf),str(hash_var[var][0]),str(hash_var[var][1]),str(paz_mut),';'.join(hash_var[var][2])]
+		stats1 = [fraz,perc, str(maf),str(hash_var[var][0]),str(hash_var[var][1]),str(paz_mut),';'.join(hash_var[var][2][0]),';'.join(hash_var[var][2][1])]
 		to_print=var_split1+info_var1+stats1
 		ws1.append(to_print)
 	

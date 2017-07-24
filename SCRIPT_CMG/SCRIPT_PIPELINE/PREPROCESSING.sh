@@ -13,8 +13,10 @@ AddOrReplaceReadGroups () {
 	RGLB=$PANNELLO \
 	VALIDATION_STRINGENCY=LENIENT
 
+
+
 	mv $1 $DELETE
-	mv ${1%.*}.bai $DELETE
+	mv $1.bai $DELETE
 	INPUT=${1%.*.*}.Add.bam
 	printf $"\n~~~>	Sample $SAMPLE_NAME => Add Or Replace Read Groups: DONE\n\n"
 }
@@ -137,6 +139,8 @@ PREPROCESSING () {
 			SAMPLE_NAME=$(echo "$line" | cut -f2)
 					
 			AddOrReplaceReadGroups $INPUT
+
+			BuildBamIndex $INPUT
 
 			if [ "$DESIGN" == "ENRICHMENT" ]
 			then

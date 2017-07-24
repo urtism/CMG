@@ -162,7 +162,7 @@ fi
 
 ls $GVCF_PATH/*.g.vcf > $OUT_PATH/Samples_list.list
 
-java -jar -Xmx32g $GATK -T GenotypeGVCFs \
+java -jar -Xmx60g $GATK -T GenotypeGVCFs \
 -R $REF \
 -V:VCF $OUT_PATH/Samples_list.list \
 -o $OUT_PATH/$DATA\_$PANNELLO\_GATK.vcf

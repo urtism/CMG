@@ -1,4 +1,5 @@
 import argparse
+import operator
 
 
 def evaluate(e_dataset,c_dataset):
@@ -23,7 +24,7 @@ def evaluate(e_dataset,c_dataset):
 	
 	fp=len(e_dataset.keys())
 	fn=len(c_dataset.keys())
-	return tp,fp,tn,fn,enum,cnum,gt_match
+	return tp,fp,tn,fn,enum,cnum,gt_match,c_dataset
 
 
 def calc_stats(tp,fp,tn,fn,enum,cnum,gt_match):
@@ -37,11 +38,18 @@ def calc_stats(tp,fp,tn,fn,enum,cnum,gt_match):
 	scoref1=2*tp/(2*tp+fp+fn)
 	return f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1
 
-def print_stats(type,f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1,outfile):
-	outfile.write('\t'.join([type,str(detect_rate),str(f_disc_rate),str(tp_rate),str(precision),str(acc),str(scoref1),str(missing_rate),str(gt_match_rate)])+'\n')
+def print_stats(type,f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1,outfile,dataset,enum,cnum):
+	outfile.write('\t'.join([type,str(enum),str(cnum),str(detect_rate),str(f_disc_rate),str(tp_rate),str(precision),str(acc),str(scoref1),str(missing_rate),str(gt_match_rate)])+'\n')
+	if dataset != None:
+		outfile.write('\nVariants missed:'+'\n')
+		sorted_dataset = sorted(dataset.items(), key=operator.itemgetter(0))
+		#print sorted_dataset
+		for var in sorted_dataset:
+			outfile.write(var[0]+'\n')
+
 
 def print_header(outfile):
-	outfile.write('\t'.join(['VARIANTI','DETECTION RATE','FALSE DISCOVER RATE','SENSITIVITY (TP RATE)','PRECISION','ACCURACY','SCORE F1','MISSING RATE','GT MATCH RATE'])+'\n')
+	outfile.write('\t'.join(['VARIANTI','NUM CALLED VARIANT','NUM REAL VARIANTS','DETECTION RATE','FALSE DISCOVER RATE','SENSITIVITY (TP RATE)','PRECISION','ACCURACY','SCORE F1','MISSING RATE','GT MATCH RATE'])+'\n')
 
 if __name__ == '__main__':
 
@@ -109,14 +117,16 @@ if __name__ == '__main__':
 	ctot=dict(csnv, **cindel)
 	stats_file=open(opts.out,'a+')
 	print_header(stats_file)
-	tp,fp,tn,fn,enum,cnum,gt_match=evaluate(esnv,csnv)
-	f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1=calc_stats(tp,fp,tn,fn,enum,cnum,gt_match)
-	print_stats('SNV',f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1,stats_file)
+	tp,fp,tn,fn,enum,cnum,gt_match,csnv=evaluate(esnv,csnv)
+	if cnum > 0:
+		f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1=calc_stats(tp,fp,tn,fn,enum,cnum,gt_match)
+		print_stats('SNV',f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1,stats_file,None,enum,cnum)
 	
-	tp,fp,tn,fn,enum,cnum,gt_match=evaluate(eindel,cindel)
-	f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1=calc_stats(tp,fp,tn,fn,enum,cnum,gt_match)
-	print_stats('INDEL',f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1,stats_file)
+	tp,fp,tn,fn,enum,cnum,gt_match,cindel=evaluate(eindel,cindel)
+	if cnum > 0:
+		f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1=calc_stats(tp,fp,tn,fn,enum,cnum,gt_match)
+		print_stats('INDEL',f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1,stats_file,None,enum,cnum)
 
-	tp,fp,tn,fn,enum,cnum,gt_match=evaluate(etot,ctot)
+	tp,fp,tn,fn,enum,cnum,gt_match,ctot=evaluate(etot,ctot)
 	f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1=calc_stats(tp,fp,tn,fn,enum,cnum,gt_match)
-	print_stats('TOTAL',f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1,stats_file)
+	print_stats('TOTAL',f_disc_rate,tp_rate,precision,detect_rate,missing_rate,gt_match_rate,acc,scoref1,stats_file,ctot,enum,cnum)

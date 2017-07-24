@@ -7,7 +7,7 @@ ANNOTATION () {
 	cat $LOGHI/logo_annotation.txt
 	printf $"\n\n\n"
 
-	sort -c $1 > ${1%.*}.sort.vcf
+	vcf-sort $1 > ${1%.*}.sort.vcf
 	
 	if [[ "$2" == "CANONICAL" ]]
 		then
@@ -104,7 +104,6 @@ SPLIT_TRANSCRIPTS () {
   	INPUT2=${1%.*.*}.Trans.other.vcf
 
   	printf $'\n =========>	SPLIT TRANSCRIPTS: DONE\n'
-
 }
 
 MERGE_2VCF () {
@@ -128,40 +127,6 @@ MERGE_2VCF () {
 	printf $'\n =========>	MERGING VCF: DONE\n'
 
 }
-
-# ANNOTATION_somatic () {
-
-# 	printf "\n\n"
-# 	cat $LOGHI/logo_annotation.txt
-# 	printf $"\n\n\n"
-	
-# 	perl $VEPANN -i $1 \
-#  	-o ${1%.*}.ANN.vcf \
-#  	--stats_file ${1%.*}.ANN.html \
-#  	--cache \
-#  	--assembly GRCh37 \
-#  	--offline \
-#  	--force_overwrite \
-#  	-v \
-#  	--fork 10 \
-#  	--variant_class \
-#  	--sift b \
-#  	--poly b \
-#  	--vcf_info_field ANN \
-#  	--hgvs \
-#  	--protein \
-#  	--canonical \
-#  	--check_existing \
-#  	--gmaf \
-#  	--pubmed \
-#  	--species homo_sapiens \
-#  	--failed 1 \
-#  	--vcf
-
-#  	mv $1 $DELETE
-#  	INPUT=${1%.*}.ANN.vcf
-#  	printf $'\n =========>	ANNOTATION: DONE\n'
-# }
 
 ADD_ANNOTATION_somatic () {
 	

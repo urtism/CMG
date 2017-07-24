@@ -97,7 +97,11 @@ HaplotypeCaller () {
 		-ERC GVCF \
 		--doNotRunPhysicalPhasing \
 		-L $TARGET \
-		--min_base_quality_score 1
+		--min_base_quality_score 1 \
+		--minReadsPerAlignmentStart 2 \
+		--standard_min_confidence_threshold_for_calling 5.0 
+
+
 	fi
 
 
@@ -152,9 +156,6 @@ FreeBayes_multisample () {
 		--genotype-qualities \
 		--report-genotype-likelihood-max \
 		--allele-balance-priors-off \
-		--genotype-qualities \
-		--report-genotype-likelihood-max \
-		--allele-balance-priors-off \
 		-m 0 \
 		-q 0 \
 		-R 0 \
@@ -172,9 +173,6 @@ FreeBayes_multisample () {
 		--report-genotype-likelihood-max \
 		--allele-balance-priors-off \
 		-t $TARGETBED \
-		--genotype-qualities \
-		--report-genotype-likelihood-max \
-		--allele-balance-priors-off \
 		-m 0 \
 		-q 0 \
 		-R 0 \
@@ -277,20 +275,6 @@ VarScan2_germline_multisample () {
 		samtools mpileup -B -q 1 -d 50000 -L 50000 -f $REF \
 		-l $TARGETBED -b $1 > $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO.mpileup
 	fi
-
-	# java -jar -Xmx64g $VARSCAN mpileup2snp $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO.mpileup \
-	# --min-coverage 10 \
-	# --min-var-freq 0.20 \
-	# --pvalue 0.05 \
-	# --output-vcf 1 \
-	# --vcf-sample-list $2 > $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_snp.vcf
-
-	# java -jar -Xmx64g $VARSCAN mpileup2indel $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO.mpileup \
-	# --min-coverage 10 \
-	# --min-var-freq 0.10 \
-	# --pvalue 0.1 \
-	# --output-vcf 1 \
-	# --vcf-sample-list $2 > $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_VarScan_Indel.vcf
 
 	java -jar -Xmx64g $VARSCAN mpileup2snp $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO.mpileup \
 	--min-coverage 1 \
@@ -522,10 +506,10 @@ VARIANT_CALLING_GERMLINE () {
 
 	save_in_storage $WORKDIR/Bam_list.txt
 
-	Vcf_merge $VCF_GATK $VCF_FREEBAYES $VCF_VARSCAN 
+	#Vcf_merge $VCF_GATK $VCF_FREEBAYES $VCF_VARSCAN 
 
-	#printf $"$VCF_GATK\t$VCF_FREEBAYES\t$VCF_VARSCAN\n" >> $CFG
-	printf $"$VCF_MERGED\n" >> $CFG
+	printf $"$VCF_GATK\t$VCF_FREEBAYES\t$VCF_VARSCAN\n" >> $CFG
+	#printf $"$VCF_MERGED\n" >> $CFG
 	
 }
 

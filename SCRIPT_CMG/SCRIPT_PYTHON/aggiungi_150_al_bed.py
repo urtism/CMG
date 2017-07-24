@@ -1,4 +1,9 @@
-bed='/home/jarvis/NGS_ANALYSIS/TARGET/ctDNA_2_113416_AmpliconsExport.bed'
+#!/usr/bin/python
+
+import sys
+
+#bed='/home/jarvis/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a.bed'
+bed=sys.argv[1]
 
 for line in open(bed,'r'):
 	line=line.rstrip()

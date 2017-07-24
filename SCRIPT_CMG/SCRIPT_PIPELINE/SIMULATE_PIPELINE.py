@@ -22,15 +22,26 @@ def vars_from_db(db,num_snv,num_indel,out):
 	start = [database.index(x) for x in database if x.startswith("#CHROM")][0]
 	varianti=database[start:]
 	i=0
+	simulate=[['chr1','0']]
 	while i < int(num_snv):
 		rand=r.randrange(len(varianti))
 		var=varianti[rand].rstrip().split('\t')
 		del(varianti[rand])
 		alt=var[4].split(',')[0]
+		chr=var[0]
+		pos=var[1]
 		if len(var[3])==1 and len(alt)==1:
-			i+=1
-			vcf.write('\t'.join(var[:4]+[alt,'.','.','.','.','.'])+'\n')
-		else:
+			for v in simulate:
+				if chr == v[0] and int(pos) < int(v[1]) + 150 and chr == v[0] and int(pos) > int(v[1]) - 150:
+					#print v,var
+					pass
+				else:
+					i+=1
+					vcf.write('\t'.join(var[:4]+[alt,'.','.','.','.','.'])+'\n')
+					#print var
+					simulate+=[[chr,pos]]
+					break
+		else:	
 			continue 
 	varianti=database[start:]
 	i=0
@@ -40,8 +51,16 @@ def vars_from_db(db,num_snv,num_indel,out):
 		del(varianti[rand])
 		alt=var[4].split(',')[0]
 		if len(var[3])>1 or len(alt)>1:
-			i+=1
-			vcf.write('\t'.join(var[:4]+[alt,'.','.','.','.','.'])+'\n')
+			for v in simulate:
+				if chr == v[0] and int(pos) < int(v[1]) + 150 and int(pos) > int(v[1]) - 150:
+					#print v,var
+					pass
+				else:
+					i+=1
+					vcf.write('\t'.join(var[:4]+[alt,'.','.','.','.','.'])+'\n')
+					#print var
+					simulate+=[[chr,pos]]
+					break
 		else:
 			continue
 	vcf.close()
@@ -96,7 +115,6 @@ def print_header(vcf):
 		else:
 			header=True
 	if header:
-
 		vcf.write(textwrap.dedent("""\
 		##fileformat=VCFv4.1
 		##phasing=none
@@ -107,8 +125,6 @@ def print_header(vcf):
 		##INFO=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">
 		##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 		#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSPIKEIN""")+'\n')
-
-
 
 def print_vcf(analisi,log_bs_dir,outpath,reference):
 	vcf=open(outpath+'/'+analisi+'.vcf','a+')
@@ -129,17 +145,25 @@ def print_vcf(analisi,log_bs_dir,outpath,reference):
 								mut = c[4]
 								dpr = c[6]
 								vaf = str(round(float(line.split('\t')[-2]),3))
-								if float(vaf) > 0.75:
+								if float(vaf) >= 0.75:
 									gt='1/1'
 								elif float(vaf) > 0.00 and float(vaf) < 0.75:
 									gt='0/1'
 
 								ref,alt = mut.split('-->')
+								try:
+									ref=ref.upper()
+								except:
+									pass
+								try:
+									alt=alt.upper()
+								except:
+									pass
 								vcf.write( "\t".join((chrom,pos,'.',ref,alt,'.','PASS', analisi+';VAF=' + vaf,'GT',gt))+'\n')
 
 							elif line.startswith('indel'):
 								vaf=str(round(float(line.split('\t')[-2]),3))
-								if float(vaf) > 0.75:
+								if float(vaf) >= 0.75:
 									gt='1/1'
 								elif float(vaf) > 0.00 and float(vaf) < 0.75:
 									gt='0/1'
@@ -159,8 +183,6 @@ def print_vcf(analisi,log_bs_dir,outpath,reference):
 
 								vcf.write('\t'.join((chrom, start, '.', ref, alt, '.', 'PASS', analisi+';VAF=' + vaf , 'GT', gt))+'\n')
 					subprocess.call("mv " + log_bs_dir+'/'+pathname+ '/'+filename + ' ' + log_bs_dir+'/'+pathname+ '/'+filename +'.checked', shell=True)
-
-
 
 
 def Vcf_to_bamsurgeon(vars,min,max,err):
@@ -433,7 +455,6 @@ def Set_pirs_args(conf):
 	
 	pirs_arguments+=["--output-file-type=gzip"]
 	path_pirs=conf["pirs"]["path"]
-
 	return path_pirs,pirs_arguments
 
 def Set_picard(conf):
@@ -474,7 +495,7 @@ def Simulate_fastq_pirs(path_pirs,opts_pirs,fasta,log):
 		opts_pirs+=[fasta,fasta]
 	else:
 		opts_pirs+=[fasta]
-
+	#print opts_pirs
 	args = [path_pirs,'simulate'] + opts_pirs
 	success = subprocess.call(args,stdout=log,stderr=log)
 	if not success:
@@ -684,8 +705,8 @@ if __name__ == '__main__':
 			Bam_surgeon(addsnv,bs_args,bam,outbam,snp,log)
 			check_simul_vars(log_bs_dir,outbam,snp,sim_log_dir)
 			print_vcf('Germline',log_bs_dir,sim_log_dir,opts.ref)
-			status = subprocess.call("rm "+bam , shell=True)
-			status = subprocess.call("rm "+bam + '.bai' , shell=True)
+			#status = subprocess.call("rm "+bam , shell=True)
+			#status = subprocess.call("rm "+bam + '.bai' , shell=True)
 			bam=SortSam(path_picard,picard_args,outbam,log)
 			status = subprocess.call("rm "+outbam, shell=True)
 			Index_bam(path_picard,picard_args,bam,log)

@@ -6,6 +6,7 @@ PipeVersion=3.0
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/ALLINEAMENTO.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/PREPROCESSING.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/VARIANT_CALLING.sh
+source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/FEATURES_EXTRACTION.sh
 #source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/VARIANT_CALLING_NOFILTERS.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/ANNOTATION.sh
 
@@ -161,7 +162,8 @@ PIPELINE_GERMLINE () {
 	fi
 	if [[ "$START" == *"F"* ]]
 	then
-		iEVA_germline $CFG
+		#iEVA_germline $CFG
+		#Features_extraction_germline_iEVA $CFG
 		Features_extraction_germline $CFG
 	fi
 	if [[ "$START" == *"E"* ]]
