@@ -21,10 +21,13 @@ for line in read:
 			riga[riga.index('Number=A')]='Number=G'
 			line=','.join(riga)
 			
-		# if line.startswith('##FORMAT=<ID=GQ'):
-		# 	riga=(line.split(','))
-		# 	riga[riga.index('Type=Integer')]='Type=Float'
-		# 	line=','.join(riga)
+		if line.startswith('##FORMAT=<ID=GQ'):
+			riga=(line.split(','))
+			try:
+		 		riga[riga.index('Type=Integer')]='Type=Float'
+		 	except:
+		 		pass
+			line=','.join(riga)
 	# 	if line.startswith('chr'):
 	# 		riga=line.split('\t')
 	# 		replaced = re.sub('[(chr)]', '', riga[0])
@@ -56,8 +59,7 @@ for line in read:
 				riga[7]+=";FIX"
 				
 			if '/-' in alt:
-				riga[4]=ref
-				riga[3]=alt.split('/-')[0]
+				riga[4]=alt.split('/-')[0]
 				riga[7]+=";FIX"
 			elif '/' in alt:
 				riga[4]=alt.split('/')[0]

@@ -6,11 +6,13 @@ ANNOTATION () {
 	printf "\n\n"
 	cat $LOGHI/logo_annotation.txt
 	printf $"\n\n\n"
+
+	vcf-sort $1 > ${1%.*}.sort.vcf
 	
 	if [[ "$2" == "CANONICAL" ]]
 		then
-		perl $VEPANN -i $1 \
-		-o ${1%.*}.ANN.nosort.vcf \
+		perl $VEPANN -i ${1%.*}.sort.vcf \
+		-o ${1%.*}.ANN.vcf \
 		--stats_file ${1%.*}.ANN.html \
 		--cache \
 		--assembly GRCh37 \
@@ -35,8 +37,8 @@ ANNOTATION () {
 
 	else
 
-		perl $VEPANN -i $1 \
-		-o ${1%.*}.ANN.nosort.vcf \
+		perl $VEPANN -i ${1%.*}.sort.vcf \
+		-o ${1%.*}.ANN.vcf \
 		--stats_file ${1%.*}.ANN.html \
 		--cache \
 		--assembly GRCh37 \
@@ -59,14 +61,12 @@ ANNOTATION () {
 		--vcf
 	fi
 
-	vcf-sort -c ${1%.*}.ANN.nosort.vcf > ${1%.*}.ANN.vcf
 	mv $1 $DELETE
-	mv ${1%.*}.ANN.nosort.vcf $DELETE
+	#mv ${1%.*}.ANN.nosort.vcf $DELETE
 	INPUT=${1%.*}.ANN.vcf
 	printf $'\n =========>	ANNOTATION: DONE\n'
 
 }
-
 
 ADD_ANNOTATION() {
 
@@ -90,7 +90,6 @@ ADD_ANNOTATION() {
   	printf $'\n =========>	ADD ANNOTATION: DONE\n'
 }
 
-
 SPLIT_TRANSCRIPTS () {
 
 	printf $'\n =========>	SPLIT TRANSCRIPTS\n'
@@ -105,7 +104,6 @@ SPLIT_TRANSCRIPTS () {
   	INPUT2=${1%.*.*}.Trans.other.vcf
 
   	printf $'\n =========>	SPLIT TRANSCRIPTS: DONE\n'
-
 }
 
 MERGE_2VCF () {
@@ -129,41 +127,6 @@ MERGE_2VCF () {
 	printf $'\n =========>	MERGING VCF: DONE\n'
 
 }
-
-# ANNOTATION_somatic () {
-
-# 	printf "\n\n"
-# 	cat $LOGHI/logo_annotation.txt
-# 	printf $"\n\n\n"
-	
-# 	perl $VEPANN -i $1 \
-#  	-o ${1%.*}.ANN.vcf \
-#  	--stats_file ${1%.*}.ANN.html \
-#  	--cache \
-#  	--assembly GRCh37 \
-#  	--offline \
-#  	--force_overwrite \
-#  	-v \
-#  	--fork 10 \
-#  	--variant_class \
-#  	--sift b \
-#  	--poly b \
-#  	--vcf_info_field ANN \
-#  	--hgvs \
-#  	--protein \
-#  	--canonical \
-#  	--check_existing \
-#  	--gmaf \
-#  	--pubmed \
-#  	--species homo_sapiens \
-#  	--failed 1 \
-#  	--vcf
-
-#  	mv $1 $DELETE
-#  	INPUT=${1%.*}.ANN.vcf
-#  	printf $'\n =========>	ANNOTATION: DONE\n'
-# }
-
 
 ADD_ANNOTATION_somatic () {
 	

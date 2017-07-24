@@ -33,7 +33,7 @@ def read_donor(varianti,varianti_other,header,somT):
 			#print gt
 			#dp = '\t'.join(line.split('\t')[11:14])
 			dp = line.split('\t')[HEADER.index('DP_media')]
-			qb = line.split('\t')[HEADER.index('MQB_media')]
+			qb = line.split('\t')[HEADER.index('MBQ_media')]
 			AF = line.split('\t')[HEADER.index('AF_media')]
 			donor = '\t'.join([gt,dp,AF,qb])
 			#print chrom + '\t'+ pos,donor, varianti.has_key(chrom + '\t'+ pos)
@@ -80,7 +80,7 @@ def read_rec(varianti,varianti_other,header,somT):
 			#print gt
 			#dp = '\t'.join(line.split('\t')[11:14])
 			dp = line.split('\t')[HEADER.index('DP_media')]
-			qb = line.split('\t')[HEADER.index('MQB_media')]
+			qb = line.split('\t')[HEADER.index('MBQ_media')]
 			AF = line.split('\t')[HEADER.index('AF_media')]
 			if varianti.has_key(chrom + '\t'+ pos):
 				rec = '\t'.join([gt,dp,AF,qb])
@@ -113,9 +113,9 @@ def read_sT(varianti,varianti_other,header,index,st,somT):
 
 		if line.startswith('CHROM'):
 			HEADER=line.split('\t')
-			header = header +  '\t' +'\t'.join(['SOMATIC_VARSCAN_T'+ str(index+1),'FILTER_MUTECT_T'+ str(index+1),'STATUS_VARDICT_T'+ str(index+1),'GT_TUM_MUTECT_T'+ str(index+1),'GT_TUM_VARSCAN_T'+ str(index+1),'GT_TUM_VARDICT_T'+ str(index+1),
-										'GT_NORM_MUTECT_T'+ str(index+1),'GT_NORM_VARSCAN_T'+ str(index+1),'GT_NORM_VARDICT_T'+ str(index+1),
-										'DP_TUM_T'+ str(index+1),'AF_TUM_T'+ str(index+1),'QB_TUM_T'+ str(index+1),'DP_NORM_T'+ str(index+1),'AF_NORM_T'+ str(index+1),'QB_NORM_T'+ str(index+1),'DELTA_MEDIA_T'+ str(index+1)])
+			header = header +  '\t' +'\t'.join(['SOMATIC_VARSCAN_T'+ str(index+1),'FILTER_MUTECT_T'+ str(index+1),'STATUS_VARDICT_T'+ str(index+1),'GT_CF_MUTECT_T'+ str(index+1),'GT_CF_VARSCAN_T'+ str(index+1),'GT_CF_VARDICT_T'+ str(index+1),
+										'GT_G_MUTECT_T'+ str(index+1),'GT_G_VARSCAN_T'+ str(index+1),'GT_G_VARDICT_T'+ str(index+1),
+										'DP_CF_T'+ str(index+1),'AF_CF_T'+ str(index+1),'QB_CF_T'+ str(index+1),'DP_G_T'+ str(index+1),'AF_G_T'+ str(index+1),'QB_G_T'+ str(index+1),'DELTA_MEDIA_T'+ str(index+1)])
 		else:
 			chrom = line.split('\t')[0]
 			pos = line.split('\t')[1]
@@ -210,8 +210,8 @@ def main():
 	parser.add_argument('-r', '--receiver', help="gatk vcf output file name",default=None)
 	parser.add_argument('--sT', help="Varscan vcf output file name")
 	parser.add_argument('-o', '--out',help="path di output")
-	parser.add_argument('-l', '--snp_list',help="gvcf path",default=None)
-	parser.add_argument('-i', '--ctrl_snp_list',help="gvcf path",default=None)
+	parser.add_argument('-l', '--snp_list',help="lista di snp da matchare",default=None)
+	parser.add_argument('-i', '--ctrl_snp_list',help="lista di snp da escludere",default=None)
 
 
 	global opts 
