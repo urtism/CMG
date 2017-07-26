@@ -1,8 +1,5 @@
 # CMG
-Pipeline development for NGS analysis
-#devel version 0.1
-#Property: MatteovwdADAdaD<<z<x<x
-ciao modificato
-Sasda
-cietto compà
-kjnmgg
+
+CMGCV scripting for NGS data. Pipeline, scripts and more!
+
+Authors: Matteo Di Giovannantonio and Mario Urtis --> M&M's
