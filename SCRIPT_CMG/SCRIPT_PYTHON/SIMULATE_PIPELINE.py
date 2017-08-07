@@ -20,56 +20,49 @@ def vars_from_db(db,num_snv,num_indel,out):
 	database=open(db,'r').readlines()
 	vcf=open(out,'w')
 	start = [database.index(x) for x in database if x.startswith("#CHROM")][0]
+	varianti=database[start:]
+	i=0
 	simulate=[['chr1','0']]
+	while i < int(num_snv):
+		rand=r.randrange(len(varianti))
+		var=varianti[rand].rstrip().split('\t')
+		del(varianti[rand])
+		alt=var[4].split(',')[0]
+		chr=var[0]
+		pos=var[1]
+		if len(var[3])==1 and len(alt)==1:
+			for v in simulate:
+				if chr == v[0] and int(pos) < int(v[1]) + 150 and chr == v[0] and int(pos) > int(v[1]) - 150:
+					#print v,var
+					pass
+				else:
+					i+=1
+					vcf.write('\t'.join(var[:4]+[alt,'.','.','.','.','.'])+'\n')
+					#print var
+					simulate+=[[chr,pos]]
+					break
+		else:	
+			continue 
 	varianti=database[start:]
 	i=0
 	while i < int(num_indel):
-		if len(varianti)>0:
-			rand=r.randrange(len(varianti))
-			var=varianti[rand].rstrip().split('\t')
-			del(varianti[rand])
-			alt=var[4].split(',')[0]
-			chr=var[0]
-			pos=var[1]
-			too_close=False
-			alt=var[4].split(',')[0]
-			if len(var[3])>1 or len(alt)>1:
-				for v in simulate:
-					if chr == v[0] and int(pos) < int(v[1]) + 150 and int(pos) > int(v[1]) - 150:
-						too_close=True
-				if not too_close:
+		rand=r.randrange(len(varianti))
+		var=varianti[rand].rstrip().split('\t')
+		del(varianti[rand])
+		alt=var[4].split(',')[0]
+		if len(var[3])>1 or len(alt)>1:
+			for v in simulate:
+				if chr == v[0] and int(pos) < int(v[1]) + 150 and int(pos) > int(v[1]) - 150:
+					#print v,var
+					pass
+				else:
 					i+=1
 					vcf.write('\t'.join(var[:4]+[alt,'.','.','.','.','.'])+'\n')
+					#print var
 					simulate+=[[chr,pos]]
-			else:
-				continue
+					break
 		else:
-			break
-	varianti=database[start:]
-	i=0
-	while i < int(num_snv):
-		if len(varianti)>0:
-			rand=r.randrange(len(varianti))
-			var=varianti[rand].rstrip().split('\t')
-			del(varianti[rand])
-			alt=var[4].split(',')[0]
-			chr=var[0]
-			pos=var[1]
-			too_close=False
-			if len(var[3])==1 and len(alt)==1:
-				for v in simulate:
-					if chr == v[0] and int(pos) < int(v[1]) + 150 and int(pos) > int(v[1]) - 150:
-						too_close=True
-						#print v,var
-						
-				if not too_close:
-					i+=1
-					vcf.write('\t'.join(var[:4]+[alt,'.','.','.','.','.'])+'\n')
-					simulate+=[[chr,pos]]
-			else:	
-				continue 
-		else:
-			break
+			continue
 	vcf.close()
 	return out
 

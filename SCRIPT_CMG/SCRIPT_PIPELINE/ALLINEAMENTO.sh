@@ -112,6 +112,18 @@ ALLINEAMENTO() {
 				LocatIt $INPUT $INDEX
 				SortSam $INPUT
 
+			elif [ "$PANNELLO" == "SureSelect" ]
+			then
+
+				FASTQ1=$(echo "$line" | cut -f1)
+				FASTQ2=$(echo "$line" | cut -f2)
+				SAMPLE_NAME=$(echo "$line" | cut -f3)
+
+				SureCallTrimmer $FASTQ1 $FASTQ2 -qxt
+				BWAMEM $FASTQ1 $FASTQ2
+				SamFormatConverter $INPUT
+				SortSam $INPUT
+
 			else
 				FASTQ1=$(echo "$line" | cut -f1)
 				FASTQ2=$(echo "$line" | cut -f2)
@@ -121,8 +133,6 @@ ALLINEAMENTO() {
 				SamFormatConverter $INPUT
 				SortSam $INPUT
 				
-				cp $FASTQ1 $STORAGE
-				cp $FASTQ2 $STORAGE
 			fi
 			
 			printf $"$INPUT\t$SAMPLE_NAME\n" >> $CFG
@@ -254,5 +264,8 @@ ALLINEAMENTO() {
 		done
 
 	fi
+	cp $FASTQ1 $STORAGE
+	cp $FASTQ2 $STORAGE
+
 	cat $LOGHI/logo_cornice.txt
 }

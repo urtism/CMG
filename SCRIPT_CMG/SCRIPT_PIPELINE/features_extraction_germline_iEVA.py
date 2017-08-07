@@ -33,30 +33,40 @@ class iEVA():
 
 	SimpleRepeat=''
 	SimpleRepeatLength=''
+	SimpleRepeatUnit=''
 	PseudoNucleotidesComposition=''
 	RepeatMasker=''
 	gcContent=''
 	VariantClass=''
+
+	#bam extraction
+
 	StrandBiasReads=''
 	UnMappedReads=''
+	MeanMappingQuality=''
 	MappingQualityZero=''
 	NotPrimaryAlignment=''
 	SupplementaryAlignment=''
 	NotPairedReads=''
 	NotProperPairedReads=''
 	AlignmentScore=''
-	NumberTotalDupReads=''
+	TotalDupReads=''
+	
+	#Genotype extraction
+
 	NumberReadDupRef=''
 	NumberReadDupAlt=''
 	DuplicateReference=''
 	DuplicateAlternate=''
 	DeltaDuplicate=''
 	iEvaDepth=''
-	iAlleleDepth=''
+	iAlleleDepthiEVA=''
 	ReadRef=''
 	ReadAlt=''
 	MeanRefQscore=''
 	MeanAltQscore=''
+	RefMeanMappingQuality=''
+	AltMeanMappingQuality=''
 	TotalDPUnfilter=''
 	NumberClippedReadsRef=''
 	NumberClippedReadsAlt=''
@@ -205,6 +215,8 @@ class Features():
 	AC_Freebayes='.'
 	AC_media='.'
 	AC_mediana='.'
+	AC_min='.'
+	AC_max='.'
 
 	AN_GATK='.'
 	AN_Varscan='.'
@@ -286,21 +298,30 @@ class Features():
 
 	#features di iEVA
 
+	#Reference extraction arguments
 	SimpleRepeat_iEVA='.'
 	SimpleRepeatLength_iEVA='.'
+	SimpleRepeatUnit_iEVA='.'
 	PseudoNucleotidesComposition_iEVA='.'
 	RepeatMasker_iEVA='.'
 	gcContent_iEVA='.'
 	VariantClass_iEVA='.'
+
+	#bam extraction
+
 	StrandBiasReads_iEVA='.'
 	UnMappedReads_iEVA='.'
+	MeanMappingQuality_iEVA='.'
 	MappingQualityZero_iEVA='.'
 	NotPrimaryAlignment_iEVA='.'
 	SupplementaryAlignment_iEVA='.'
 	NotPairedReads_iEVA='.'
 	NotProperPairedReads_iEVA='.'
 	AlignmentScore_iEVA='.'
-	NumberTotalDupReads_iEVA='.'
+	TotalDupReads_iEVA='.'
+	
+	#Genotype extraction
+
 	NumberReadDupRef_iEVA='.'
 	NumberReadDupAlt_iEVA='.'
 	DuplicateReference_iEVA='.'
@@ -312,6 +333,8 @@ class Features():
 	ReadAlt_iEVA='.'
 	MeanRefQscore_iEVA='.'
 	MeanAltQscore_iEVA='.'
+	RefMeanMappingQuality_iEVA='.'
+	AltMeanMappingQuality_iEVA='.'
 	TotalDPUnfilter_iEVA='.'
 	NumberClippedReadsRef_iEVA='.'
 	NumberClippedReadsAlt_iEVA='.'
@@ -330,6 +353,8 @@ def get_info_iEVA(chrom,pos,ref,alt,filter,info,format,sample,ieva):
 		ieva.UnMappedReads=sample[format.index("UnMap")]
 	if "MQ0" in format:
 		ieva.MappingQualityZero=sample[format.index("MQ0")]
+	if "MMQ" in format:
+		ieva.MeanMappingQuality=sample[format.index("MMQ")]
 	if "NPA" in format:
 		ieva.NotPrimaryAlignment=sample[format.index("NPA")]
 	if "SA" in format:
@@ -340,44 +365,52 @@ def get_info_iEVA(chrom,pos,ref,alt,filter,info,format,sample,ieva):
 		ieva.NotProperPairedReads=sample[format.index("NPP")]
 	if "AS" in format:
 		ieva.AlignmentScore=sample[format.index("AS")]
-	if "NDT" in format:
-		ieva.NumberTotalDupReads=sample[format.index("NDT")]
-	if "NDR" in format:
-		ieva.NumberReadDupRef=sample[format.index("NDR")]
-	if "NDA" in format:
-		ieva.NumberReadDupAlt=sample[format.index("NDA")]
-	if "DR" in format:
-		ieva.DuplicateReference=sample[format.index("DR")]
-	if "DA" in format:
-		ieva.DuplicateAlternate=sample[format.index("DA")]
-	if "DDup" in format:
-		ieva.DeltaDuplicate=sample[format.index("DDup")]
+	if "TDR" in format:
+		ieva.TotalDupReads=sample[format.index("TDR")]
+
+	if "iNDR" in format:
+		ieva.NumberReadDupRef=sample[format.index("iNDR")]
+	if "iNDA" in format:
+		ieva.NumberReadDupAlt=sample[format.index("iNDA")]
+	if "iDR" in format:
+		ieva.DuplicateReference=sample[format.index("iDR")]
+	if "iDA" in format:
+		ieva.DuplicateAlternate=sample[format.index("iDA")]
+	if "iDDup" in format:
+		ieva.DeltaDuplicate=sample[format.index("iDDup")]
 	if "iDP" in format:
 		ieva.iEvaDepth=sample[format.index("iDP")]
 	if "iAD" in format:
 		ieva.iAlleleDepth=sample[format.index("iAD")]
-	if "RR" in format:
-		ieva.ReadRef=sample[format.index("RR")]
-	if "RA" in format:
-		ieva.ReadAlt=sample[format.index("RA")]
-	if "QR" in format:
-		ieva.MeanRefQscore=sample[format.index("QR")]
-	if "QA" in format:
-		ieva.MeanAltQscore=sample[format.index("QA")]
+	if "iRR" in format:
+		ieva.ReadRef=sample[format.index("iRR")]
+	if "iRA" in format:
+		ieva.ReadAlt=sample[format.index("iRA")]
+	if "iQR" in format:
+		ieva.MeanRefQscore=sample[format.index("iQR")]
+	if "iQA" in format:
+		ieva.MeanAltQscore=sample[format.index("iQA")]
+
 	if "TDP" in format:
 		ieva.TotalDPUnfilter=sample[format.index("TDP")]
-	if "NCR" in format:
+	if "iRMQ" in format:
+		ieva.RefMeanMappingQuality=sample[format.index("iRMQ")]
+	if "iAMQ" in format:
+		ieva.AltMeanMappingQuality=sample[format.index("iAMQ")]
+	if "iNCR" in format:
 		ieva.NumberClippedReadsRef=sample[format.index("NCR")]
-	if "NCA" in format:
+	if "iNCA" in format:
 		ieva.NumberClippedReadsAlt=sample[format.index("NCA")]
-	if "CR" in format:
+	if "iCR" in format:
 		ieva.ClippedReadsRef=sample[format.index("CR")]
-	if "CA" in format:
+	if "iCA" in format:
 		ieva.ClippedReadsAlt=sample[format.index("CA")]
 
 	for el in info:
 		if el.startswith('SRL='):
 			ieva.SimpleRepeatLength=el.split('=')[1]
+		elif el.startswith('SRU='):
+			ieva.SimpleRepeatUnit=el.split('=')[1]
 		elif el.startswith('SR='):
 			ieva.SimpleRepeat=el.split('=')[1]
 		elif el.startswith('PNC='):
@@ -886,22 +919,25 @@ def set_features(dictionary):
 			
 			index = index + 1	
 
-
 		features.SimpleRepeat_iEVA = varc_array[3].SimpleRepeat
 		features.SimpleRepeatLength_iEVA = varc_array[3].SimpleRepeatLength
+		features.SimpleRepeatUnit_iEVA= varc_array[3].SimpleRepeatUnit
 		features.PseudoNucleotidesComposition_iEVA = '\t'.join((varc_array[3].PseudoNucleotidesComposition).split(','))
 		features.RepeatMasker_iEVA = varc_array[3].RepeatMasker
 		features.gcContent_iEVA = varc_array[3].gcContent
+
 		features.VariantClass_iEVA = varc_array[3].VariantClass
 		features.StrandBiasReads_iEVA = varc_array[3].StrandBiasReads
 		features.UnMappedReads_iEVA = varc_array[3].UnMappedReads
+		features.MeanMappingQuality_iEVA = varc_array[3].MeanMappingQuality
 		features.MappingQualityZero_iEVA = varc_array[3].MappingQualityZero
 		features.NotPrimaryAlignment_iEVA = varc_array[3].NotPrimaryAlignment
 		features.SupplementaryAlignment_iEVA = varc_array[3].SupplementaryAlignment
 		features.NotPairedReads_iEVA = varc_array[3].NotPairedReads
 		features.NotProperPairedReads_iEVA = varc_array[3].NotProperPairedReads
 		features.AlignmentScore_iEVA = varc_array[3].AlignmentScore
-		features.NumberTotalDupReads_iEVA = varc_array[3].NumberTotalDupReads
+		features.TotalDupReads_iEVA = varc_array[3].TotalDupReads
+
 		features.NumberReadDupRef_iEVA = varc_array[3].NumberReadDupRef
 		features.NumberReadDupAlt_iEVA = varc_array[3].NumberReadDupAlt
 		features.DuplicateReference_iEVA = varc_array[3].DuplicateReference
@@ -913,6 +949,8 @@ def set_features(dictionary):
 		features.ReadAlt_iEVA = varc_array[3].ReadAlt
 		features.MeanRefQscore_iEVA = varc_array[3].MeanRefQscore
 		features.MeanAltQscore_iEVA = varc_array[3].MeanAltQscore
+		features.RefMeanMappingQuality_iEVA = varc_array[3].RefMeanMappingQuality
+		features.AltMeanMappingQuality_iEVA = varc_array[3].AltMeanMappingQuality
 		features.TotalDPUnfilter_iEVA = varc_array[3].TotalDPUnfilter
 		features.NumberClippedReadsRef_iEVA = varc_array[3].NumberClippedReadsRef
 		features.NumberClippedReadsAlt_iEVA = varc_array[3].NumberClippedReadsAlt
@@ -1020,6 +1058,15 @@ def set_features(dictionary):
 		for ac in vett_AC:
 			if ac and ac is not '.':
 				v=v+[int(ac)]
+
+		try:
+			features.AC_min=statistics.amin(v)
+		except:
+			features.AC_min='.'
+			try:
+			features.AC_max=statistics.amax(v)
+		except:
+			features.AC_max='.'				
 		try:
 			features.AC_media=statistics.mean(v)
 		except:

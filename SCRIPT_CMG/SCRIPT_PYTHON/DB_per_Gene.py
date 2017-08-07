@@ -19,6 +19,7 @@ def extract_info(varianti,hash_var,pazienti):
 			index_of_gen = line.split('\t').index('GT')
 			index_of_ac = line.split('\t').index('AC')
 			index_of_an = line.split('\t').index('AN')
+			index_of_exon = line.split('\t').index('EXON')
 
 			#print line
 			
@@ -171,7 +172,7 @@ def main():
 
 	for filename in glob2.glob(os.path.join(opts.path,'*.tsv')):
 		num_paz = num_paz + 1
-		print filename
+		#print filename
 		if 'FREEBAYES' in filename:
 			vc = 'FREEBAYES'
 		elif 'GATK_Other' in filename:
