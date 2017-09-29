@@ -420,7 +420,7 @@ def main():
 	parser.add_argument('-o','--outfile',help="file di output in vcf format")
 
 	global opts
-	
+
 	opts = parser.parse_args()
 	vcf = open(opts.input,'r')
 	out = open(opts.outfile,'w')
