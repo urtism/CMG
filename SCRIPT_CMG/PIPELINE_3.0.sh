@@ -38,6 +38,7 @@ ANN_LIST_SOMATIC=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_annotazione
 REF=~/NGS_TOOLS/hg19/ucsc.hg19.fasta
 REF_DICT=~/NGS_TOOLS/hg19/ucsc.hg19.dict
 MILLS=~/NGS_TOOLS/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf
+#DBSNP=~/NGS_TOOLS/hg19/common_all_20170710.vcf
 DBSNP=~/NGS_TOOLS/hg19/dbsnp_138.hg19.vcf
 LOGHI=~/git/CMG/LOGHI
 TRASCR_CARDIO=~/NGS_ANALYSIS/TARGET/Lista_trascritti_Cardio.txt
@@ -60,6 +61,8 @@ TARGET_CANCER_1000=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000
 TARGET_CANCER_1000_BED=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.bed
 TARGET_HALOPLEX=~/NGS_ANALYSIS/TARGET/HaloPlex_Covered.list
 TARGET_HALOPLEX_BED=~/NGS_ANALYSIS/TARGET/HaloPlex_Covered.bed
+TARGET_SURESELECT=~/NGS_ANALYSIS/TARGET/Meloni_SureSelect_target_files/3066331/3066331_Covered.list
+TARGET_SURESELECT_BED=~/NGS_ANALYSIS/TARGET/Meloni_SureSelect_target_files/3066331/3066331_Covered.bed
 AMPLICONS_HALOPLEX_BED=~/NGS_ANALYSIS/TARGET/HaloPlex_target_files/HaloPlex_Amplicons.bed
 
 HELP () {

@@ -33,7 +33,7 @@ samtools_vc () {
 
 	samtools_mpileup $1 $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.vcf -u
 
-	echo -e "$BCFTOOLS view -mv -Ov $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.vcf >  $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.call.vcf"
+	#echo -e "$BCFTOOLS view -mv -Ov $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.vcf >  $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.call.vcf"
 
 	$BCFTOOLS call -mv -Ov $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.vcf >  $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.call.vcf
 
@@ -153,33 +153,37 @@ FreeBayes_multisample () {
 		-K \
 		-J \
 		-s $2 \
+		--use-best-n-alleles 6 \
 		--genotype-qualities \
 		--report-genotype-likelihood-max \
 		--allele-balance-priors-off \
-		-m 0 \
-		-q 0 \
-		-R 0 \
-		-Y 0 \
-		-Q 1 \
-		-F 0.001 \
-		-C 1 > $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf
+		# -m 0 \
+		# -q 0 \
+		# -R 0 \
+		# -Y 0 \
+		# -Q 1 \
+		# -F 0.001 \
+		# -C 1 \
+		> $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf
 	else
 		$FREEBAYES -f $REF \
 		-L $1 \
 		-K \
 		-J \
 		-s $2 \
+		--use-best-n-alleles 6 \
 		--genotype-qualities \
 		--report-genotype-likelihood-max \
 		--allele-balance-priors-off \
-		-t $TARGETBED \
-		-m 0 \
-		-q 0 \
-		-R 0 \
-		-Y 0 \
-		-Q 1 \
-		-F 0.001 \
-		-C 1 > $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf
+		-t $TARGETBED > $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf
+		# -m 0 \
+		# -q 0 \
+		# -R 0 \
+		# -Y 0 \
+		# -Q 1 \
+		# -F 0.001 \
+		# -C 1 \
+		#> $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf
 	fi
 
 	python  $SCRIPT_PIPELINE/header_fix.py -v F -f $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf \

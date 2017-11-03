@@ -4,7 +4,7 @@ import argparse
 def main():
 
 	parser = argparse.ArgumentParser('add or remove chr in vcf file or bedfile. OUT IN STDOUT')
-	parser.add_argument('-f', '--infile', help="Freebayes vcf output file name")
+	parser.add_argument('-f', '--infile', help="vcf")
 
 	global opts 
 	opts = parser.parse_args()
