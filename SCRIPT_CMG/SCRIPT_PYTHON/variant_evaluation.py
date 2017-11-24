@@ -18,6 +18,7 @@ def evaluate(e_dataset,c_dataset):
 			if e_dataset[var] == c_dataset[var]:
 				gt_match+=1
 			else:
+				print var
 				gt_no_match+=1
 			del(e_dataset[var])
 			del(c_dataset[var])
@@ -75,43 +76,51 @@ if __name__ == '__main__':
 			id_var='\t'.join([chr,pos,ref,alt])
 			#print format
 			gt=sample.split(':')[format.split(':').index('GT')]
-			if len(ref)==1 and len(alt)==1:
-				esnv[id_var]=gt
-			else:
-				eindel[id_var]=gt
+			if chr != '17' and pos != '77468498':
+				if len(ref)==1 and len(alt)==1:
+					esnv[id_var]=gt
+				else:
+					eindel[id_var]=gt
 	else:
 		header=ineval[0]
 		for line in ineval[1:]:
 			chr,pos,id,ref,alt=line.rstrip().split('\t')[:5]
 			id_var='\t'.join([chr,pos,ref,alt])
 			gt=line.rstrip().split('\t')[header.split('\t').index('GT')]
-			if len(ref)==1 and len(alt)==1:
-				esnv[id_var]=gt
-			else:
-				eindel[id_var]=gt
+			if chr != '17' and pos != '77468498':
+				if len(ref)==1 and len(alt)==1:
+					esnv[id_var]=gt
+				else:
+					eindel[id_var]=gt
 
 	incomp = open(opts.comp,'r').readlines()
 	
 	if incomp[0].startswith("##fileformat=VCF"):
 		start = [incomp.index(x) for x in incomp if x.startswith("#CHROM")][0]
 		for line in incomp[start+1:]:
-			chr,pos,id,ref,alt,qual,filter,info,format,sample=line.rstrip().split('\t')
-			id_var='\t'.join([chr,pos,ref,alt])
-			gt=sample.split(':')[format.split(':').index('GT')]
-			if len(ref)==1 and len(alt)==1:
-				csnv[id_var]=gt
-			else:
-				cindel[id_var]=gt
+			try:
+				chr,pos,id,ref,alt,qual,filter,info,format,sample=line.rstrip().split('\t')
+				gt=sample.split(':')[format.split(':').index('GT')]
+			except:
+				chr,pos,id,ref,alt,filter,info,format,sample=line.rstrip().split('\t')
+				gt=info.split(';')[0].split('=')[1]
+			if chr != '17' and pos != '77468498':
+				id_var='\t'.join([chr,pos,ref,alt])
+				if len(ref)==1 and len(alt)==1:
+					csnv[id_var]=gt
+				else:
+					cindel[id_var]=gt
 	else:
 		header=incomp[0]
 		for line in incomp[1:]:
 			chr,pos,id,ref,alt=line.rstrip().split('\t')[:5]
 			id_var='\t'.join([chr,pos,ref,alt])
 			gt=line.rstrip().split('\t')[header.split('\t').index('GT')]
-			if len(ref)==1 and len(alt)==1:
-				csnv[id_var]=gt
-			else:
-				cindel[id_var]=gt
+			if chr != '17' and pos != '77468498':
+				if len(ref)==1 and len(alt)==1:
+					csnv[id_var]=gt
+				else:
+					cindel[id_var]=gt
 
 	etot=dict(esnv, **eindel)
 	ctot=dict(csnv, **cindel)

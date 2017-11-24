@@ -186,7 +186,7 @@ def print_vcf(analisi,log_bs_dir,outpath,reference):
 
 
 def Vcf_to_bamsurgeon(vars,min,max,err):
-
+	print vars
 	snp=open('/'.join(vars.split('.')[:-1])+'.snp','w')
 	indel=open('/'.join(vars.split('.')[:-1])+'.indel','w')
 	vcf=open(vars,'r')
@@ -690,9 +690,9 @@ if __name__ == '__main__':
 		# if bam file is given
 		bam=opts.bam
 
+	vars=opts.vars
 	if opts.dbsnp !=None:
 		vars=vars_from_db(opts.dbsnp,opts.num_snv_dbsnp,opts.num_indel_dbsnp,opts.out_path+'/Germline_dbsnp.vcf')
-	
 	if vars != None:
 		print "\nStarting simulation of Germline variants:"
 		# if a file containing variant to simulate is given

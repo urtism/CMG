@@ -117,37 +117,38 @@ if __name__ == '__main__':
 			
 	
 	#out.write('\t'.join(["VARIANTI","NUM CALLED VARIANT","NUM REAL VARIANTS","MEAN DETECTION RATE","STDV DETECTION RATE","MEAN FALSE DISCOVER RATE","STDV FALSE DISCOVER RATE","MEAN SENSITIVITY","STDV SENSITIVITY","MEAN PRECISION","STDV PRECISION","MEAN ACCURACY","STDV ACCURACY","MEAN SCORE F1","STDV SCORE F1","MEAN MISSING RATE","STDV MISSING RATE","MEAN GT MATCH RATE","STDV GT MATCH RATE"])+'\n')
-	
+
 	for vars in [snv,indel,total]:
+		#print vars
 		
-		NUM_CALLED_VARIANT = str(int(round(np.sum(vars.num_called_variant),4)))
-		NUM_REAL_VARIANTS = str(int(round(np.sum(vars.num_real_variants),4)))
+			NUM_CALLED_VARIANT = str(int(round(np.sum(vars.num_called_variant),4)))
+			NUM_REAL_VARIANTS = str(int(round(np.sum(vars.num_real_variants),4)))
 
-		MEAN_DETECTION_RATE = str(round(st.mean(vars.detection_rate),4))
-		STDV_DETECTION_RATE = str(round(st.stdev(vars.detection_rate),4))
+			MEAN_DETECTION_RATE = str(round(st.mean(vars.detection_rate),4))
+			STDV_DETECTION_RATE = str(round(st.stdev(vars.detection_rate),4))
 
-		MEAN_FALSE_DISCOVER_RATE = str(round(st.mean(vars.False_discover_rate),4))
-		STDV_FALSE_DISCOVER_RATE = str(round(st.stdev(vars.False_discover_rate),4))
+			MEAN_FALSE_DISCOVER_RATE = str(round(st.mean(vars.False_discover_rate),4))
+			STDV_FALSE_DISCOVER_RATE = str(round(st.stdev(vars.False_discover_rate),4))
 
-		MEAN_SENSITIVITY = str(round(st.mean(vars.Sensitivity),4))
-		STDV_SENSITIVITY = str(round(st.stdev(vars.Sensitivity),4))
+			MEAN_SENSITIVITY = str(round(st.mean(vars.Sensitivity),4))
+			STDV_SENSITIVITY = str(round(st.stdev(vars.Sensitivity),4))
 
-		MEAN_PRECISION = str(round(st.mean(vars.precision),4))
-		STDV_PRECISION = str(round(st.stdev(vars.precision),4))
+			MEAN_PRECISION = str(round(st.mean(vars.precision),4))
+			STDV_PRECISION = str(round(st.stdev(vars.precision),4))
 
-		MEAN_ACCURACY = str(round(st.mean(vars.accuracy),4))
-		STDV_ACCURACY = str(round(st.stdev(vars.accuracy),4))
+			MEAN_ACCURACY = str(round(st.mean(vars.accuracy),4))
+			STDV_ACCURACY = str(round(st.stdev(vars.accuracy),4))
 
-		MEAN_SCORE_F1 = str(round(st.mean(vars.score_f1),4))
-		STDV_SCORE_F1 = str(round(st.stdev(vars.score_f1),4))
+			MEAN_SCORE_F1 = str(round(st.mean(vars.score_f1),4))
+			STDV_SCORE_F1 = str(round(st.stdev(vars.score_f1),4))
 
-		MEAN_MISSING_RATE = str(round(st.mean(vars.missing_rate),4))
-		STDV_MISSING_RATE = str(round(st.stdev(vars.missing_rate),4))
+			MEAN_MISSING_RATE = str(round(st.mean(vars.missing_rate),4))
+			STDV_MISSING_RATE = str(round(st.stdev(vars.missing_rate),4))
 
-		MEAN_GT_MATCH_RATE = str(round(st.mean(vars.gt_match_rate),4))
-		STDV_GT_MATCH_RATE = str(round(st.stdev(vars.gt_match_rate),4))
+			MEAN_GT_MATCH_RATE = str(round(st.mean(vars.gt_match_rate),4))
+			STDV_GT_MATCH_RATE = str(round(st.stdev(vars.gt_match_rate),4))
 
-		out.write('\t'.join(['GROUP',vars.variant,NUM_CALLED_VARIANT,NUM_REAL_VARIANTS,MEAN_DETECTION_RATE,MEAN_FALSE_DISCOVER_RATE,MEAN_SENSITIVITY,MEAN_PRECISION,MEAN_ACCURACY,MEAN_SCORE_F1,MEAN_MISSING_RATE,MEAN_GT_MATCH_RATE])+'\n')
-	
+			out.write('\t'.join(['GROUP',vars.variant,NUM_CALLED_VARIANT,NUM_REAL_VARIANTS,MEAN_DETECTION_RATE,MEAN_FALSE_DISCOVER_RATE,MEAN_SENSITIVITY,MEAN_PRECISION,MEAN_ACCURACY,MEAN_SCORE_F1,MEAN_MISSING_RATE,MEAN_GT_MATCH_RATE])+'\n')
+		
 		#out.write('\t'.join([vars.variant,NUM_CALLED_VARIANT,NUM_REAL_VARIANTS,MEAN_DETECTION_RATE,STDV_DETECTION_RATE,MEAN_FALSE_DISCOVER_RATE,STDV_FALSE_DISCOVER_RATE,MEAN_SENSITIVITY,STDV_SENSITIVITY,MEAN_PRECISION,STDV_PRECISION,MEAN_ACCURACY,STDV_ACCURACY,MEAN_SCORE_F1,STDV_SCORE_F1,MEAN_MISSING_RATE,STDV_MISSING_RATE,MEAN_GT_MATCH_RATE,STDV_GT_MATCH_RATE])+'\n')
 	

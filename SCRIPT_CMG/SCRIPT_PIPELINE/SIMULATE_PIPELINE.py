@@ -211,17 +211,20 @@ def Vcf_to_bamsurgeon(vars,min,max,err):
 			freq=line[-1]
 			if freq == '.' or format != 'vaf':
 				freq=Freq_calc(min,max,err)
-			if len(ref)==1 and len(alt)==1:
-				if alt =='.':
-					snp.write('\t'.join([chr,pos,pos,freq]) + '\n')
-				else:
-					snp.write('\t'.join([chr,pos,pos,freq,alt]) + '\n')
-			elif len(ref)>1 and len(alt)==1:
-				del_pos=str(int(pos) + len(ref) - len(alt))
-				indel.write('\t'.join([chr,pos,del_pos,freq,'DEL']) + '\n')
-			elif len(ref)==1 and len(alt)>1:
-				INS=alt[1:]
-				indel.write('\t'.join([chr,pos,str(int(pos)+1),freq,'INS',INS]) + '\n')
+
+			if float(freq) > 0.0: #controllo che la frequenza sia maggiore di 0. Se tenessi anche la frequenza = 0 mi simula comunque una read
+				
+				if len(ref)==1 and len(alt)==1:
+					if alt =='.':
+						snp.write('\t'.join([chr,pos,pos,freq]) + '\n')
+					else:
+						snp.write('\t'.join([chr,pos,pos,freq,alt]) + '\n')
+				elif len(ref)>1 and len(alt)==1:
+					del_pos=str(int(pos) + len(ref) - len(alt))
+					indel.write('\t'.join([chr,pos,del_pos,freq,'DEL']) + '\n')
+				elif len(ref)==1 and len(alt)>1:
+					INS=alt[1:]
+					indel.write('\t'.join([chr,pos,str(int(pos)+1),freq,'INS',INS]) + '\n')
 	snp.close()
 	indel.close()
 	vcf.close()
@@ -697,6 +700,7 @@ if __name__ == '__main__':
 		# if bam file is given
 		bam=opts.bam
 
+	vars=opts.vars
 	if opts.dbsnp !=None:
 		vars=vars_from_db(opts.dbsnp,opts.num_snv_dbsnp,opts.num_indel_dbsnp,opts.out_path+'/Germline_dbsnp.vcf')
 	

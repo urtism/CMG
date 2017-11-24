@@ -419,9 +419,12 @@ VarScan2_somatic () {
 	--output-vcf 1 \
 	--mpileup 1
 
+	python $SCRIPT_PIPELINE/header_fix.py -v V -f $WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.snp.vcf \
+	> $WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.fix.snp.vcf
+
 	$BCFTOOLS norm -m -both \
  	-f $REF \
- 	$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.snp.vcf \
+ 	$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.fix.snp.vcf \
  	> $WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.norm.snp.vcf
 
  	python $SCRIPT_PIPELINE/header_fix.py -v V -f $WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.indel.vcf \
