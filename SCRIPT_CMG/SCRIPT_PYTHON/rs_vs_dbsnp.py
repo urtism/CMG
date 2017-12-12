@@ -12,27 +12,34 @@ if __name__ == '__main__':
 	global opts
 	opts = parser.parse_args()
 	vcfout = open(opts.out,'w')
+	rs=dict()
 	with open(opts.rs_list,'r') as vcf:
 		for line in vcf:
 			line = line.rstrip()
 			if line.startswith('#'):
 				vcfout.write(line+'\n')
 			else:
-				chr,pos,id,ref,alt,filter,info,format,sample = line.split('\t')
-				print id
+				#chr,pos,id,ref,alt,filter,info,format,sample = line.split('\t')
+				id = line
 
-				dbsnp = open(opts.dbsnp,'r')
-				for row in dbsnp:
-					if row.startswith('#'):
-						continue
-					else:
-						if id == row.split('\t')[2]:
-							print id,row.split('\t')[2]
-							ref = row.split('\t')[3]
-							alt = row.split('\t')[4]
-							vcfout.write('\t'.join([chr,pos,id,ref,alt,filter,info,format,sample])+'\n')
-							break
-				dbsnp.close()
+				rs[id]=[]
+
+
+
+	dbsnp = open(opts.dbsnp,'r')
+	for row in dbsnp:
+		if row.startswith('#'):
+			continue
+		else:
+			if str(row.split('\t')[2]) in rs.keys():
+				print row.split('\t')[2]
+				chr = row.split('\t')[0]
+				pos = row.split('\t')[1]
+				ref = row.split('\t')[3]
+				alt = row.split('\t')[4]
+				vcfout.write('\t'.join([chr,pos,id,ref,alt,'.','.','.','.'])+'\n')
+				
+	dbsnp.close()
 
 						
 							

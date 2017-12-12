@@ -31,7 +31,7 @@ if __name__ == '__main__':
 			out.write('\t'.join(header) +'\n')
 			for line in pazienti[paz]:
 				if paz in line[-1]:
-					line[2:2]=['HOM']
+					line[2:2]=['OMO']
 				elif paz in line[-2]:
 					line[2:2]=['HET']
 				out.write('\t'.join(line) +'\n')

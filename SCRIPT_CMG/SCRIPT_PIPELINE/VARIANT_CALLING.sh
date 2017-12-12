@@ -29,22 +29,23 @@ samtools_mpileup (){
 
 samtools_vc () {
 	
-	printf $"\n =========>	Sample $SAMPLE_NAME => Variant Calling: Samtools\n\n"
+	printf $"\n =========>	Sample $2 => Variant Calling: Samtools\n\n"
 
-	samtools_mpileup $1 $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.vcf -u
+	samtools_mpileup $1 $WORKDIR/VARIANT_CALLING/$2\_Samtools.tobcftools.vcf -u
 
-	#echo -e "$BCFTOOLS view -mv -Ov $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.vcf >  $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.call.vcf"
-
-	$BCFTOOLS call -mv -Ov $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.vcf >  $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.call.vcf
+	$BCFTOOLS call -mv -Ov $WORKDIR/VARIANT_CALLING/$2\_Samtools.tobcftools.vcf >  $WORKDIR/VARIANT_CALLING/$2\_Samtools.vcf
 
 	$BCFTOOLS norm -m -both \
 	-f $REF \
-	$WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.call.vcf \
-	> $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.split.vcf
+	$WORKDIR/VARIANT_CALLING/$2\_Samtools.vcf \
+	> $WORKDIR/VARIANT_CALLING/$2\_Samtools.split.vcf
 
-	VCF_SAMTOOLS=$WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.split.vcf
+	VCF_SAMTOOLS=$WORKDIR/VARIANT_CALLING/$2\_Samtools.split.vcf
 
-	printf $"\n =========>	Sample $SAMPLE_NAME => Variant Calling: Samtools: DONE\n\n"
+	mv $WORKDIR/VARIANT_CALLING/$2\_Samtools.tobcftools.vcf $DELETE
+	mv $WORKDIR/VARIANT_CALLING/$2\_Samtools.vcf $DELETE
+
+	printf $"\n =========>	Sample $2 => Variant Calling: Samtools: DONE\n\n"
 
 }
 
@@ -443,7 +444,7 @@ VarScan2_somatic () {
 }
 
 
-#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     VARDICT     :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     VARDICT     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 VarDict () {	
 
@@ -458,6 +459,60 @@ VarDict () {
 	printf $"\n =========>	Sample $3 => Variant Calling: VarDict: DONE\n\n"	
 }
 
+
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     SCALPEL     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+scalpel_germline_singlesample () {
+
+	printf $"\n =========>	Sample $2 => Variant Calling: Scalpel\n\n"
+
+	$SCALPEL --single \
+	--bam $1 \
+	--bed $TARGETBED \
+	--ref $REF \
+	--numprocs 8 \
+	--dir $WORKDIR/VARIANT_CALLING/SCALPEL
+
+	mv $WORKDIR/VARIANT_CALLING/SCALPEL/variants.indel.vcf $WORKDIR/VARIANT_CALLING/$2\_Scalpel.vcf
+
+	VCF_SCALPEL=$WORKDIR/VARIANT_CALLING/$2\_Scalpel.vcf
+
+	printf $"\n =========>	Sample $2 => Variant Calling: Scalpel: DONE\n\n"
+
+}
+
+
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     SNVER     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+SNVer_germline_singlesample () {
+
+	printf $"\n =========>	Sample $2 => Variant Calling: SNVer\n\n"
+
+	java -jar -Xmx64g $SNVER_INDIVIDUAL \
+	-i $1 \
+	-l $TARGETBED \
+	-r $REF \
+	-o $WORKDIR/VARIANT_CALLING/SNVER/$2
+
+	bgzip $WORKDIR/VARIANT_CALLING/SNVER/$2.filter.vcf
+	bgzip $WORKDIR/VARIANT_CALLING/SNVER/$2.indel.filter.vcf
+	tabix $WORKDIR/VARIANT_CALLING/SNVER/$2.filter.vcf.gz
+	tabix $WORKDIR/VARIANT_CALLING/SNVER/$2.indel.filter.vcf.gz
+
+	vcf-concat $WORKDIR/VARIANT_CALLING/SNVER/$2.filter.vcf.gz $WORKDIR/VARIANT_CALLING/SNVER/$2.indel.filter.vcf.gz > $WORKDIR/VARIANT_CALLING/SNVER/$2\_SNVer.vcf
+	vcf-sort -c $WORKDIR/VARIANT_CALLING/SNVER/$2\_SNVer.vcf > $WORKDIR/VARIANT_CALLING/$2\_SNVer.sort.vcf
+
+	mv $WORKDIR/VARIANT_CALLING/SNVER/$2\_SNVer.vcf $DELETE
+	mv $WORKDIR/VARIANT_CALLING/SNVER/$2.filter.vcf.gz $DELETE
+	mv $WORKDIR/VARIANT_CALLING/SNVER/$2.indel.filter.vcf.gz $DELETE
+	mv $WORKDIR/VARIANT_CALLING/SNVER/$2.filter.vcf.gz.tbi $DELETE
+	mv $WORKDIR/VARIANT_CALLING/SNVER/$2.indel.filter.vcf.gz.tbi $DELETE
+
+	VCF_SNVER=$WORKDIR/VARIANT_CALLING/$2\_SNVer.sort.vcf
+
+	printf $"\n =========>	Sample $2 => Variant Calling: SNVer: DONE\n\n"
+
+}
 
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     MERGE VCF    ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -592,6 +647,8 @@ VARIANT_CALLING_CELLFREE () {
 
 		done
 
+
+
 		cp $BAM_NORM $STORAGE
 		cp ${BAM_NORM%.*}.bai $STORAGE
 
@@ -642,6 +699,46 @@ VARIANT_CALLING_SANGER () {
 	done
 	
 	save_in_storage $WORKDIR/Bam_list.txt
+	
+	
+}
+
+
+
+VARIANT_CALLING_SINGLE_SAMPLE () {
+	
+	cat $LOGHI/logo_variant.txt
+
+	mkdir -p $WORKDIR/VARIANT_CALLING
+	mkdir -p $WORKDIR/TARGETBED
+	mkdir -p $WORKDIR/VARIANT_CALLING/GVCF
+	mkdir -p $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION
+	mkdir -p $WORKDIR/VARIANT_CALLING/SCALPEL
+	mkdir -p $WORKDIR/VARIANT_CALLING/SNVER
+	
+	rm -f $WORKDIR/Bam_list.txt
+	rm -f $WORKDIR/Sample_list.txt
+	rm -f $WORKDIR/gvcf.list
+	rm -f $WORKDIR/PostVariantCalling.cfg
+	CFG=$WORKDIR/PostVariantCalling.cfg
+	
+
+	cat $1 | while read line
+	do
+
+		BAM=$(echo "$line" | cut -f1)
+		SAMPLE_NAME=$(echo "$line" | cut -f2)
+
+		samtools_vc $BAM $SAMPLE_NAME
+		scalpel_germline_singlesample $BAM $SAMPLE_NAME
+		SNVer_germline_singlesample $BAM $SAMPLE_NAME
+
+		printf $"$BAM\n" >> $WORKDIR/Bam_list.txt
+		printf $"$VCF_SAMTOOLS\t$VCF_SCALPEL\t$VCF_SNVER\n" >> $CFG
+
+	done
+	
+	#save_in_storage $WORKDIR/Bam_list.txt
 	
 	
 }

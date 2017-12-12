@@ -24,9 +24,10 @@ class Var_confidance():
 
 
 def make_stats(chr,pos,id,ref,alt,Consequence,gene,HGVSc,HGVSp,AF_media,confidenza,HC,HC_vars_lf,HC_vars_hf,MC,MC_vars_lf,MC_vars_hf,LC,LC_vars_lf,LC_vars_hf):
+	
 	if confidenza == 'high':
 						
-		if float(AF_tum_media) < 0.05 and float(AF_tum_media) > 0.01:
+		if float(AF_media) < 0.05 and float(AF_media) > 0.01:
 			HC.var_lf += 1
 			
 			if 'stop_gained' in Consequence or 'frameshift_variant' in Consequence:
@@ -49,7 +50,8 @@ def make_stats(chr,pos,id,ref,alt,Consequence,gene,HGVSc,HGVSp,AF_media,confiden
 				HC.others_lf +=1
 
 
-		elif float(AF_media) >= 0.05: 
+		elif float(AF_media) >= 0.05:
+			
 			HC.var_hf += 1
 			
 			if 'stop_gained' in Consequence or 'frameshift_variant' in Consequence:
@@ -161,7 +163,6 @@ def make_stats(chr,pos,id,ref,alt,Consequence,gene,HGVSc,HGVSp,AF_media,confiden
 
 
 def assegna_conf_som(somVars,somVard,filterMu):
-	
 	varcal=0
 	som=0
 	conf='?'
@@ -178,7 +179,7 @@ def assegna_conf_som(somVars,somVard,filterMu):
 		if filterMu == 'PASS':
 			som += 1
 
-	print varcal,som
+	#print varcal,som
 
 	if varcal > 1 and som >=2 :
 		conf = 'high'
@@ -189,13 +190,42 @@ def assegna_conf_som(somVars,somVard,filterMu):
 
 	return conf
 
+def assegna_conf_cirr_tum(somVars,somVard,filterMu):
+	varcal=0
+	germ=0
+	conf='?'
+	if somVars != '.':
+		varcal += 1
+		if somVars == '0':
+			germ += 1
+	if somVard != '.':
+		varcal += 1
+		if somVard == '0':
+			germ += 1
+	if filterMu != '.':
+		varcal += 1
+		if filterMu != 'PASS':
+			germ += 1
+
+	#print varcal,som
+
+	if varcal > 1 and germ >=2 :
+		conf = 'high'
+	elif varcal > 1 and germ == 1:
+		conf = 'medium'
+	elif varcal == 1 and germ == 1:
+		conf = 'low'
+
+	return conf
+
+
 
 def assegna_conf_cirr(gt_tum,gt_cirr):
 	
 	OMO_tum=gt_tum.count('0/0')
 	ET_tum=gt_tum.count('0/1')+gt_tum.count('1/0')
-	OMO_cirr=gt_cirr.count('0/1')+ gt_cirr.count('1/0')
-	ET_cirr=gt_cirr.count('0/0')
+	ET_cirr=gt_cirr.count('0/1')+ gt_cirr.count('1/0')
+	OMO_cirr=gt_cirr.count('0/0')
 
 	if ET_cirr >= 2 and OMO_tum >= 2 and OMO_cirr == 0 and ET_tum == 0 :
 		conf = 'high'
@@ -271,19 +301,22 @@ if __name__ == '__main__':
 				gene = line.split('\t')[header.index('SYMBOL')]
 				HGVSc = line.split('\t')[header.index('HGVSc')]
 				HGVSp = line.split('\t')[header.index('HGVSp')]
-
-
 				
 				if opts.tess =='TUMORE' and float(DP_tum_media) >= 400.0 and float(AO_tum_media) >= 10 and float(Delta_perc_media) == 100 and tess == opts.tess:
 
 					confidenza = assegna_conf_som(SomaticVarscan,SomaticVardict,FILTER_Mutect)
 					HC,HC_vars_lf,HC_vars_hf,MC,MC_vars_lf,MC_vars_hf,LC,LC_vars_lf,LC_vars_hf = make_stats(chr,pos,id,ref,alt,Consequence,gene,HGVSc,HGVSp,AF_tum_media,confidenza,HC,HC_vars_lf,HC_vars_hf,MC,MC_vars_lf,MC_vars_hf,LC,LC_vars_lf,LC_vars_hf)
 
-				elif opts.tess =='CIRR+TUMORE' and float(DP_cirr_media) >= 400.0 and float(AO_cirr_media) >= 10 and '0/0' in gt_tum and '0/1' in gt_cirr and tess == opts.tess:
-					#print LC_vars_lf
+				elif opts.tess =='CIRR' and float(DP_cirr_media) >= 400.0 and float(AO_cirr_media) >= 10 and '0/0' in gt_tum and '0/1' in gt_cirr and tess == 'CIRR+TUMORE':
+
 					confidenza = assegna_conf_cirr(gt_tum,gt_cirr)
 					HC,HC_vars_lf,HC_vars_hf,MC,MC_vars_lf,MC_vars_hf,LC,LC_vars_lf,LC_vars_hf = make_stats(chr,pos,id,ref,alt,Consequence,gene,HGVSc,HGVSp,AF_cirr_media,confidenza,HC,HC_vars_lf,HC_vars_hf,MC,MC_vars_lf,MC_vars_hf,LC,LC_vars_lf,LC_vars_hf)
-					#print LC_vars_lf
+
+				elif opts.tess =='CIRR+TUMORE' and float(DP_tum_media) >= 400.0 and float(AO_tum_media) >= 10 and tess == opts.tess:
+
+					confidenza = assegna_conf_cirr_tum(SomaticVarscan,SomaticVardict,FILTER_Mutect)
+					HC,HC_vars_lf,HC_vars_hf,MC,MC_vars_lf,MC_vars_hf,LC,LC_vars_lf,LC_vars_hf = make_stats(chr,pos,id,ref,alt,Consequence,gene,HGVSc,HGVSp,AF_cirr_media,confidenza,HC,HC_vars_lf,HC_vars_hf,MC,MC_vars_lf,MC_vars_hf,LC,LC_vars_lf,LC_vars_hf)
+
 				elif opts.tess =='PERIFERICO' and float(DP_tum_media) >= 400.0 and tess == opts.tess:
 
 					confidenza = 'high'

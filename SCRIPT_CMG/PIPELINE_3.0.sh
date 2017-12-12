@@ -24,6 +24,9 @@ VARDICT=~/NGS_TOOLS/VarDictJava-master/build/install/VarDict/bin/VarDict
 BCFTOOLS=bcftools
 SURECALLTRIMMER=~/NGS_TOOLS/AGeNT/SurecallTrimmer_v3.5.1.46.jar
 LOCATLT=~/NGS_TOOLS/AGeNT/LocatIt_v3.5.1.46.jar
+SCALPEL=~/NGS_TOOLS/scalpel-0.5.3/scalpel-discovery
+SNVER_INDIVIDUAL=~/NGS_TOOLS/SNVer-0.5.3/SNVerIndividual.jar
+SNVER_POOL=~/NGS_TOOLS/SNVer-0.5.3/SNVerPool.jar
 
 VEP=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 VEPANN=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/variant_effect_predictor.pl
@@ -243,7 +246,7 @@ PIPELINE_SANGER () {
 	fi
 	if [[ "$START" == *"V"* ]]
 	then
-		VARIANT_CALLING_SANGER $CFG
+		VARIANT_CALLING_SINGLE_SAMPLE $CFG
 	fi
 	if [[ "$START" == *"F"* ]]
 	then

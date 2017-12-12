@@ -20,6 +20,7 @@ def extract_info(varianti,hash_var,pazienti):
 			index_of_ac = line.split('\t').index('AC')
 			index_of_an = line.split('\t').index('AN')
 			index_of_exon = line.split('\t').index('EXON')
+			index_of_intron = line.split('\t').index('INTRON')
 
 			#print line
 			
@@ -49,6 +50,8 @@ def extract_info(varianti,hash_var,pazienti):
 			CONSEQUENCE = variante[index_of_conseq]
 			AC = variante[index_of_ac]
 			AN = variante[index_of_an]
+			INTRON = variante[index_of_intron]
+			EXON = variante[index_of_exon]
 			info = variante[4:]
 			var_id = '\t'.join([chrom,pos,ref,alt])
 
@@ -76,21 +79,24 @@ def extract_info(varianti,hash_var,pazienti):
 				hash_var[var_id][5] = CONSEQUENCE
 				hash_var[var_id][6] = AC
 				hash_var[var_id][7] = AN
+				hash_var[var_id][8] = EXON
+				hash_var[var_id][9] = INTRON
+
 
 			else:
 				if variante[index_of_gen].split('/')[0] == variante[index_of_gen].split('/')[1]:
 					if '22014162' in var_id: 
 						print [pazienti[id][0]]
 					try:
-						hash_var[var_id] = [0,1,[[],[pazienti[id][0]]],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
+						hash_var[var_id] = [0,1,[[],[pazienti[id][0]]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
 					except:
-						hash_var[var_id] = [0,1,[[],[id]],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
+						hash_var[var_id] = [0,1,[[],[id]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
 							
 				else:
 					try:
-						hash_var[var_id] = [1,0,[[pazienti[id][0]],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
+						hash_var[var_id] = [1,0,[[pazienti[id][0]],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
 					except:
-						hash_var[var_id] = [0,1,[[id],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN]
+						hash_var[var_id] = [0,1,[[id],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
 				#print "nuova variante",hash_var[var_id],AC,AN
 
 
@@ -113,8 +119,11 @@ def extract_var_from_gene(varianti,vc):
 			index_of_HGVSp = line_split.index('HGVSp')
 			index_of_conseq = line_split.index('Consequence')
 			index_of_gene = line_split.index('SYMBOL')
+			index_of_exon = line_split.index('EXON')
+			index_of_intron = line_split.index('INTRON')
 
-			header = '\t'.join(var_id + ['HGVSc','HGVSp','Consequence','SYMBOL','GT','AC','AN']) + '\n'
+
+			header = '\t'.join(var_id + ['HGVSc','HGVSp','Consequence','SYMBOL','GT','AC','AN','EXON','INTRON']) + '\n'
 			if header not in var_array: 
 				var_list.write(header)
 			
@@ -122,7 +131,7 @@ def extract_var_from_gene(varianti,vc):
 			if line_split[index_of_gene].rstrip() == opts.gene.rstrip():
 				#print "si"
 				var_id = line_split[0:5]
-				var_list.write('\t'.join(var_id + [line_split[index_of_HGVSc],line_split[index_of_HGVSp],line_split[index_of_conseq],line_split[index_of_gene],line_split[index_of_gen],line_split[index_of_ac],line_split[index_of_an]]) + '\n')
+				var_list.write('\t'.join(var_id + [line_split[index_of_HGVSc],line_split[index_of_HGVSp],line_split[index_of_conseq],line_split[index_of_gene],line_split[index_of_gen],line_split[index_of_ac],line_split[index_of_an],line_split[index_of_exon],line_split[index_of_intron]]) + '\n')
 			
 def extract_paz_name(pazienti):
 	id_info={}
@@ -187,7 +196,6 @@ def main():
 	#print num_paz
 
 	for filename in glob2.glob(os.path.join(opts.out,'*.list')):
-		#print filename
 		if 'GATK_Other' in filename:
 			continue
 		else:
@@ -201,8 +209,8 @@ def main():
 	ws1.title = "range names"
 
 
-	statistiche.write('CHROM'+'\t' + 'POS'+'\t' + 'REF'+'\t' + 'ALT' +'\t' +'HGVSc'+'\t' + 'HGVSp'+'\t'+'CONSEQUENCE'+'\t'+ 'FRAZ_ALLELICA'+'\t' + 'FRAZ_PERC'+'\t' + 'MAF'+'\t'+'ETERO'+'\t'+ 'OMO'+'\t'+'NUM_PAZ_MUTATI'+'\t'+'PAZIENTI_HET'+'\t'+'PAZIENTI_HOM'+'\n')
-	header=['CHROM','POS','REF','ALT','HGVSc','HGVSp','CONSEQUENCE','FRAZ_ALLELICA','FRAZ_PERC','MAF','ETERO','OMO','NUM_PAZ_MUTATI','PAZIENTI_HET','PAZIENTI_HOM']
+	statistiche.write('CHROM'+'\t' + 'POS'+'\t' + 'REF'+'\t' + 'ALT' +'\t' +'HGVSc'+'\t' + 'HGVSp'+'\t'+'EXON'+'\t'+'INTRON'+'\t'+'CONSEQUENCE'+'\t'+ 'FRAZ_ALLELICA'+'\t' + 'FRAZ_PERC'+'\t' + 'MAF'+'\t'+'ETERO'+'\t'+ 'HOM'+'\t'+'NUM_PAZ_MUTATI'+'\t'+'PAZIENTI_HET'+'\t'+'PAZIENTI_HOM'+'\n')
+	header=['CHROM','POS','REF','ALT','HGVSc','HGVSp','EXON','INTRON','CONSEQUENCE','FRAZ_ALLELICA','FRAZ_PERC','MAF','ETERO','HOM','NUM_PAZ_MUTATI','PAZIENTI_HET','PAZIENTI_HOM']
 	ws1.append(header)
 
 	for var in hash_var.keys():
@@ -210,16 +218,16 @@ def main():
 			hash_var[var][2][0] =['-']
 		if hash_var[var][2][1] ==[]:
 			hash_var[var][2][1] =['-']
-		maf = float("{0:.4f}".format(float(hash_var[var][-2])/float(hash_var[var][-1])))
-		fraz = str(hash_var[var][-2]) + '/' + str(hash_var[var][-1])
+		maf = float("{0:.4f}".format(float(hash_var[var][6])/float(hash_var[var][7])))
+		fraz = str(hash_var[var][6]) + '/' + str(hash_var[var][7])
 		perc = str(maf*100) + '%'
 		paz_mut = str(int(hash_var[var][0]) + int(hash_var[var][1])) + '/' + str((num_paz))
-		info_var = str(hash_var[var][3]) + '\t' + str(hash_var[var][4])+ '\t' + str(hash_var[var][5])
+		info_var = str(hash_var[var][3]) + '\t' + str(hash_var[var][4])+  '\t' + str(hash_var[var][8])+ '\t' + str(hash_var[var][9]) +'\t' + str(hash_var[var][5])
 		stats = fraz + '\t' + perc + '\t' +  str(maf) + '\t' + str(hash_var[var][0]) + '\t' + str(hash_var[var][1]) + '\t' + str(paz_mut) + '\t' + ';'.join(hash_var[var][2][0])+ '\t' + ';'.join(hash_var[var][2][1])
 		statistiche.write(var + '\t' +info_var + '\t' + stats + '\n')
 
 		var_split1 = var.split('\t')
-		info_var1 = [str(hash_var[var][3]),str(hash_var[var][4]),str(hash_var[var][5])]
+		info_var1 = [str(hash_var[var][3]),str(hash_var[var][4]),str(hash_var[var][8]),str(hash_var[var][9]),str(hash_var[var][5])]
 		stats1 = [fraz,perc, str(maf),str(hash_var[var][0]),str(hash_var[var][1]),str(paz_mut),';'.join(hash_var[var][2][0]),';'.join(hash_var[var][2][1])]
 		to_print=var_split1+info_var1+stats1
 		ws1.append(to_print)
