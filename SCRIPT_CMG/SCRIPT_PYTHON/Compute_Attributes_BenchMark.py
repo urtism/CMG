@@ -1,12 +1,8 @@
 import argparse
-import re
-import string
-import sys
+# ------------------------------FUNCTION---------------------------------
 
-#------------------------------------------FUNCTION---------------------------------
 
-def extract_FREE(New_Head,tag):
-
+def extract_FREE(New_Head, tag):
 	# Tolgo le tag che leggo nelle if dalla nuova header
 	if 'FREE-FORMAT-DPR-TOT' == tag or 'FREE-FORMAT-DPR-ALT' == tag or 'FREE-FORMAT-AD-ALT' == tag \
 	or 'FREE-FORMAT-AD-REF' == tag or 'FREE-INFO-DPB' == tag or 'FREE-INFO-NUMALT' == tag or 'FREE-INFO-RPR' == tag \
@@ -14,10 +10,10 @@ def extract_FREE(New_Head,tag):
 	or 'FREE-INFO-SAF' == tag or 'FREE-INFO-SAR' == tag or 'FREE-INFO-SRF' == tag or 'FREE-INFO-SRR' == tag:
 		pass
 
-	#Aggioungo all'header le tag che devo calcolare
+	# Aggioungo all'header le tag che devo calcolare
 	elif 'FREE-FORMAT-RO' == tag:
-		New_Head += ['FREE-FORMAT-RO']
 		New_Head += ['FREE-FORMAT-AD-FREQ']
+		New_Head += ['FREE-FORMAT-RO']
 
 	elif 'FREE-INFO-AO' == tag:
 		New_Head += ['FREE-INFO-AO']
@@ -28,18 +24,20 @@ def extract_FREE(New_Head,tag):
 
 	return New_Head
 
-def extract_GATK(New_Head,tag):
 
- 	if 'GATK-FORMAT-AD-ALT' == tag:
+def extract_GATK(New_Head, tag):
+
+	if 'GATK-FORMAT-AD-ALT' == tag:
 		New_Head += ['GATK-FORMAT-AD-ALT']
 		New_Head += ['GATK-FORMAT-AD-FREQ']
 
 	else:
 		New_Head += [tag]
 
- 	return New_Head
+	return New_Head
 
-def extract_iEVA(New_Head,tag):
+
+def extract_iEVA(New_Head, tag):
 
 	if 'iEVA-FORMAT-iAD-REF' == tag:
 		New_Head += ['iEVA-FORMAT-iAD-REF']
@@ -89,13 +87,6 @@ def extract_iEVA(New_Head,tag):
 		New_Head += ['iEVA-FORMAT-iUnMap-ALT-FREQ']
 		New_Head += ['iEVA-FORMAT-iUnMap-DELTA']
 
-	elif 'iEVA-FORMAT-iMQ-REF' == tag:
-		New_Head += ['iEVA-FORMAT-iMQ-REF']
-
-	elif 'iEVA-FORMAT-iMQ-ALT' == tag:
-		New_Head += ['iEVA-FORMAT-iMQ-ALT']
-		New_Head += ['iEVA-FORMAT-iMQ-DELTA']
-
 	elif 'iEVA-FORMAT-iMQ0-REF' == tag:
 		New_Head += ['iEVA-FORMAT-iMQ0-REF']
 		New_Head += ['iEVA-FORMAT-iMQ0-REF-FREQ']
@@ -104,6 +95,10 @@ def extract_iEVA(New_Head,tag):
 		New_Head += ['iEVA-FORMAT-iMQ0-ALT']
 		New_Head += ['iEVA-FORMAT-iMQ0-ALT-FREQ']
 		New_Head += ['iEVA-FORMAT-iMQ0-DELTA']
+
+	elif 'iEVA-FORMAT-iMMQ-ALT' == tag:
+		New_Head += ['iEVA-FORMAT-iMMQ-ALT']
+		New_Head += ['iEVA-FORMAT-iMMQ-DELTA']
 
 	elif 'iEVA-FORMAT-iNPA-REF' == tag:
 		New_Head += ['iEVA-FORMAT-iNPA-REF']
@@ -163,7 +158,7 @@ def extract_iEVA(New_Head,tag):
 	return New_Head
 
 
-def Extract_Feature_FreeBayes(line,Header_input,New_Head):
+def Extract_Feature_FreeBayes(line, Header_input, New_Head):
 
 	Variant_Info = {}
 
@@ -195,7 +190,7 @@ def Extract_Feature_FreeBayes(line,Header_input,New_Head):
 	return Variant_Info
 
 
-def Extract_Feature_GATK(line,Header_input,New_Head):
+def Extract_Feature_GATK(line, Header_input, New_Head):
 
 	Variant_Info = {}
 
@@ -220,7 +215,7 @@ def Extract_Feature_GATK(line,Header_input,New_Head):
 	return Variant_Info
 
 
-def Extract_Feature_iEVA(Variant_Info,line,Header_input,New_Head):
+def Extract_Feature_iEVA(Variant_Info, line, Header_input, New_Head):
 
 	for elem in New_Head:
 
@@ -395,10 +390,25 @@ def Extract_Feature_iEVA(Variant_Info,line,Header_input,New_Head):
 		if 'iEVA-FORMAT-iADup-DELTA' == elem:
 
 			try:
-				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iADup-REF-FREQ')])-float(line[Header_input.index('iEVA-FORMAT-iADup-ALT-FREQ')])) \
-					/(float(line[Header_input.index('iEVA-FORMAT-iADup-REF-FREQ')])+float(line[Header_input.index('iEVA-FORMAT-iADup-ALT-FREQ')])),4))
+				Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iADup-REF-FREQ'])-float(Variant_Info['iEVA-FORMAT-iADup-ALT-FREQ'])) \
+					/(float(Variant_Info['iEVA-FORMAT-iADup-REF-FREQ'])+float(Variant_Info['iEVA-FORMAT-iADup-ALT-FREQ'])),4))
 			except:
-				Variant_Info[elem] = '?'
+				if Variant_Info['iEVA-FORMAT-iADup-ALT-FREQ'] == '0.0' and Variant_Info['iEVA-FORMAT-iADup-REF-FREQ'] == '0.0':
+					Variant_Info[elem] = '0'
+				elif '?' == Variant_Info['iEVA-FORMAT-iADup-ALT-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iADup-REF-FREQ'])-float(0)) \
+						/(float(Variant_Info['iEVA-FORMAT-iADup-REF-FREQ'])+float(0)),4))
+					except:
+						Variant_Info[elem] = '?'
+				elif '?' == Variant_Info['iEVA-FORMAT-iADup-REF-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(0)-float(Variant_Info['iEVA-FORMAT-iADup-ALT-FREQ'])) \
+						/(float(0)+float(Variant_Info['iEVA-FORMAT-iADup-ALT-FREQ'])),4))
+					except:
+						Variant_Info[elem] = '?'
+				else:
+					Variant_Info[elem] = '?'
 
 		if 'iEVA-FORMAT-iAS-DELTA' == elem:
 
@@ -406,55 +416,160 @@ def Extract_Feature_iEVA(Variant_Info,line,Header_input,New_Head):
 				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iAS-REF')])-float(line[Header_input.index('iEVA-FORMAT-iAS-ALT')])) \
 					/(float(line[Header_input.index('iEVA-FORMAT-iAS-REF')])+float(line[Header_input.index('iEVA-FORMAT-iAS-ALT')])),4))
 			except:
-				Variant_Info[elem] = '?'
-		
+				if Variant_Info['iEVA-FORMAT-iAS-REF'] == '0' and Variant_Info['iEVA-FORMAT-iAS-ALT'] == '0':
+					Variant_Info[elem] = '0'
+				elif '?' == Variant_Info['iEVA-FORMAT-iAS-ALT']:
+					try:
+						Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iAS-REF')])-float(0)) \
+						/(float(line[Header_input.index('iEVA-FORMAT-iAS-REF')])+float(0)),4))
+					except:
+						Variant_Info[elem] = '?'
+				elif '?' == Variant_Info['iEVA-FORMAT-iAS-REF']:
+					try:
+						Variant_Info[elem] = str(round((float(0)-float(line[Header_input.index('iEVA-FORMAT-iAS-ALT')])) \
+						/(float(0)+float(line[Header_input.index('iEVA-FORMAT-iAS-ALT')])),4))
+					except:
+						Variant_Info[elem] = '?'
+				else:
+					Variant_Info[elem] = '?'
+
 		if 'iEVA-FORMAT-iXS-DELTA' == elem:
 
 			try:
 				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iXS-REF')])-float(line[Header_input.index('iEVA-FORMAT-iXS-ALT')])) \
 					/(float(line[Header_input.index('iEVA-FORMAT-iXS-REF')])+float(line[Header_input.index('iEVA-FORMAT-iXS-ALT')])),4))
 			except:
-				Variant_Info[elem] = '?'
+				if Variant_Info['iEVA-FORMAT-iXS-ALT'] == '0' and Variant_Info['iEVA-FORMAT-iXS-REF'] == '0':
+					Variant_Info[elem] = '0'
+				elif '?' == Variant_Info['iEVA-FORMAT-iXS-ALT']:
+					try:
+						Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iXS-REF')])-float(0)) \
+						/(float(line[Header_input.index('iEVA-FORMAT-iXS-REF')])+float(0)),4))
+					except:
+						Variant_Info[elem] = '?'
+				elif '?' == Variant_Info['iEVA-FORMAT-iXS-REF']:
+					try:
+						Variant_Info[elem] = str(round((float(0)-float(line[Header_input.index('iEVA-FORMAT-iXS-ALT')])) \
+						/(float(0)+float(line[Header_input.index('iEVA-FORMAT-iXS-ALT')])),4))
+					except:
+						Variant_Info[elem] = '?'
+				else:
+					Variant_Info[elem] = '?'
 
 		if 'iEVA-FORMAT-iXS0-DELTA' == elem:
 
 			try:
-				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iXS0-REF-FREQ')])-float(line[Header_input.index('iEVA-FORMAT-iXS0-ALT-FREQ')])) \
-					/(float(line[Header_input.index('iEVA-FORMAT-iXS0-REF-FREQ')])+float(line[Header_input.index('iEVA-FORMAT-iXS0-ALT-FREQ')])),4))
+				Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iXS0-REF-FREQ'])-float(Variant_Info['iEVA-FORMAT-iXS0-ALT-FREQ'])) \
+					/(float(Variant_Info['iEVA-FORMAT-iXS0-REF-FREQ'])+float(Variant_Info['iEVA-FORMAT-iXS0-ALT-FREQ'])),4))
 			except:
-				Variant_Info[elem] = '?'
+				if Variant_Info['iEVA-FORMAT-iXS0-ALT-FREQ'] == '0.0' and Variant_Info['iEVA-FORMAT-iXS0-REF-FREQ'] == '0.0':
+					Variant_Info[elem] = '0'
+				elif '?' == Variant_Info['iEVA-FORMAT-iXS0-ALT-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iXS0-REF-FREQ'])-float(0)) \
+						/(float(Variant_Info['iEVA-FORMAT-iXS0-REF-FREQ'])+float(0)),4))
+					except:
+						Variant_Info[elem] = '?'
+				elif '?' == Variant_Info['iEVA-FORMAT-iXS0-REF-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(0)-float(Variant_Info['iEVA-FORMAT-iXS0-ALT-FREQ'])) \
+						/(float(0)+float(Variant_Info['iEVA-FORMAT-iXS0-ALT-FREQ'])),4))
+					except:
+						Variant_Info[elem] = '?'
+				else:
+					Variant_Info[elem] = '?'
 
 		if 'iEVA-FORMAT-iUnMap-DELTA' == elem:
 
 			try:
-				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iUnMap-REF-FREQ')])-float(line[Header_input.index('iEVA-FORMAT-iUnMap-ALT-FREQ')])) \
-					/(float(line[Header_input.index('iEVA-FORMAT-iUnMap-REF-FREQ')])+float(line[Header_input.index('iEVA-FORMAT-iUnMap-ALT-FREQ')])),4))
+				Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iUnMap-REF-FREQ'])-float(Variant_Info['iEVA-FORMAT-iUnMap-ALT-FREQ'])) \
+					/(float(Variant_Info['iEVA-FORMAT-iUnMap-REF-FREQ'])+float(Variant_Info['iEVA-FORMAT-iUnMap-ALT-FREQ'])),4))
 			except:
-				Variant_Info[elem] = '?'
-
-		if 'iEVA-FORMAT-iMQ-DELTA' == elem:
-
-			try:
-				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iMQ0-REF-FREQ')])-float(line[Header_input.index('iEVA-FORMAT-iMQ0-ALT-FREQ')])) \
-					/(float(line[Header_input.index('iEVA-FORMAT-iMQ0-REF-FREQ')])+float(line[Header_input.index('iEVA-FORMAT-iMQ0-ALT-FREQ')])),4))
-			except:
-				Variant_Info[elem] = '?'
+				if Variant_Info['iEVA-FORMAT-iUnMap-ALT-FREQ'] == '0.0' and Variant_Info['iEVA-FORMAT-iUnMap-REF-FREQ'] == '0.0':
+					Variant_Info[elem] = '0'
+				elif '?' == Variant_Info['iEVA-FORMAT-iUnMap-ALT-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iUnMap-REF-FREQ'])-float(0)) \
+						/(float(Variant_Info['iEVA-FORMAT-iUnMap-REF-FREQ'])+float(0)),4))
+					except:
+						Variant_Info[elem] = '?'
+				elif '?' == Variant_Info['iEVA-FORMAT-iUnMap-REF-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(0)-float(Variant_Info['iEVA-FORMAT-iUnMap-ALT-FREQ'])) \
+						/(float(0)+float(Variant_Info['iEVA-FORMAT-iUnMap-ALT-FREQ'])),4))
+					except:
+						Variant_Info[elem] = '?'
+				else:
+					Variant_Info[elem] = '?'
 
 		if 'iEVA-FORMAT-iMQ0-DELTA' == elem:
 
 			try:
-				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iMQ0-REF-FREQ')])-float(line[Header_input.index('iEVA-FORMAT-iMQ0-ALT-FREQ')])) \
-					/(float(line[Header_input.index('iEVA-FORMAT-iMQ0-REF-FREQ')])+float(line[Header_input.index('iEVA-FORMAT-iMQ0-ALT-FREQ')])),4))
+				Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iMQ0-REF-FREQ'])-float(Variant_Info['iEVA-FORMAT-iMQ0-ALT-FREQ'])) \
+					/(float(Variant_Info['iEVA-FORMAT-iMQ0-REF-FREQ'])+float(Variant_Info['iEVA-FORMAT-iMQ0-ALT-FREQ'])),4))
 			except:
-				Variant_Info[elem] = '?'
+				if Variant_Info['iEVA-FORMAT-iMQ0-ALT-FREQ'] == '0.0' and Variant_Info['iEVA-FORMAT-iMQ0-REF-FREQ'] == '0.0':
+					Variant_Info[elem] = '0'
+				elif '?' == Variant_Info['iEVA-FORMAT-iMQ0-ALT-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iMQ0-REF-FREQ']) - float(0)) \
+						/(float(Variant_Info['iEVA-FORMAT-iMQ0-REF-FREQ']) + float(0)), 4))
+					except:
+						Variant_Info[elem] = '?'
+				elif '?' == Variant_Info['iEVA-FORMAT-iMQ0-REF-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(0)-float(Variant_Info['iEVA-FORMAT-iMQ0-ALT-FREQ'])) \
+						/(float(0)+float(Variant_Info['iEVA-FORMAT-iMQ0-ALT-FREQ'])),4))
+					except:
+						Variant_Info[elem] = '?'
+				else:
+					Variant_Info[elem] = '?'
+
+		if 'iEVA-FORMAT-iMMQ-DELTA' == elem:
+
+			try:
+				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iMMQ-REF')])-float(line[Header_input.index('iEVA-FORMAT-iMMQ-ALT')])) \
+					/(float(line[Header_input.index('iEVA-FORMAT-iMMQ-REF')])+float(line[Header_input.index('iEVA-FORMAT-iMMQ-ALT')])),4))
+			except:
+				if Variant_Info['iEVA-FORMAT-iMMQ-ALT'] == '0' and Variant_Info['iEVA-FORMAT-iMMQ-REF'] == '0':
+					Variant_Info[elem] = '0'
+				elif Variant_Info['iEVA-FORMAT-iMMQ-ALT'] == '?':
+					try:
+						Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iMMQ-REF')])-float(0)) \
+						/(float(line[Header_input.index('iEVA-FORMAT-iMMQ-REF')])+float(0)),4))
+					except:
+						Variant_Info[elem] = '?'
+				elif '?' == Variant_Info['iEVA-FORMAT-iMMQ-REF']:
+					try:
+						Variant_Info[elem] = str(round((float(0)-float(line[Header_input.index('iEVA-FORMAT-iMMQ-ALT')])) \
+						/(float(0)+float(line[Header_input.index('iEVA-FORMAT-iMMQ-ALT')])),4))
+					except:
+						Variant_Info[elem] = '?'
+				else:
+					Variant_Info[elem] = '?'
 
 		if 'iEVA-FORMAT-iNPA-DELTA' == elem:
 
 			try:
-				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iNPA-REF-FREQ')])-float(line[Header_input.index('iEVA-FORMAT-iNPA-ALT-FREQ')])) \
-					/(float(line[Header_input.index('iEVA-FORMAT-iNPA-REF-FREQ')])+float(line[Header_input.index('iEVA-FORMAT-iNPA-ALT-FREQ')])),4))
+				Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iNPA-REF-FREQ'])-float(Variant_Info['iEVA-FORMAT-iNPA-ALT-FREQ'])) \
+					/(float(Variant_Info['iEVA-FORMAT-iNPA-REF-FREQ'])+float(Variant_Info['iEVA-FORMAT-iNPA-ALT-FREQ'])),4))
 			except:
-				Variant_Info[elem] = '?'
+				if Variant_Info['iEVA-FORMAT-iNPA-ALT-FREQ'] == '0.0' and Variant_Info['iEVA-FORMAT-iNPA-REF-FREQ'] == '0.0':
+					Variant_Info[elem] = '0'
+				elif Variant_Info['iEVA-FORMAT-iNPA-ALT-FREQ'] == '?':
+					try:
+						Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iNPA-REF-FREQ'])-float(0)) \
+						/(float(Variant_Info['iEVA-FORMAT-iNPA-REF-FREQ'])+float(0)),4))
+					except:
+						Variant_Info[elem] = '?'
+				elif '?' == Variant_Info['iEVA-FORMAT-iNPA-REF-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(0)-float(Variant_Info['iEVA-FORMAT-iNPA-ALT-FREQ'])) \
+						/(float(0)+float(Variant_Info['iEVA-FORMAT-iNPA-ALT-FREQ'])),4))
+					except:
+						Variant_Info[elem] = '?'
+				else:
+					Variant_Info[elem] = '?'
 
 		if 'iEVA-FORMAT-iQual-DELTA' == elem:
 
@@ -462,39 +577,114 @@ def Extract_Feature_iEVA(Variant_Info,line,Header_input,New_Head):
 				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iQual-REF')])-float(line[Header_input.index('iEVA-FORMAT-iQual-ALT')])) \
 					/(float(line[Header_input.index('iEVA-FORMAT-iQual-REF')])+float(line[Header_input.index('iEVA-FORMAT-iQual-ALT')])),4))
 			except:
-				Variant_Info[elem] = '?'
+				if Variant_Info['iEVA-FORMAT-iQual-ALT'] == '0' and Variant_Info['iEVA-FORMAT-iQual-REF'] == '0':
+					Variant_Info[elem] = '0'
+				elif '?' == Variant_Info['iEVA-FORMAT-iQual-ALT']:
+					try:
+						Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iQual-REF')])-float(0)) \
+						/(float(line[Header_input.index('iEVA-FORMAT-iQual-REF')])+float(0)),4))
+					except:
+						Variant_Info[elem] = '?'
+				elif '?' == Variant_Info['iEVA-FORMAT-iQual-REF']:
+					try:
+						Variant_Info[elem] = str(round((float(0)-float(line[Header_input.index('iEVA-FORMAT-iQual-ALT')])) \
+						/(float(0)+float(line[Header_input.index('iEVA-FORMAT-iQual-ALT')])),4))
+					except:
+						Variant_Info[elem] = '?'
+				else:
+					Variant_Info[elem] = '?'
 
 		if 'iEVA-FORMAT-iSA-DELTA' == elem:
 
 			try:
-				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iSA-REF')])-float(line[Header_input.index('iEVA-FORMAT-iSA-ALT')])) \
-					/(float(line[Header_input.index('iEVA-FORMAT-iSA-REF')])+float(line[Header_input.index('iEVA-FORMAT-iSA-ALT')])),4))
+				Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iSA-REF-FREQ'])-float(Variant_Info['iEVA-FORMAT-iSA-ALT-FREQ'])) \
+					/(float(Variant_Info['iEVA-FORMAT-iSA-REF-FREQ'])+float(Variant_Info['iEVA-FORMAT-iSA-ALT-FREQ'])),4))
 			except:
-				Variant_Info[elem] = '?'
+				if Variant_Info['iEVA-FORMAT-iSA-ALT-FREQ'] == '0.0' and  Variant_Info['iEVA-FORMAT-iSA-REF-FREQ'] == '0.0':
+					Variant_Info[elem] = '0'
+				elif '?' == Variant_Info['iEVA-FORMAT-iSA-ALT-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iSA-REF-FREQ'])-float(0)) \
+						/(float(Variant_Info['iEVA-FORMAT-iSA-REF-FREQ'])+float(0)),4))
+					except:
+						Variant_Info[elem] = '?'
+				elif '?' == Variant_Info['iEVA-FORMAT-iSA-REF-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(0)-float(Variant_Info['iEVA-FORMAT-iSA-ALT-FREQ'])) \
+						/(float(0)+float(Variant_Info['iEVA-FORMAT-iSA-ALT-FREQ'])),4))
+					except:
+						Variant_Info[elem] = '?'
+				else:
+					Variant_Info[elem] = '?'
 
 		if 'iEVA-FORMAT-iNP-DELTA' == elem:
 
 			try:
-				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iNP-REF-FREQ')])-float(line[Header_input.index('iEVA-FORMAT-iNP-ALT-FREQ')])) \
-					/(float(line[Header_input.index('iEVA-FORMAT-iNP-REF-FREQ')])+float(line[Header_input.index('iEVA-FORMAT-iNP-ALT-FREQ')])),4))
+				Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iNP-REF-FREQ'])-float(Variant_Info['iEVA-FORMAT-iNP-ALT-FREQ'])) \
+					/(float(Variant_Info['iEVA-FORMAT-iNP-REF-FREQ'])+float(Variant_Info['iEVA-FORMAT-iNP-ALT-FREQ'])),4))
 			except:
-				Variant_Info[elem] = '?'
+				if Variant_Info['iEVA-FORMAT-iNP-ALT-FREQ'] == '0.0' and Variant_Info['iEVA-FORMAT-iNP-REF-FREQ'] == '0.0':
+					Variant_Info[elem] = '0'
+				elif '?' == Variant_Info['iEVA-FORMAT-iNP-ALT-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iNP-REF-FREQ'])-float(0)) \
+						/(float(Variant_Info['iEVA-FORMAT-iNP-REF-FREQ'])+float(0)),4))
+					except:
+						Variant_Info[elem] = '?'
+				elif '?' == Variant_Info['iEVA-FORMAT-iNP-REF-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(0)-float(Variant_Info['iEVA-FORMAT-iNP-ALT-FREQ'])) \
+						/(float(0)+float(Variant_Info['iEVA-FORMAT-iNP-ALT-FREQ'])),4))
+					except:
+						Variant_Info[elem] = '?'
+				else:
+					Variant_Info[elem] = '?'
 
 		if 'iEVA-FORMAT-iNPP-DELTA' == elem:
 
 			try:
-				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iNPP-REF-FREQ')])-float(line[Header_input.index('iEVA-FORMAT-iNPP-ALT-FREQ')])) \
-					/(float(line[Header_input.index('iEVA-FORMAT-iNPP-REF-FREQ')])+float(line[Header_input.index('iEVA-FORMAT-iNPP-ALT-FREQ')])),4))
+				Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iNPP-REF-FREQ'])-float(Variant_Info['iEVA-FORMAT-iNPP-ALT-FREQ'])) \
+					/(float(Variant_Info['iEVA-FORMAT-iNPP-REF-FREQ'])+float(Variant_Info['iEVA-FORMAT-iNPP-ALT-FREQ'])),4))
 			except:
-				Variant_Info[elem] = '?'
+				if Variant_Info['iEVA-FORMAT-iNPP-ALT-FREQ'] == '0.0' and Variant_Info['iEVA-FORMAT-iNPP-REF-FREQ'] == '0.0':
+					Variant_Info[elem] = '0'
+				elif '?' == Variant_Info['iEVA-FORMAT-iNPP-ALT-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iNPP-REF-FREQ'])-float(0)) \
+						/(float(Variant_Info['iEVA-FORMAT-iNPP-REF-FREQ'])+float(0)),4))
+					except:
+						Variant_Info[elem] = '?'
+				elif '?' == Variant_Info['iEVA-FORMAT-iNPP-REF-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(0)-float(Variant_Info['iEVA-FORMAT-iNPP-ALT-FREQ'])) \
+						/(float(0)+float(Variant_Info['iEVA-FORMAT-iNPP-ALT-FREQ'])),4))
+					except:
+						Variant_Info[elem] = '?'
+				else:
+					Variant_Info[elem] = '?'
 
 		if 'iEVA-FORMAT-iCR-DELTA' == elem:
 
 			try:
-				Variant_Info[elem] = str(round((float(line[Header_input.index('iEVA-FORMAT-iCR-REF-FREQ')])-float(line[Header_input.index('iEVA-FORMAT-iCR-ALT-FREQ')])) \
-					/(float(line[Header_input.index('iEVA-FORMAT-iCR-REF-FREQ')])+float(line[Header_input.index('iEVA-FORMAT-iCR-ALT-FREQ')])),4))
+				Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iCR-REF-FREQ'])-float(Variant_Info['iEVA-FORMAT-iCR-ALT-FREQ'])) \
+					/(float(Variant_Info['iEVA-FORMAT-iCR-REF-FREQ'])+float(Variant_Info['iEVA-FORMAT-iCR-ALT-FREQ'])),4))
 			except:
-				Variant_Info[elem] = '?'
+				if Variant_Info['iEVA-FORMAT-iCR-ALT-FREQ'] == '0.0' and Variant_Info['iEVA-FORMAT-iCR-REF-FREQ'] == '0.0':
+					Variant_Info[elem] = '0'
+				elif '?' == Variant_Info['iEVA-FORMAT-iCR-ALT-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(Variant_Info['iEVA-FORMAT-iCR-REF-FREQ'])-float(0)) \
+						/(float(Variant_Info['iEVA-FORMAT-iCR-REF-FREQ'])+float(0)),4))
+					except:
+						Variant_Info[elem] = '?'
+				elif '?' == Variant_Info['iEVA-FORMAT-iCR-REF-FREQ']:
+					try:
+						Variant_Info[elem] = str(round((float(0) - float(Variant_Info['iEVA-FORMAT-iCR-ALT-FREQ'])) \
+						/(float(0) + float(Variant_Info['iEVA-FORMAT-iCR-ALT-FREQ'])),4))
+					except:
+						Variant_Info[elem] = '?'
+				else:
+					Variant_Info[elem] = '?'
 
 
 	return Variant_Info
@@ -565,7 +755,7 @@ def main():
 
 						else:
 							New_Head += [tag]
-	
+
 				out.write(','.join(New_Head))
 
 
