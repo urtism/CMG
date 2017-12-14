@@ -6,7 +6,7 @@ import re
 
 parser = argparse.ArgumentParser('Parse VCF HEADER from FreeBayes,VarScan,GATK to fix it.  Output is to stdout.')
 parser.add_argument('-f', '--file', help="freebayes vcf output file name")
-parser.add_argument('-v', '--variantcaller', help="variant caller: F = freebayes, G = GATK, V = Varscan, P = Platypus")
+parser.add_argument('-v', '--variantcaller', help="variant caller: F = freebayes, G = GATK, V = Varscan, P = Platypus, S = Samtools")
 
 opts = parser.parse_args()
 
@@ -37,7 +37,7 @@ for line in read:
 	elif opts.variantcaller == 'G':
 	
 		if line.startswith('##FORMAT=<ID=AD'):
-			riga=(line.split(','))
+			riga=line.split(',')
 			try:
 				riga[riga.index('Number=.')]='Number=G'
 				line=','.join(riga)
@@ -69,13 +69,13 @@ for line in read:
 
 	elif opts.variantcaller == 'P':
 	
-		if line.startswith('##FORMAT=<ID=GL'):
-			riga=(line.split(','))
-			try:
-				riga[riga.index('Number=.')]='Number=G'
-				line=','.join(riga)
-			except:
-				pass
+		# if line.startswith('##FORMAT=<ID=GL'):
+		# 	riga=(line.split(','))
+		# 	try:
+		# 		riga[riga.index('Number=.')]='Number=G'
+		# 		line=','.join(riga)
+		# 	except:
+		# 		pass
 
 		if line.startswith('##FORMAT=<ID=NR'):
 			riga=(line.split(','))
@@ -133,4 +133,22 @@ for line in read:
 			except:
 				pass
 
+	elif opts.variantcaller == 'S':
+	
+		if line.startswith('chr'):
+			riga=line.split('\t')
+
+			if riga[3].isupper() and riga[4].isupper():
+				line='\t'.join(riga)
+				pass
+			else:
+				try:
+					riga[3] = riga[3].upper()
+					riga[4] = riga[4].upper()
+					line='\t'.join(riga)
+				except:
+					pass
+
 	print line.rstrip()
+
+read.close()
