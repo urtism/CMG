@@ -6,7 +6,7 @@ import re
 
 parser = argparse.ArgumentParser('Parse VCF HEADER from FreeBayes,VarScan,GATK to fix it.  Output is to stdout.')
 parser.add_argument('-f', '--file', help="freebayes vcf output file name")
-parser.add_argument('-v', '--variantcaller', help="variant caller: F = freebayes, G = GATK, V = Varscan")
+parser.add_argument('-v', '--variantcaller', help="variant caller: F = freebayes, G = GATK, V = Varscan, P = Platypus")
 
 opts = parser.parse_args()
 
@@ -66,4 +66,71 @@ for line in read:
 				riga[7]+=";FIX"
 
 			line='\t'.join(riga)
+
+	elif opts.variantcaller == 'P':
+	
+		if line.startswith('##FORMAT=<ID=GL'):
+			riga=(line.split(','))
+			try:
+				riga[riga.index('Number=.')]='Number=G'
+				line=','.join(riga)
+			except:
+				pass
+
+		if line.startswith('##FORMAT=<ID=NR'):
+			riga=(line.split(','))
+			try:
+				riga[riga.index('Number=.')]='Number=A'
+				line=','.join(riga)
+			except:
+				pass
+
+		if line.startswith('##FORMAT=<ID=NV'):
+			riga=(line.split(','))
+			try:
+				riga[riga.index('Number=.')]='Number=A'
+				line=','.join(riga)
+			except:
+				pass
+
+		if line.startswith('##INFO=<ID=FR'):
+			riga=(line.split(','))
+			try:
+				riga[riga.index('Number=.')]='Number=A'
+				line=','.join(riga)
+			except:
+				pass
+
+		if line.startswith('##INFO=<ID=PP'):
+			riga=(line.split(','))
+			try:
+				riga[riga.index('Number=.')]='Number=A'
+				line=','.join(riga)
+			except:
+				pass
+
+		if line.startswith('##INFO=<ID=TR'):
+			riga=(line.split(','))
+			try:
+				riga[riga.index('Number=.')]='Number=A'
+				line=','.join(riga)
+			except:
+				pass
+
+		if line.startswith('##INFO=<ID=NF'):
+			riga=(line.split(','))
+			try:
+				riga[riga.index('Number=.')]='Number=A'
+				line=','.join(riga)
+			except:
+				pass
+
+		if line.startswith('##INFO=<ID=NR'):
+			riga=(line.split(','))
+			try:
+				riga[riga.index('Number=.')]='Number=A'
+				line=','.join(riga)
+			except:
+				pass
+
 	print line.rstrip()
