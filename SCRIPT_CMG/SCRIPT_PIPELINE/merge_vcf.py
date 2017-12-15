@@ -132,14 +132,22 @@ def modifica_format(format,i):
 def fix_format_values(line_var,s_list,i,format):
 	format_sample=[]
 	null_format='./.'
-	
 	if (line_var[i])[-1]=='.':
 		for a in format.split(':')[1:]:
+			#print a
 			null_format=null_format + ':.'
 		for s in s_list:
 			format_sample=format_sample + [null_format]
 	else:
-		format_sample=(line_var[i])[-1]
+		for form in (line_var[i])[-1]:
+			null_format='./.'
+			if form.startswith('.:'):
+				for a in format.split(':')[1:]:
+					null_format=null_format + ':.'
+				format_sample = format_sample + [null_format]
+			else:
+				format_sample =	format_sample + [form]
+
 	return format_sample
 
 
@@ -164,7 +172,7 @@ def main():
 	h_filter_gatk,h_info_gatk,h_format_gatk,format_gatk=parse_header(gatk,1)
 	h_filter_freebayes,h_info_freebayes,h_format_freebayes,format_freebayes=parse_header(freebayes,2)
 	h_filter_varscan,h_info_varscan,h_format_varscan,format_varscan=parse_header(varscan,3)
-	
+
 	sample_list_gatk=samples(gatk)
 	sample_list_freebayes=samples(freebayes)
 	sample_list_varscan=samples(varscan)

@@ -59,6 +59,8 @@ TRASCR_BRCA=~/NGS_ANALYSIS/TARGET/Lista_trascritti_BRCA.txt
 TRASCR_CANCER=~/NGS_ANALYSIS/TARGET/Lista_trascritti_Cancer.txt
 
 ### TARGET ###
+#TARGET_CARDIO_1000=~/Scrivania/TEST/col3a1/COL3A1.list
+#TARGET_CARDIO_1000_BED=~/Scrivania/TEST/col3a1/COL3A1.bed
 TARGET_CARDIO_1000=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a_ESTESO+-1000.list
 TARGET_CARDIO_1000_BED=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a_ESTESO+-1000.bed
 TARGET_CARDIO=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a.list
@@ -162,10 +164,12 @@ fi
 
 ls $GVCF_PATH/*.g.vcf > $OUT_PATH/Samples_list.list
 
-java -jar -Xmx60g $GATK -T GenotypeGVCFs \
+java -jar -Xmx48g $GATK -T GenotypeGVCFs \
 -R $REF \
 -V:VCF $OUT_PATH/Samples_list.list \
+--disable_auto_index_creation_and_locking_when_reading_rods \
 -o $OUT_PATH/$DATA\_$PANNELLO\_GATK.vcf
+#--disable_auto_index_creation_and_locking_when_reading_rods
 
 java -jar $GATK -T VariantFiltration \
 -R $REF \

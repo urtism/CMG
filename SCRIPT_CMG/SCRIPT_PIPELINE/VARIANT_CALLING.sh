@@ -29,22 +29,23 @@ samtools_mpileup (){
 
 samtools_vc () {
 	
-	printf $"\n =========>	Sample $SAMPLE_NAME => Variant Calling: Samtools\n\n"
+	printf $"\n =========>	Sample $2 => Variant Calling: Samtools\n\n"
 
-	samtools_mpileup $1 $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.vcf -u
+	samtools_mpileup $1 $WORKDIR/VARIANT_CALLING/$2\_Samtools.tobcftools.vcf -u
 
-	echo -e "$BCFTOOLS view -mv -Ov $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.vcf >  $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.call.vcf"
-
-	$BCFTOOLS call -mv -Ov $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.vcf >  $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.call.vcf
+	$BCFTOOLS call -mv -Ov $WORKDIR/VARIANT_CALLING/$2\_Samtools.tobcftools.vcf >  $WORKDIR/VARIANT_CALLING/$2\_Samtools.vcf
 
 	$BCFTOOLS norm -m -both \
 	-f $REF \
-	$WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.call.vcf \
-	> $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.split.vcf
+	$WORKDIR/VARIANT_CALLING/$2\_Samtools.vcf \
+	> $WORKDIR/VARIANT_CALLING/$2\_Samtools.split.vcf
 
-	VCF_SAMTOOLS=$WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_Samtools.split.vcf
+	VCF_SAMTOOLS=$WORKDIR/VARIANT_CALLING/$2\_Samtools.split.vcf
 
-	printf $"\n =========>	Sample $SAMPLE_NAME => Variant Calling: Samtools: DONE\n\n"
+	mv $WORKDIR/VARIANT_CALLING/$2\_Samtools.tobcftools.vcf $DELETE
+	mv $WORKDIR/VARIANT_CALLING/$2\_Samtools.vcf $DELETE
+
+	printf $"\n =========>	Sample $2 => Variant Calling: Samtools: DONE\n\n"
 
 }
 
@@ -153,33 +154,37 @@ FreeBayes_multisample () {
 		-K \
 		-J \
 		-s $2 \
+		--use-best-n-alleles 6 \
 		--genotype-qualities \
 		--report-genotype-likelihood-max \
 		--allele-balance-priors-off \
-		-m 0 \
-		-q 0 \
-		-R 0 \
-		-Y 0 \
-		-Q 1 \
-		-F 0.001 \
-		-C 1 > $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf
+		# -m 0 \
+		# -q 0 \
+		# -R 0 \
+		# -Y 0 \
+		# -Q 1 \
+		# -F 0.001 \
+		# -C 1 \
+		> $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf
 	else
 		$FREEBAYES -f $REF \
 		-L $1 \
 		-K \
 		-J \
 		-s $2 \
+		--use-best-n-alleles 6 \
 		--genotype-qualities \
 		--report-genotype-likelihood-max \
 		--allele-balance-priors-off \
-		-t $TARGETBED \
-		-m 0 \
-		-q 0 \
-		-R 0 \
-		-Y 0 \
-		-Q 1 \
-		-F 0.001 \
-		-C 1 > $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf
+		-t $TARGETBED > $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf
+		# -m 0 \
+		# -q 0 \
+		# -R 0 \
+		# -Y 0 \
+		# -Q 1 \
+		# -F 0.001 \
+		# -C 1 \
+		#> $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf
 	fi
 
 	python  $SCRIPT_PIPELINE/header_fix.py -v F -f $WORKDIR/VARIANT_CALLING/$DATA\_$PANNELLO\_FreeBayes.vcf \
@@ -415,9 +420,12 @@ VarScan2_somatic () {
 	--output-vcf 1 \
 	--mpileup 1
 
+	python $SCRIPT_PIPELINE/header_fix.py -v V -f $WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.snp.vcf \
+	> $WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.fix.snp.vcf
+
 	$BCFTOOLS norm -m -both \
  	-f $REF \
- 	$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.snp.vcf \
+ 	$WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.fix.snp.vcf \
  	> $WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.norm.snp.vcf
 
  	python $SCRIPT_PIPELINE/header_fix.py -v V -f $WORKDIR/VARIANT_CALLING/$3\_Sane_VarScan.indel.vcf \
@@ -436,7 +444,7 @@ VarScan2_somatic () {
 }
 
 
-#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     VARDICT     :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     VARDICT     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 VarDict () {	
 
@@ -451,6 +459,64 @@ VarDict () {
 	printf $"\n =========>	Sample $3 => Variant Calling: VarDict: DONE\n\n"	
 }
 
+
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     SCALPEL     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+scalpel_germline_singlesample () {
+
+	printf $"\n =========>	Sample $2 => Variant Calling: Scalpel\n\n"
+
+	$SCALPEL --single \
+	--bam $1 \
+	--bed $TARGETBED \
+	--ref $REF \
+	--numprocs 8 \
+	--dir $WORKDIR/VARIANT_CALLING/SCALPEL
+	
+	echo $1 
+	echo $2
+
+	sed "s/sample/$2/g" $WORKDIR/VARIANT_CALLING/SCALPEL/variants.indel.vcf > $WORKDIR/VARIANT_CALLING/$2\_Scalpel.vcf
+	rm $WORKDIR/VARIANT_CALLING/SCALPEL/variants.indel.vcf
+	
+	VCF_SCALPEL=$WORKDIR/VARIANT_CALLING/$2\_Scalpel.vcf
+
+	printf $"\n =========>	Sample $2 => Variant Calling: Scalpel: DONE\n\n"
+
+}
+
+
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     SNVER     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+SNVer_germline_singlesample () {
+
+	printf $"\n =========>	Sample $2 => Variant Calling: SNVer\n\n"
+
+	java -jar -Xmx64g $SNVER_INDIVIDUAL \
+	-i $1 \
+	-l $TARGETBED \
+	-r $REF \
+	-o $WORKDIR/VARIANT_CALLING/SNVER/$2
+
+	bgzip $WORKDIR/VARIANT_CALLING/SNVER/$2.filter.vcf
+	bgzip $WORKDIR/VARIANT_CALLING/SNVER/$2.indel.filter.vcf
+	tabix $WORKDIR/VARIANT_CALLING/SNVER/$2.filter.vcf.gz
+	tabix $WORKDIR/VARIANT_CALLING/SNVER/$2.indel.filter.vcf.gz
+
+	vcf-concat $WORKDIR/VARIANT_CALLING/SNVER/$2.filter.vcf.gz $WORKDIR/VARIANT_CALLING/SNVER/$2.indel.filter.vcf.gz > $WORKDIR/VARIANT_CALLING/SNVER/$2\_SNVer.vcf
+	vcf-sort -c $WORKDIR/VARIANT_CALLING/SNVER/$2\_SNVer.vcf > $WORKDIR/VARIANT_CALLING/$2\_SNVer.sort.vcf
+
+	mv $WORKDIR/VARIANT_CALLING/SNVER/$2\_SNVer.vcf $DELETE
+	mv $WORKDIR/VARIANT_CALLING/SNVER/$2.filter.vcf.gz $DELETE
+	mv $WORKDIR/VARIANT_CALLING/SNVER/$2.indel.filter.vcf.gz $DELETE
+	mv $WORKDIR/VARIANT_CALLING/SNVER/$2.filter.vcf.gz.tbi $DELETE
+	mv $WORKDIR/VARIANT_CALLING/SNVER/$2.indel.filter.vcf.gz.tbi $DELETE
+
+	VCF_SNVER=$WORKDIR/VARIANT_CALLING/$2\_SNVer.sort.vcf
+
+	printf $"\n =========>	Sample $2 => Variant Calling: SNVer: DONE\n\n"
+
+}
 
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::     MERGE VCF    ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -585,6 +651,8 @@ VARIANT_CALLING_CELLFREE () {
 
 		done
 
+
+
 		cp $BAM_NORM $STORAGE
 		cp ${BAM_NORM%.*}.bai $STORAGE
 
@@ -635,6 +703,47 @@ VARIANT_CALLING_SANGER () {
 	done
 	
 	save_in_storage $WORKDIR/Bam_list.txt
+	
+	
+}
+
+
+
+VARIANT_CALLING_SINGLE_SAMPLE () {
+	
+	cat $LOGHI/logo_variant.txt
+
+	mkdir -p $WORKDIR/VARIANT_CALLING
+	mkdir -p $WORKDIR/TARGETBED
+	mkdir -p $WORKDIR/VARIANT_CALLING/GVCF
+	mkdir -p $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION
+	mkdir -p $WORKDIR/VARIANT_CALLING/SCALPEL
+	mkdir -p $WORKDIR/VARIANT_CALLING/SNVER
+	
+	rm -f $WORKDIR/Bam_list.txt
+	rm -f $WORKDIR/Sample_list.txt
+	rm -f $WORKDIR/gvcf.list
+	rm -f $WORKDIR/PostVariantCalling.cfg
+	CFG=$WORKDIR/PostVariantCalling.cfg
+	
+
+	cat $1 | while read line
+	do
+		mkdir -p $WORKDIR/VARIANT_CALLING/SCALPEL
+		BAM=$(echo "$line" | cut -f1)
+		SAMPLE_NAME=$(echo "$line" | cut -f2)
+
+		#samtools_vc $BAM $SAMPLE_NAME
+		scalpel_germline_singlesample $BAM $SAMPLE_NAME
+		rm -rf $WORKDIR/VARIANT_CALLING/SCALPEL
+		#SNVer_germline_singlesample $BAM $SAMPLE_NAME
+
+		#printf $"$BAM\n" >> $WORKDIR/Bam_list.txt
+		#printf $"$VCF_SAMTOOLS\t$VCF_SCALPEL\t$VCF_SNVER\n" >> $CFG
+
+	done
+	
+	#save_in_storage $WORKDIR/Bam_list.txt
 	
 	
 }

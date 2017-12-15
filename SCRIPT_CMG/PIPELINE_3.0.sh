@@ -7,11 +7,8 @@ source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/ALLINEAMENTO.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/PREPROCESSING.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/VARIANT_CALLING.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/FEATURES_EXTRACTION.sh
-#source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/VARIANT_CALLING_NOFILTERS.sh
 source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/ANNOTATION.sh
-
-#/home/jarvis/NGS_ANALYSIS/TARGET/gene_list_HaloPlex.txt
-
+#source ~/git/CMG/SCRIPT_CMG/SCRIPT_PIPELINE/VARIANT_CALLING_NOFILTERS.sh
 
 
 ### TOOLS ###
@@ -27,6 +24,9 @@ VARDICT=~/NGS_TOOLS/VarDictJava-master/build/install/VarDict/bin/VarDict
 BCFTOOLS=bcftools
 SURECALLTRIMMER=~/NGS_TOOLS/AGeNT/SurecallTrimmer_v3.5.1.46.jar
 LOCATLT=~/NGS_TOOLS/AGeNT/LocatIt_v3.5.1.46.jar
+SCALPEL=~/NGS_TOOLS/scalpel-0.5.3/scalpel-discovery
+SNVER_INDIVIDUAL=~/NGS_TOOLS/SNVer-0.5.3/SNVerIndividual.jar
+SNVER_POOL=~/NGS_TOOLS/SNVer-0.5.3/SNVerPool.jar
 
 VEP=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 VEPANN=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/variant_effect_predictor.pl
@@ -41,6 +41,7 @@ ANN_LIST_SOMATIC=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_annotazione
 REF=~/NGS_TOOLS/hg19/ucsc.hg19.fasta
 REF_DICT=~/NGS_TOOLS/hg19/ucsc.hg19.dict
 MILLS=~/NGS_TOOLS/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf
+#DBSNP=~/NGS_TOOLS/hg19/common_all_20170710.vcf
 DBSNP=~/NGS_TOOLS/hg19/dbsnp_138.hg19.vcf
 LOGHI=~/git/CMG/LOGHI
 TRASCR_CARDIO=~/NGS_ANALYSIS/TARGET/Lista_trascritti_Cardio.txt
@@ -63,6 +64,8 @@ TARGET_CANCER_1000=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000
 TARGET_CANCER_1000_BED=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-1000.bed
 TARGET_HALOPLEX=~/NGS_ANALYSIS/TARGET/HaloPlex_Covered.list
 TARGET_HALOPLEX_BED=~/NGS_ANALYSIS/TARGET/HaloPlex_Covered.bed
+TARGET_SURESELECT=~/NGS_ANALYSIS/TARGET/Meloni_SureSelect_target_files/3066331/3066331_Covered.list
+TARGET_SURESELECT_BED=~/NGS_ANALYSIS/TARGET/Meloni_SureSelect_target_files/3066331/3066331_Covered.bed
 AMPLICONS_HALOPLEX_BED=~/NGS_ANALYSIS/TARGET/HaloPlex_target_files/HaloPlex_Amplicons.bed
 
 HELP () {
@@ -131,9 +134,15 @@ CHECK_PANNELLO () {
 
 	elif [ "$PANNELLO" == "HaloPlex" ]
 	then
-		DESIGN="AMPLICON"
+		DESIGN="ENRICHMENT"
 		TARGET=$TARGET_HALOPLEX
 		TARGETBED=$TARGET_HALOPLEX_BED
+
+	elif [ "$PANNELLO" == "SureSelect" ]
+	then
+		DESIGN="ENRICHMENT"
+		TARGET=$TARGET_SURESELECT
+		TARGETBED=$TARGET_SURESELECT_BED
 
 	elif [ "$PANNELLO" == "" ] || [ "$PANNELLO" == "Sanger" ]
 	then
@@ -237,7 +246,7 @@ PIPELINE_SANGER () {
 	fi
 	if [[ "$START" == *"V"* ]]
 	then
-		VARIANT_CALLING_SANGER $CFG
+		VARIANT_CALLING_SINGLE_SAMPLE $CFG
 	fi
 	if [[ "$START" == *"F"* ]]
 	then

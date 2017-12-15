@@ -409,7 +409,11 @@ def get_info_GATK(chrom,pos,ref,alt,filter,info,format,sample,GATK):
 	else:
 		GATK.AO=float((sample[format.index('AD')]).split(',')[1])
 		GATK.RO=float((sample[format.index('AD')]).split(',')[0])
-		GATK.DP=float(sample[format.index('DP')])
+		try:
+			GATK.DP=float(sample[format.index('DP')])
+		except:
+			GATK.DP=0.0
+			print chrom,pos,ref,alt,'erroreeeeeeeee'
 		try:
 			GATK.RF=(GATK.AO+GATK.RO)/GATK.DP
 		except:

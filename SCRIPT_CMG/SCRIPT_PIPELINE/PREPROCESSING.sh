@@ -176,6 +176,7 @@ PREPROCESSING () {
 			SAMPLE_NAME=$(echo "$line" | cut -f2)
 					
 			AddOrReplaceReadGroups $INPUT
+			BuildBamIndex $INPUT
 
 			if [ "$DESIGN" == "ENRICHMENT" ]
 			then
@@ -208,6 +209,7 @@ PREPROCESSING () {
 			SAMPLE_NAME=$(echo "$line" | cut -f4)
 
 			AddOrReplaceReadGroups $INPUT
+			BuildBamIndex	$INPUT
 
 			if [ "$DESIGN" == "ENRICHMENT" ]
 			then
@@ -254,6 +256,7 @@ PREPROCESSING () {
 				((i+=1))
 
 				AddOrReplaceReadGroups $INPUT
+				BuildBamIndex	$INPUT
 
 				if [ "$DESIGN" == "ENRICHMENT" ]
 				then

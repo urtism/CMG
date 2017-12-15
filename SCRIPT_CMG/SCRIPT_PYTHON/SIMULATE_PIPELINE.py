@@ -20,56 +20,49 @@ def vars_from_db(db,num_snv,num_indel,out):
 	database=open(db,'r').readlines()
 	vcf=open(out,'w')
 	start = [database.index(x) for x in database if x.startswith("#CHROM")][0]
+	varianti=database[start:]
+	i=0
 	simulate=[['chr1','0']]
+	while i < int(num_snv):
+		rand=r.randrange(len(varianti))
+		var=varianti[rand].rstrip().split('\t')
+		del(varianti[rand])
+		alt=var[4].split(',')[0]
+		chr=var[0]
+		pos=var[1]
+		if len(var[3])==1 and len(alt)==1:
+			for v in simulate:
+				if chr == v[0] and int(pos) < int(v[1]) + 150 and chr == v[0] and int(pos) > int(v[1]) - 150:
+					#print v,var
+					pass
+				else:
+					i+=1
+					vcf.write('\t'.join(var[:4]+[alt,'.','.','.','.','.'])+'\n')
+					#print var
+					simulate+=[[chr,pos]]
+					break
+		else:	
+			continue 
 	varianti=database[start:]
 	i=0
 	while i < int(num_indel):
-		if len(varianti)>0:
-			rand=r.randrange(len(varianti))
-			var=varianti[rand].rstrip().split('\t')
-			del(varianti[rand])
-			alt=var[4].split(',')[0]
-			chr=var[0]
-			pos=var[1]
-			too_close=False
-			alt=var[4].split(',')[0]
-			if len(var[3])>1 or len(alt)>1:
-				for v in simulate:
-					if chr == v[0] and int(pos) < int(v[1]) + 150 and int(pos) > int(v[1]) - 150:
-						too_close=True
-				if not too_close:
+		rand=r.randrange(len(varianti))
+		var=varianti[rand].rstrip().split('\t')
+		del(varianti[rand])
+		alt=var[4].split(',')[0]
+		if len(var[3])>1 or len(alt)>1:
+			for v in simulate:
+				if chr == v[0] and int(pos) < int(v[1]) + 150 and int(pos) > int(v[1]) - 150:
+					#print v,var
+					pass
+				else:
 					i+=1
 					vcf.write('\t'.join(var[:4]+[alt,'.','.','.','.','.'])+'\n')
+					#print var
 					simulate+=[[chr,pos]]
-			else:
-				continue
+					break
 		else:
-			break
-	varianti=database[start:]
-	i=0
-	while i < int(num_snv):
-		if len(varianti)>0:
-			rand=r.randrange(len(varianti))
-			var=varianti[rand].rstrip().split('\t')
-			del(varianti[rand])
-			alt=var[4].split(',')[0]
-			chr=var[0]
-			pos=var[1]
-			too_close=False
-			if len(var[3])==1 and len(alt)==1:
-				for v in simulate:
-					if chr == v[0] and int(pos) < int(v[1]) + 150 and int(pos) > int(v[1]) - 150:
-						too_close=True
-						#print v,var
-						
-				if not too_close:
-					i+=1
-					vcf.write('\t'.join(var[:4]+[alt,'.','.','.','.','.'])+'\n')
-					simulate+=[[chr,pos]]
-			else:	
-				continue 
-		else:
-			break
+			continue
 	vcf.close()
 	return out
 
@@ -193,7 +186,7 @@ def print_vcf(analisi,log_bs_dir,outpath,reference):
 
 
 def Vcf_to_bamsurgeon(vars,min,max,err):
-
+	print vars
 	snp=open('/'.join(vars.split('.')[:-1])+'.snp','w')
 	indel=open('/'.join(vars.split('.')[:-1])+'.indel','w')
 	vcf=open(vars,'r')
@@ -211,20 +204,17 @@ def Vcf_to_bamsurgeon(vars,min,max,err):
 			freq=line[-1]
 			if freq == '.' or format != 'vaf':
 				freq=Freq_calc(min,max,err)
-
-			if float(freq) > 0.0: #controllo che la frequenza sia maggiore di 0. Se tenessi anche la frequenza = 0 mi simula comunque una read
-				
-				if len(ref)==1 and len(alt)==1:
-					if alt =='.':
-						snp.write('\t'.join([chr,pos,pos,freq]) + '\n')
-					else:
-						snp.write('\t'.join([chr,pos,pos,freq,alt]) + '\n')
-				elif len(ref)>1 and len(alt)==1:
-					del_pos=str(int(pos) + len(ref) - len(alt))
-					indel.write('\t'.join([chr,pos,del_pos,freq,'DEL']) + '\n')
-				elif len(ref)==1 and len(alt)>1:
-					INS=alt[1:]
-					indel.write('\t'.join([chr,pos,str(int(pos)+1),freq,'INS',INS]) + '\n')
+			if len(ref)==1 and len(alt)==1:
+				if alt =='.':
+					snp.write('\t'.join([chr,pos,pos,freq]) + '\n')
+				else:
+					snp.write('\t'.join([chr,pos,pos,freq,alt]) + '\n')
+			elif len(ref)>1 and len(alt)==1:
+				del_pos=str(int(pos) + len(ref) - len(alt))
+				indel.write('\t'.join([chr,pos,del_pos,freq,'DEL']) + '\n')
+			elif len(ref)==1 and len(alt)>1:
+				INS=alt[1:]
+				indel.write('\t'.join([chr,pos,str(int(pos)+1),freq,'INS',INS]) + '\n')
 	snp.close()
 	indel.close()
 	vcf.close()
@@ -703,7 +693,6 @@ if __name__ == '__main__':
 	vars=opts.vars
 	if opts.dbsnp !=None:
 		vars=vars_from_db(opts.dbsnp,opts.num_snv_dbsnp,opts.num_indel_dbsnp,opts.out_path+'/Germline_dbsnp.vcf')
-	
 	if vars != None:
 		print "\nStarting simulation of Germline variants:"
 		# if a file containing variant to simulate is given
