@@ -35,3 +35,27 @@ if __name__ == '__main__':
 				line_split[header.index('GT_Freebayes')+1:header.index('GT_Freebayes')+1]=['GT']
 
 			out_tsv.write('\t'.join(line_split)+'\n')
+
+	elif opts.analisi == 'Somatic':
+		for line in in_tsv:
+			line_split=line.rstrip().split('\t')
+			if line.startswith('chr'):
+				gts=[line_split[header.index('GT_t_Varscan')],line_split[header.index('GT_t_Vardict')],line_split[header.index('GT_t_Mutect')]]
+				hom=0
+				het=0
+				for gt in gts:
+					if gt=='1/1':
+						hom+=1
+					elif gt=='0/1' or gt=='1/0':
+						het+=1
+				if hom>=het:
+					gt='1/1'
+				else:
+					gt='0/1'
+				line_split[header.index('GT_t_Mutect')+1:header.index('GT_t_Mutect')+1]=[gt]
+				
+			else:
+				header=line_split
+				line_split[header.index('GT_t_Mutect')+1:header.index('GT_t_Mutect')+1]=['GT']
+
+			out_tsv.write('\t'.join(line_split)+'\n')

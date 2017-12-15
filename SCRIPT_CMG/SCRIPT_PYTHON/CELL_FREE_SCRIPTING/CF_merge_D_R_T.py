@@ -65,7 +65,7 @@ def read_donor(varianti,varianti_other,header,somT):
 	return header
 
 def read_rec(varianti,varianti_other,header,somT):
-	lista_snp = open(opts.receiver,'r')
+	lista_snp = open(opts.recipient,'r')
 	for line in lista_snp:
 		line=line.rstrip()
 		if line.startswith('CHROM'):
@@ -173,14 +173,14 @@ def check(varianti):
 		if var[0]=='':
 			var[0] = '\t'.join(['.','.','.'])
 		if var[1]=='':
-			var[1] = '\t'.join(['.','.','.','.','.','.'])
+			var[1] = '\t'.join(['0/0','0/0','0/0','.','0','.'])
 		if var[2]=='':
-			var[2] = '\t'.join(['.','.','.','.','.','.'])
+			var[2] = '\t'.join(['0/0','0/0','0/0','.','0','.'])
 		for el in var[3:]:
 			if el=='':
 				var[var.index(el)]='\t'.join(['.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.'])
 
-		if not opts.receiver:
+		if not opts.recipient:
 			del var[2]
 		if not opts.donor:
 			del var[1]
@@ -205,10 +205,10 @@ def print_varianti(varianti,out,header,vett):
 
 def main():
 
-	parser = argparse.ArgumentParser('Parse VCF output from Variant callers to output a variant_dataset.txt.  Output is to stdout.')
-	parser.add_argument('-d', '--donor', help="Freebayes vcf output file name",default=None)
-	parser.add_argument('-r', '--receiver', help="gatk vcf output file name",default=None)
-	parser.add_argument('--sT', help="Varscan vcf output file name")
+	parser = argparse.ArgumentParser('Parse VCF output from Variant callers to output a variant_dataset.txt.')
+	parser.add_argument('-d', '--donor', help="donor.tsv",default=None)
+	parser.add_argument('-r', '--recipient', help="recipient.tsv",default=None)
+	parser.add_argument('--sT', help="lista di sample.tsv somatici Don_Rec divisi da ';'")
 	parser.add_argument('-o', '--out',help="path di output")
 	parser.add_argument('-l', '--snp_list',help="lista di snp da matchare",default=None)
 	parser.add_argument('-i', '--ctrl_snp_list',help="lista di snp da escludere",default=None)
@@ -226,20 +226,19 @@ def main():
 			if line.startswith('#') or line.startswith('CHROM'):
 				continue
 			else:
-				#print '\t'.join(line.split('\t')[0:2])
 				vett+=['\t'.join(line.split('\t')[0:2])] 
 
-		#print vett
-		
+
 	varianti = dict()
 	varianti_other = dict()
-	somT=opts.sT.split(',')
+	somT=opts.sT.split(';')
+
 	header='CHROM\tPOS\tID\tREF\tALT'
 	if opts.snp_list:
 		read_snp(varianti,somT)
 	if opts.donor:
 		header=read_donor(varianti,varianti_other,header,somT)
-	if opts.receiver:
+	if opts.recipient:
 		header=read_rec(varianti,varianti_other,header,somT)
 	
 	for st in somT:
@@ -247,6 +246,7 @@ def main():
 		header=read_sT(varianti,varianti_other,header,index,st,somT)
 	check(varianti)
 	check(varianti_other)
+
 	out_snp_list=open(opts.out+'.list.tsv','w')
 	out_other=open(opts.out+'.other.tsv','w')
 	print_varianti(varianti,out_snp_list,header,vett)
