@@ -5,8 +5,8 @@ dataset = c.search_datasets().next()
 
 
 
-# individual_dataset = c.get_dataset(dataset_id="brca")
-# print individual_dataset
+individual_dataset = c.get_dataset(dataset_id="brca")
+print individual_dataset
 
 # variant_sets = [i for i in c.search_variant_sets(dataset_id=dataset.id)]
 # Sets = {}
@@ -37,11 +37,15 @@ dataset = c.search_datasets().next()
 
 
 
-SingleVar = c.get_variant(variant_id="hg37-32793")
-print "Variant Id: {},\tVariant Set Id: {},\tReference Name: {}\n\tVariant Start: {},\tVariant End: {}\n\tReference Bases: {},\tAlternate Bases: {},\t".format(SingleVar.id, SingleVar.variant_set_id,SingleVar.reference_name,SingleVar.start, SingleVar.end,SingleVar.reference_bases,SingleVar.alternate_bases)
+#SingleVar = c.get_variant(variant_id="hg37-32793")
+#print "Variant Id: {},\tVariant Set Id: {},\tReference Name: {}\n\tVariant Start: {},\tVariant End: {}\n\tReference Bases: {},\tAlternate Bases: {},\t".format(SingleVar.id, #SingleVar.variant_set_id,SingleVar.reference_name,SingleVar.start, SingleVar.end,SingleVar.reference_bases,SingleVar.alternate_bases)
 #for i in SingleVar.info:
     #print "{}: \t{}".format(i, SingleVar.info[str(i)].values[0].string_value or SingleVar.info[str(i)].values[0].number_value)
     #print i
 
 #print SingleVar.info['EAS_Allele_frequency_1000_Genomes'].values[0].string_value
-print SingleVar
+#print SingleVar
+
+
+
+

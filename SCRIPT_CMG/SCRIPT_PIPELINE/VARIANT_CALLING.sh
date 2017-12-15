@@ -472,9 +472,13 @@ scalpel_germline_singlesample () {
 	--ref $REF \
 	--numprocs 8 \
 	--dir $WORKDIR/VARIANT_CALLING/SCALPEL
+	
+	echo $1 
+	echo $2
 
-	mv $WORKDIR/VARIANT_CALLING/SCALPEL/variants.indel.vcf $WORKDIR/VARIANT_CALLING/$2\_Scalpel.vcf
-
+	sed "s/sample/$2/g" $WORKDIR/VARIANT_CALLING/SCALPEL/variants.indel.vcf > $WORKDIR/VARIANT_CALLING/$2\_Scalpel.vcf
+	rm $WORKDIR/VARIANT_CALLING/SCALPEL/variants.indel.vcf
+	
 	VCF_SCALPEL=$WORKDIR/VARIANT_CALLING/$2\_Scalpel.vcf
 
 	printf $"\n =========>	Sample $2 => Variant Calling: Scalpel: DONE\n\n"
@@ -725,16 +729,17 @@ VARIANT_CALLING_SINGLE_SAMPLE () {
 
 	cat $1 | while read line
 	do
-
+		mkdir -p $WORKDIR/VARIANT_CALLING/SCALPEL
 		BAM=$(echo "$line" | cut -f1)
 		SAMPLE_NAME=$(echo "$line" | cut -f2)
 
-		samtools_vc $BAM $SAMPLE_NAME
+		#samtools_vc $BAM $SAMPLE_NAME
 		scalpel_germline_singlesample $BAM $SAMPLE_NAME
-		SNVer_germline_singlesample $BAM $SAMPLE_NAME
+		rm -rf $WORKDIR/VARIANT_CALLING/SCALPEL
+		#SNVer_germline_singlesample $BAM $SAMPLE_NAME
 
-		printf $"$BAM\n" >> $WORKDIR/Bam_list.txt
-		printf $"$VCF_SAMTOOLS\t$VCF_SCALPEL\t$VCF_SNVER\n" >> $CFG
+		#printf $"$BAM\n" >> $WORKDIR/Bam_list.txt
+		#printf $"$VCF_SAMTOOLS\t$VCF_SCALPEL\t$VCF_SNVER\n" >> $CFG
 
 	done
 	
