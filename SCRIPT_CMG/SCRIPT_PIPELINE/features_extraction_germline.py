@@ -101,7 +101,7 @@ class GATK(Caller):
 	MQRankSum=''
 	QD=''
 	RAW_MQ=''
-	ReadPosRankSum=''
+	ReadPosRankSum='.'
 	SOR=''
 
 class Varscan(Caller):
@@ -987,7 +987,7 @@ def split_vcf(vcf_dir,samples):
 			variant_caller = 'GATK'
 	elif 'VarScan' in vcf_name:
 			variant_caller = 'VarScan'
-	print '\n'+variant_caller +'\n'
+	print '\n'+variant_caller +':'
 	for line in vcf:
 		line=line.rstrip()
 		if line.startswith('##'):
@@ -1081,6 +1081,7 @@ def main():
 	parser.add_argument('-g', '--gatk', help="gatk vcf output file name",default=None)
 	parser.add_argument('-v', '--varscan', help="Varscan vcf output file name",default=None)
 	parser.add_argument('-l', '--listaFeatures', help="Lista di features da stampare",default=None)
+	parser.add_argument('-m', '--merged', help="vcf merged from GATK,Freebayes and Varscan2",default=None)
 	parser.add_argument('-s', '--split', help="Split vcf per samples", action='store_true')
 	parser.add_argument('-F', '--feat_extraction', help="Enable features extraction", action='store_true')
 	parser.add_argument('-a', '--amplicon',help="Amplicon design", action='store_true')
@@ -1090,46 +1091,75 @@ def main():
 
 	global opts 
 	opts = parser.parse_args()
-	callers = [opts.gatk,opts.varscan,opts.freebayes]
-	samples = samples_name_extract(open(opts.freebayes,'r'))
-	print callers
+	
 	try:
 		os.mkdir(opts.out_path)
 	except:
 		pass
-	
-	if opts.split:
-		print 'Splitto le varianti per campione.'
-		for vcf_dir in callers:
-			#print 'Splitto ' + vcf_dir
-			split_vcf(vcf_dir,samples)
-		print'\nSplitto le varianti per campione:Done'
 
-	if opts.feat_extraction:
-		print '\nFEATURES EXTRACTION.'
-		varianti_total = dict()
-		for dir_sample in os.listdir(opts.out_path):
-			varianti = dict()
-			vcf_path = opts.out_path +'/' + dir_sample
-			if os.path.isdir(vcf_path):
-				print "\nAnalizzo le varianti da: " + vcf_path
-				for vcf_name in os.listdir(vcf_path) :
-					print vcf_name
-					if 'FreeB' in vcf_name:
-						index = 0
-					elif 'GATK' in vcf_name:
-						index = 2
-					elif 'VarScan' in vcf_name:
-						index = 1
+	if opts.merged != None:
+		samples = samples_name_extract(open(opts.merged,'r'))
+		if opts.split:
+			print 'Splitto le varianti per campione.'
+			split_vcf(opts.merged,samples)
+			print'\nSplitto le varianti per campione:Done'
+
+		if opts.feat_extraction:
+			print '\nFEATURES EXTRACTION.'
+			varianti_total = dict()
+			for dir_sample in os.listdir(opts.out_path):
+				if dir_sample in samples:
+					varianti = dict()
+					vcf_path = opts.out_path +'/' + dir_sample
+					if os.path.isdir(vcf_path):
+						for vcf_name in os.listdir(vcf_path):
+							in_file = open(vcf_path + '/' + vcf_name)	
+							vcfreader = read(in_file,None,varianti)
+
+						set_features(varianti)
+						print_var(varianti,opts.out_path,dir_sample)
 					
-					in_file = open(vcf_path + '/' + vcf_name)
-					vcfreader = read(in_file,index,varianti)
+					for var in varianti.keys():
+						varianti_total[var] = ''
+			print_vcf(varianti_total,opts.out_path)
+
+	else:
+		callers = [opts.gatk,opts.varscan,opts.freebayes]
+		samples = samples_name_extract(open(opts.freebayes,'r'))
+
+		if opts.split:
+			print 'Splitto le varianti per campione.'
+			for vcf_dir in callers:
+				#print 'Splitto ' + vcf_dir
+				split_vcf(vcf_dir,samples)
+			print'\nSplitto le varianti per campione:Done'
+
+		if opts.feat_extraction:
+			print '\nFEATURES EXTRACTION.'
+			varianti_total = dict()
+			for dir_sample in os.listdir(opts.out_path):
+				if dir_sample in samples:
+					varianti = dict()
+					vcf_path = opts.out_path +'/' + dir_sample
+					if os.path.isdir(vcf_path):
+						print "\nAnalizzo le varianti da: " + vcf_path
+						for vcf_name in os.listdir(vcf_path) :
+							print vcf_name
+							if 'FreeB' in vcf_name:
+								index = 0
+							elif 'GATK' in vcf_name:
+								index = 2
+							elif 'VarScan' in vcf_name:
+								index = 1
+							
+							in_file = open(vcf_path + '/' + vcf_name)
+							vcfreader = read(in_file,index,varianti)
+						
+						set_features(varianti)
+						print_var(varianti,opts.out_path,dir_sample)
 				
-				set_features(varianti)
-				print_var(varianti,opts.out_path,dir_sample)
-			
-			for var in varianti.keys():
-				#varianti_total[var] = var.split('\t')[0]+'\t'+var.split('\t')[1]+'\t.\t'+var.split('\t')[2]+'\t'+var.split('\t')[3]+'\t.\t.\t.\t.\t.'
-				varianti_total[var] = ''
-		print_vcf(varianti_total,opts.out_path)
+					for var in varianti.keys():
+						#varianti_total[var] = var.split('\t')[0]+'\t'+var.split('\t')[1]+'\t.\t'+var.split('\t')[2]+'\t'+var.split('\t')[3]+'\t.\t.\t.\t.\t.'
+						varianti_total[var] = ''
+			print_vcf(varianti_total,opts.out_path)
 main()

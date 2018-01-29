@@ -52,7 +52,7 @@ TARGET_SURESELECT=~/NGS_ANALYSIS/TARGET/Meloni_SureSelect_target_files/3066331/3
 TARGET_SURESELECT_BED=~/NGS_ANALYSIS/TARGET/Meloni_SureSelect_target_files/3066331/3066331_Covered.bed
 AMPLICONS_HALOPLEX_BED=~/NGS_ANALYSIS/TARGET/HaloPlex_target_files/HaloPlex_Amplicons.bed
 
-cd /home/jarvis/Scrivania/STORICO_CONFERME_RUN/IEVA-PROVA/vcf-ieva
+cd /home/jarvis/Scrivania/VCF-IEVA/
 
 for file in *.vcf
 	do
@@ -63,34 +63,34 @@ for file in *.vcf
 				then
 					printf "\n$extract\n"
 					python $SCRIPT_PIPELINE/header_fix.py -v F -f $file \
-					> /home/jarvis/Scrivania/STORICO_CONFERME_RUN/IEVA-PROVA/vcf-ieva/FIX/$extract.fix.vcf
+					> /home/jarvis/Scrivania/VCF-IEVA/FIX/$extract.fix.vcf
 
 					$BCFTOOLS norm -m -both \
 					-f $REF \
-					/home/jarvis/Scrivania/STORICO_CONFERME_RUN/IEVA-PROVA/vcf-ieva/FIX/$extract.fix.vcf \
-					> /home/jarvis/Scrivania/STORICO_CONFERME_RUN/IEVA-PROVA/vcf-ieva/NORM/$extract.norm.vcf
+					/home/jarvis/Scrivania/VCF-IEVA/FIX/$extract.fix.vcf \
+					> /home/jarvis/Scrivania/VCF-IEVA/NORM/$extract.norm.vcf
 				
 			elif [[ $extract == *"GATK"* ]];
 				then
 					printf "\n$extract\n"
 					python $SCRIPT_PIPELINE/header_fix.py -v G -f $file \
-					> /home/jarvis/Scrivania/STORICO_CONFERME_RUN/IEVA-PROVA/vcf-ieva/FIX/$extract.fix.vcf
+					> /home/jarvis/Scrivania/VCF-IEVA/FIX/$extract.fix.vcf
 
 					$BCFTOOLS norm -m -both \
 					-f $REF \
-					/home/jarvis/Scrivania/STORICO_CONFERME_RUN/IEVA-PROVA/vcf-ieva/FIX/$extract.fix.vcf \
-					> /home/jarvis/Scrivania/STORICO_CONFERME_RUN/IEVA-PROVA/vcf-ieva/NORM/$extract.norm.vcf
+					/home/jarvis/Scrivania/VCF-IEVA/FIX/$extract.fix.vcf \
+					> /home/jarvis/Scrivania/VCF-IEVA/NORM/$extract.norm.vcf
 
 			elif [[ $extract == *"VarScan"* ]];
 				then
 					printf "\n$extract\n"
 					python $SCRIPT_PIPELINE/header_fix.py -v V -f $file \
-					> /home/jarvis/Scrivania/STORICO_CONFERME_RUN/IEVA-PROVA/vcf-ieva/FIX/$extract.fix.vcf
+					> /home/jarvis/Scrivania/VCF-IEVA/FIX/$extract.fix.vcf
 
 					$BCFTOOLS norm -m -both \
 					-f $REF \
-					/home/jarvis/Scrivania/STORICO_CONFERME_RUN/IEVA-PROVA/vcf-ieva/FIX/$extract.fix.vcf \
-					> /home/jarvis/Scrivania/STORICO_CONFERME_RUN/IEVA-PROVA/vcf-ieva/NORM/$extract.norm.vcf
+					/home/jarvis/Scrivania/VCF-IEVA/FIX/$extract.fix.vcf \
+					> /home/jarvis/Scrivania/VCF-IEVA/NORM/$extract.norm.vcf
 
 			else
 				printf "\n$file non contiene alcun file GATK, FREEBAYES o VARSCAN\n"

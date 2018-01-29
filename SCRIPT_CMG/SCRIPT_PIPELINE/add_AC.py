@@ -23,7 +23,6 @@ def main():
 			AN=0
 
 			for sample in samples:
-				print chr,pos
 				gt_G = sample.split(':')[format.split(':').index('GT_G')]
 				gt_F = sample.split(':')[format.split(':').index('GT_F')]
 				gt_V = sample.split(':')[format.split(':').index('GT_V')]

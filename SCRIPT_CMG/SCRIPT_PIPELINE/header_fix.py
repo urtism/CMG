@@ -6,7 +6,7 @@ import re
 
 parser = argparse.ArgumentParser('Parse VCF HEADER from FreeBayes,VarScan,GATK to fix it.  Output is to stdout.')
 parser.add_argument('-f', '--file', help="freebayes vcf output file name")
-parser.add_argument('-v', '--variantcaller', help="variant caller: F = freebayes, G = GATK, V = Varscan, P = Platypus, S = Samtools")
+parser.add_argument('-v', '--variantcaller', help="variant caller: F = freebayes, G = GATK, V = Varscan, P = Platypus, S = Samtools, L = Scalpel, N = SNVer" )
 
 opts = parser.parse_args()
 
@@ -76,62 +76,75 @@ for line in read:
 		# 		line=','.join(riga)
 		# 	except:
 		# 		pass
-
+		
 		if line.startswith('##FORMAT=<ID=NR'):
-			riga=(line.split(','))
 			try:
+				riga=line.split(',')
 				riga[riga.index('Number=.')]='Number=A'
 				line=','.join(riga)
 			except:
 				pass
 
 		if line.startswith('##FORMAT=<ID=NV'):
-			riga=(line.split(','))
 			try:
+				riga=line.split(',')
 				riga[riga.index('Number=.')]='Number=A'
 				line=','.join(riga)
 			except:
 				pass
 
 		if line.startswith('##INFO=<ID=FR'):
-			riga=(line.split(','))
 			try:
+				riga=line.split(',')
 				riga[riga.index('Number=.')]='Number=A'
 				line=','.join(riga)
 			except:
 				pass
 
 		if line.startswith('##INFO=<ID=PP'):
-			riga=(line.split(','))
 			try:
+				riga=line.split(',')
 				riga[riga.index('Number=.')]='Number=A'
 				line=','.join(riga)
 			except:
 				pass
 
 		if line.startswith('##INFO=<ID=TR'):
-			riga=(line.split(','))
 			try:
+				riga=line.split(',')
 				riga[riga.index('Number=.')]='Number=A'
 				line=','.join(riga)
 			except:
 				pass
 
 		if line.startswith('##INFO=<ID=NF'):
-			riga=(line.split(','))
 			try:
+				riga=line.split(',')
 				riga[riga.index('Number=.')]='Number=A'
 				line=','.join(riga)
 			except:
 				pass
 
 		if line.startswith('##INFO=<ID=NR'):
-			riga=(line.split(','))
 			try:
+				riga=line.split(',')
 				riga[riga.index('Number=.')]='Number=A'
 				line=','.join(riga)
 			except:
 				pass
+		if line.startswith('chr'):
+			riga=line.rstrip().split('\t')
+			for s in riga[9:]:
+				sample = s.split(':')
+				gt = sample[0]
+
+				if gt == '1/0':
+					gt = '0/1'
+
+				sample[0] = gt
+				riga[riga.index(s)] = ':'.join(sample)
+
+			line='\t'.join(riga)
 
 	elif opts.variantcaller == 'S':
 	
@@ -148,6 +161,70 @@ for line in read:
 					line='\t'.join(riga)
 				except:
 					pass
+			for s in riga[9:]:
+				sample = s.split(':')
+				gt = sample[0]
+				if gt == '1/0':
+					gt = '0/1'
+				sample[0] = gt
+				riga[riga.index(s)] = ':'.join(sample)
+			line='\t'.join(riga)
+
+	elif opts.variantcaller == 'L':
+	
+		if line.startswith('##FORMAT=<ID=AD'):
+			riga=(line.split(','))
+			try:
+				riga[riga.index('Number=.')]='Number=A'
+				line=','.join(riga)
+			except:
+				pass
+
+	elif opts.variantcaller == 'N':
+	
+		if line.startswith('##FORMAT=<ID=PL'):
+			riga=(line.split(','))
+			try:
+				riga[riga.index('Number=1')]='Number=G'
+				line=','.join(riga)
+			except:
+				pass
+		elif line.startswith('##INFO=<ID=FS') or line.startswith('##INFO=<ID=SP') or line.startswith('##INFO=<ID=PV'):
+			riga=(line.split(','))
+			try:
+				riga[riga.index('Number=.')]='Number=1'
+				line=','.join(riga)
+			except:
+				pass
+		elif line.startswith('#CHROM'):
+			riga = (line.split('\t'))
+			sample = riga[-1].split('/')[-1].split('.')[0]
+			riga[-1] = sample
+			line='\t'.join(riga)
+		elif line.startswith('##'):
+			pass
+		else:
+			riga = (line.rstrip().split('\t'))
+
+			INFO = riga[7].split(';')
+			fixedINFO = []
+
+			for field in INFO:
+				if field.startswith('FS=') or field.startswith('SP='):
+					fixedfield = '.'.join(field.split(','))
+				else:
+					fixedfield = field
+				fixedINFO += [fixedfield] 
+			riga[7] = ';'.join(fixedINFO)
+
+			for s in riga[9:]:
+				sample = s.split(':')
+				gt = sample[0]
+				if gt == '1/0':
+					gt = '0/1'
+				sample[0] = gt
+				riga[riga.index(s)] = ':'.join(sample)
+			line='\t'.join(riga)
 
 	print line.rstrip()
 

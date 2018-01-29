@@ -70,8 +70,9 @@ Features_extraction_germline () {
 		VCF_GATK=$(echo "$line" | cut -f1)
 		VCF_FREEBAYES=$(echo "$line" | cut -f2)
 		VCF_VARSCAN=$(echo "$line" | cut -f3)
+		SAMPLE_NAME=$(echo "$line" | cut -f4)
 
-		printf $"\n=========> Features extraction\n\n"
+		printf $"\n=========> Features extraction: $SAMPLE_NAME\n\n"
 
 		if [ "$DESIGN" == "ENRICHMENT" ]
 		then
@@ -99,7 +100,7 @@ Features_extraction_germline () {
 
 		fi
 
-		mv $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/TOTAL.vcf $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf
+		mv $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/TOTAL.vcf $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME\_TOTAL.vcf
 		cp $VCF_GATK $OUT
 		cp $VCF_FREEBAYES $OUT
 		cp $VCF_VARSCAN $OUT
@@ -109,7 +110,7 @@ Features_extraction_germline () {
 		
 		save_in_storage $WORKDIR/gvcf.list
 
-		#printf $"$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf\n" >> $CFG
+		printf $"$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME\_TOTAL.vcf\t$SAMPLE_NAME\n" >> $CFG
 		printf $"\n=========> Features extraction: DONE"
 	done
 	INPUT=$WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$DATA\_$PANNELLO\_TOTAL.vcf

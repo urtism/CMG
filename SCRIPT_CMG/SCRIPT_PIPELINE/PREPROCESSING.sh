@@ -131,7 +131,7 @@ PREPROCESSING () {
 	rm -f $WORKDIR/PostPreprocessing.cfg
 	CFG=$WORKDIR/PostPreprocessing.cfg
 
-	if [ "$ANALISI" == "Germline" ] ||  [ "$ANALISI" == "Sanger" ] 
+	if [ "$ANALISI" == "Germline" ] ||  [ "$ANALISI" == "Sanger" ] ||  [ "$ANALISI" == "SingleSample" ] 
 		then
 		cat $1 | while read line
 		do

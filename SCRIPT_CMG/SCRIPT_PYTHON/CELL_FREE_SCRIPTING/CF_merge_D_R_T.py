@@ -248,9 +248,9 @@ def main():
 	check(varianti_other)
 
 	out_snp_list=open(opts.out+'.list.tsv','w')
-	out_other=open(opts.out+'.other.tsv','w')
+	#out_other=open(opts.out+'.other.tsv','w')
 	print_varianti(varianti,out_snp_list,header,vett)
-	print_varianti(varianti_other,out_other,header,vett)
+	#print_varianti(varianti_other,out_other,header,vett)
 
 	
 main()
