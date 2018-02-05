@@ -126,6 +126,22 @@ def extract_feat_from_vcf(file,var_list,features,sample):
 								else:
 									newv = [format_sample[format_split.index(tag)]]
 									print newv
+
+						elif htag == 'IEVA' or htag == 'iEVA':
+							if tag == 'SR' or tag == 'SRL' or tag == 'PNC' or tag == 'SRU' or tag == 'RM' or tag == 'GC' or tag == 'VC':
+								for itag in info_split:
+									if itag.startswith(tag + '='):
+										if tag == 'PNC':
+											newv = itag.split('=')[-1].split(',')
+										else:
+											newv = [itag.split('=')[-1]]
+										break
+							else:
+								if tag == 'iAD' or tag == 'iSBD' or tag == 'iQual' or tag == 'iAMMQ' or tag == 'iAAS' or tag == 'iAXS' or tag == 'iAXS0' or tag == 'iAMQ0' or tag == 'iACR':
+									newv = format_sample[format_split.index(tag)].split(',')
+								else:
+									newv = [format_sample[format_split.index(tag)]]
+
 						var += newv
 		var+=[CLASS]
 		if var[2] != 'NON TROVATA':
@@ -138,10 +154,9 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser('\n\nQuesto tool estrae le varianti dai vcf a partire da una lista di varianti in tab delimited. BenchMark-Extractor prende la variante (deve avere nel tab delimited i campi CHR POS REF ALT ID e CLASS con ID riferito al codice paziente e CLASS riferito alla classe che puo essere PASS o FILTER (verificata in sanger o wt) e va a controllare in tutti i file forniti nel list a quale run appartiene e poi estra l inter riga del vcf in un nuovo file (UNO PER OGNI VARIANT CALLER) tab delimited con tutti i campi del vcf splittati correttamente. PREREQUISITO: data in ID paziente uguale a data in ID run nel nome del file. Es: ID_PAZ = 20160724_01_Conn mentre nome del file = 20150716_Cardio_iEVA_GATK.vcf --> Basta che 20160724 sia presente anche nel file.\n')
 	parser.add_argument('-I','--input',help="File tab delimited contenente le varianti confermate in sanger")
-	parser.add_argument('-L','--list',default=None,help="path contenente i file in cui cercare le varianti. N.B il codice paziente contiene la data della run, per cui lo script accede direttamente a quel file.")
-	parser.add_argument('-f','--features_list',help="path al file contenente gli attributi da estrarre dal file vcf di GATK. Un attributo per riga. CONTROLLA SE ESISTONO TAG UGUALI TRA INFO E FORMAT. Se ESISTONO, allora aggiungi INFO prima della tag in questo file. Es: GATK-DP (nel campo INFO) diventa GATK-INFO-DP. Poi controlla la funzione extract_variant e aggiungi un if per valutare quell'info come ho gia fatto per la DP (basati su quell'esempio)")
+	parser.add_argument('-L','--list',default=None,help="file contenente i path ai vcf file in cui cercare le varianti.I file devono essere nominati DATA_NUMPAZ_PANNELLO_VARIANTCALLER.* se è singlesample e DATA_PANNELLO_VARIANTCALLER.* se multisample")
+	parser.add_argument('-f','--features_list',help="file contenente gli attributi da estrarre dai file vcf. Un attributo per riga preceduto da INFO- se è confenuto nelle info , da FORMAT- se contenuto nel formato o IEVA- se è una feature di iEVA.")
 	parser.add_argument('-O','--outfile',help="file di output in tab delimited format.")
-	parser.add_argument('-debug','--debugfile',help="Path del file di log per vedere eventuali errori.")
 
 	global opts
 	opts = parser.parse_args()
@@ -214,6 +229,38 @@ if __name__ == '__main__':
 	elif VariantCaller == 'Platypus' or VariantCaller == 'FreeBayes':
 		features[features.index('FORMAT-GL'):features.index('FORMAT-GL')] = ['FORMAT-GL 0/0', 'FORMAT-GL 0/1','FORMAT-GL 1/1']
 		del features[features.index('FORMAT-GL')]
+
+	if "IEVA-PNC" in features:
+		features[features.index('IEVA-PNC'):features.index('IEVA-PNC')] = ['IEVA-PNC AA','IEVA-PNC AC', 'IEVA-PNC AG', 'IEVA-PNC AT', 'IEVA-PNC CA', 'IEVA-PNC CC', 'IEVA-PNC CG', 'IEVA-PNC CT', 'IEVA-PNC GA', 'IEVA-PNC GC', 'IEVA-PNC GG', 'IEVA-PNC GT', 'IEVA-PNC TA', 'IEVA-PNC TC', 'IEVA-PNC TG', 'IEVA-PNC TT']
+		del features[features.index('IEVA-PNC')]
+	if "IEVA-iAD" in features:
+		features[features.index('IEVA-iAD'):features.index('IEVA-iAD')] = ['IEVA-iAD REF','IEVA-iAD ALT']
+		del features[features.index('IEVA-iAD')]
+	if "IEVA-iSBD" in features:
+		features[features.index('IEVA-iSBD'):features.index('IEVA-iSBD')] = ['IEVA-iSBD RF','IEVA-iSBD RR', 'IEVA-iSBD AF' , 'IEVA-iSBD AR']
+		del features[features.index('IEVA-iSBD')]
+	if "IEVA-iQual" in features:
+		features[features.index('IEVA-iQual'):features.index('IEVA-iQual')] = ['IEVA-iQual REF','IEVA-iQual ALT']
+		del features[features.index('IEVA-iQual')]
+	if "IEVA-iAAS" in features:
+		features[features.index('IEVA-iAMMQ'):features.index('IEVA-iAMMQ')] = ['IEVA-iAMMQ REF','IEVA-iAMMQ ALT']
+		del features[features.index('IEVA-iAMMQ')]
+	if "IEVA-iAAS" in features:
+		features[features.index('IEVA-iAAS'):features.index('IEVA-iAAS')] = ['IEVA-iAAS REF','IEVA-iAAS ALT']
+		del features[features.index('IEVA-iAAS')]
+	if "IEVA-iAXS" in features:
+		features[features.index('IEVA-iAXS'):features.index('IEVA-iAXS')] = ['IEVA-iAXS REF','IEVA-iAXS ALT']
+		del features[features.index('IEVA-iAXS')]
+	if "IEVA-iAXS0" in features:
+		features[features.index('IEVA-iAXS0'):features.index('IEVA-iAXS0')] = ['IEVA-iAXS0 REF','IEVA-iAXS0 ALT']
+		del features[features.index('IEVA-iAXS0')]
+	if "IEVA-iAMQ0" in features:
+		features[features.index('IEVA-iAMQ0'):features.index('IEVA-iAMQ0')] = ['IEVA-iAMQ0 REF','IEVA-iAMQ0 ALT']
+		del features[features.index('IEVA-iAMQ0')]
+	if "IEVA-iACR" in features:
+		features[features.index('IEVA-iACR'):features.index('IEVA-iACR')] = ['IEVA-iACR REF','IEVA-iACR ALT']
+		del features[features.index('IEVA-iACR')]
+
 
 	out.write('\t'.join(['SAMPLE_ID']+['VAR_ID']+features)+'\n')
 

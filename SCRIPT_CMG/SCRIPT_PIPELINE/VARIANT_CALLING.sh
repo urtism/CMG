@@ -99,9 +99,9 @@ Mutect2 () {
 	$BCFTOOLS norm -m -both \
 	-f $REF \
 	$WORKDIR/VARIANT_CALLING/$3\_$4\_GATK.vcf \
-	> $WORKDIR/VARIANT_CALLING/$3\_$4\_GATK.split.vcf 
+	> $WORKDIR/VARIANT_CALLING/$3\_$4\_GATK.norm.vcf 
 
-	VCF_MUTECT=$WORKDIR/VARIANT_CALLING/$3\_$4\_GATK.split.vcf
+	VCF_MUTECT=$WORKDIR/VARIANT_CALLING/$3\_$4\_GATK.norm.vcf
 
 	printf $"\n =========>	Sample $3 => Variant Calling: MuTect2: DONE\n\n"
 }
@@ -159,13 +159,13 @@ GenotypeGVCFs () {
 	$BCFTOOLS norm -m -both \
 	-f $REF \
 	$WORKDIR/VARIANT_CALLING/$2\_GATK.fix.vcf \
-	> $WORKDIR/VARIANT_CALLING/$2\_GATK.split.vcf
+	> $WORKDIR/VARIANT_CALLING/$2\_GATK.norm.vcf
 
 	mv $WORKDIR/VARIANT_CALLING/$2\_GATK.fix.vcf $DELETE
 	mv $WORKDIR/VARIANT_CALLING/$2\_GATK.vcf $DELETE
 	mv $WORKDIR/VARIANT_CALLING/$2\_GATK.vcf.idx $DELETE
 
-	VCF_GATK=$WORKDIR/VARIANT_CALLING/$2\_GATK.split.vcf
+	VCF_GATK=$WORKDIR/VARIANT_CALLING/$2\_GATK.norm.vcf
 
 	printf $'\n =========>	Variant Calling: Genotype GVCF & Multi-sample variant calling: DONE\n'
 
@@ -223,12 +223,12 @@ FreeBayes_multisample () {
  	$BCFTOOLS norm -m -both \
  	-f $REF \
  	$WORKDIR/VARIANT_CALLING/$3\_FreeBayes.fix.vcf \
- 	> $WORKDIR/VARIANT_CALLING/$3\_FreeBayes.split.vcf
+ 	> $WORKDIR/VARIANT_CALLING/$3\_FreeBayes.norm.vcf
 
  	mv $WORKDIR/VARIANT_CALLING/$3\_FreeBayes.fix.vcf $DELETE
 	mv $WORKDIR/VARIANT_CALLING/$3\_FreeBayes.vcf $DELETE
 
-	VCF_FREEBAYES=$WORKDIR/VARIANT_CALLING/$3\_FreeBayes.split.vcf
+	VCF_FREEBAYES=$WORKDIR/VARIANT_CALLING/$3\_FreeBayes.norm.vcf
 
 	printf $'\n =========>	Variant Calling with FreeBayes: DONE\n\n'
 	
@@ -285,12 +285,12 @@ FreeBayes_singlesample () {
  	$BCFTOOLS norm -m -both \
  	-f $REF \
  	$WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_FreeBayes.fix.vcf \
- 	> $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_FreeBayes.split.vcf
+ 	> $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_FreeBayes.norm.vcf
 
  	mv $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_FreeBayes.fix.vcf $DELETE
 	mv $WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_FreeBayes.vcf $DELETE
 
-	VCF_FREEBAYES=$WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_FreeBayes.split.vcf
+	VCF_FREEBAYES=$WORKDIR/VARIANT_CALLING/$SAMPLE_NAME\_FreeBayes.norm.vcf
 
 	printf $'\n =========>	Variant Calling with FreeBayes: DONE\n\n'
 	
@@ -345,9 +345,9 @@ VarScan2_germline_multisample () {
 	$BCFTOOLS norm -m -both \
  	-f $REF \
  	$WORKDIR/VARIANT_CALLING/$3\_VarScan.sort.vcf \
- 	> $WORKDIR/VARIANT_CALLING/$3\_VarScan.split.vcf
+ 	> $WORKDIR/VARIANT_CALLING/$3\_VarScan.norm.vcf
 
- 	VCF_VARSCAN=$WORKDIR/VARIANT_CALLING/$3\_VarScan.split.vcf
+ 	VCF_VARSCAN=$WORKDIR/VARIANT_CALLING/$3\_VarScan.norm.vcf
 
 	mv $WORKDIR/VARIANT_CALLING/$3\_VarScan.Merge.vcf $DELETE
 	mv $WORKDIR/VARIANT_CALLING/$3\_VarScan.sort.vcf $DELETE
@@ -420,9 +420,9 @@ VarScan2_germline_singlesample () {
 	$BCFTOOLS norm -m -both \
  	-f $REF \
  	$WORKDIR/VARIANT_CALLING/$2\_VarScan.sort.vcf \
- 	> $WORKDIR/VARIANT_CALLING/$2\_VarScan.split.vcf
+ 	> $WORKDIR/VARIANT_CALLING/$2\_VarScan.norm.vcf
 
- 	VCF_VARSCAN=$WORKDIR/VARIANT_CALLING/$2\_VarScan.split.vcf
+ 	VCF_VARSCAN=$WORKDIR/VARIANT_CALLING/$2\_VarScan.norm.vcf
 
 	mv $WORKDIR/VARIANT_CALLING/$2\_VarScan.Merge.vcf $DELETE
 	mv $WORKDIR/VARIANT_CALLING/$2\_VarScan.sort.vcf $DELETE
@@ -686,7 +686,7 @@ VARIANT_CALLING_GERMLINE () {
 		BAM=$(echo "$line" | cut -f1)
 		SAMPLE_NAME=$(echo "$line" | cut -f2)
 			
-		HaplotypeCaller $BAM $SAMPLE_NAME
+		#HaplotypeCaller $BAM $SAMPLE_NAME
 
 		printf $"$BAM\n" >> $WORKDIR/Bam_list.txt
 		printf $"$SAMPLE_NAME\n" >> $WORKDIR/Sample_list.txt
@@ -695,11 +695,11 @@ VARIANT_CALLING_GERMLINE () {
 
 	SAMPLE_NAME=$DATA\_$PANNELLO
 	
-	GenotypeGVCFs $WORKDIR/gvcf.list $SAMPLE_NAME
+	#GenotypeGVCFs $WORKDIR/gvcf.list $SAMPLE_NAME
 	
-	FreeBayes_multisample $WORKDIR/Bam_list.txt $WORKDIR/Sample_list.txt $SAMPLE_NAME
+	#FreeBayes_multisample $WORKDIR/Bam_list.txt $WORKDIR/Sample_list.txt $SAMPLE_NAME
 
-	VarScan2_germline_multisample $WORKDIR/Bam_list.txt $WORKDIR/Sample_list.txt $SAMPLE_NAME
+	#VarScan2_germline_multisample $WORKDIR/Bam_list.txt $WORKDIR/Sample_list.txt $SAMPLE_NAME
 
 	Platypus_multisample $WORKDIR/Bam_list.txt
 
