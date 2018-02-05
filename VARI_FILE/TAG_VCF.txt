@@ -1,4 +1,4 @@
-GATK:
+GATK :
 
 
 AD  "Allelic depths for the ref and alt alleles in the order listed">

@@ -1,6 +1,6 @@
 import argparse
 import sys
-from tr import tr
+#from tr import tr
 import re
 
 

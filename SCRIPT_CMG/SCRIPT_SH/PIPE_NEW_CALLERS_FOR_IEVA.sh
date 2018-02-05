@@ -14,9 +14,9 @@ GATK=~/NGS_TOOLS/GATK/GenomeAnalysisTK.jar
 VARSCAN=~/NGS_TOOLS/VarScan/VarScan.v2.3.9.jar
 FREEBAYES=~/NGS_TOOLS/freebayes/bin/freebayes
 BCFTOOLS=bcftools
-SCALPEL=/home/minime/NGS_TOOLS/scalpel-0.5.3/scalpel-discovery
-PLATYPUS=/home/minime/NGS_TOOLS/Platypus_0.8.1/Platypus.py
-SNVER=/home/minime/NGS_TOOLS/SNVer-0.5.3/SNVerIndividual.jar
+SCALPEL=~/NGS_TOOLS/scalpel-0.5.3/scalpel-discovery
+PLATYPUS=~/NGS_TOOLS/Platypus_0.8.1/Platypus.py
+SNVER=~/NGS_TOOLS/SNVer-0.5.3/SNVerIndividual.jar
 
 ### DATABASES & FILES ###
 #LISTAFEATURES_SOMATIC=/home/jarvis/NGS_ANALYSIS/TARGET/Features_lists/lista_features_somatic_CF_20170315.list
@@ -25,7 +25,7 @@ REF_DICT=~/NGS_TOOLS/hg19/ucsc.hg19.dict
 MILLS=~/NGS_TOOLS/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf
 DBSNP=~/NGS_TOOLS/hg19/dbsnp_138.hg19.vcf
 LOGHI=~/git/CMG/LOGHI
-VARIANT_CALLING=/home/minime/NGS_ANALYSIS/PROCESSING/6_Variant/
+VARIANT_CALLING=~/NGS_ANALYSIS/PROCESSING/6_Variant/
 
 ### TARGET ###
 TARGET_Cardio_1000=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a_ESTESO+-1000.list
@@ -120,97 +120,97 @@ do
 
 		#----------- SAMTOOLS ----------------
 		
-		# samtools mpileup \
-		# -uf $REF \
-		# -l $BED \
-		# -d 50000 \
-		# -L 50000 \
-		# -b $BAMLIST | bcftools call -mv -Oz -f GQ,GP --threads 4 > $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.vcf.gz
+		samtools mpileup \
+		-uf $REF \
+		-l $BED \
+		-d 50000 \
+		-L 50000 \
+		-b $BAMLIST | bcftools call -mv -Oz -f GQ,GP --threads 4 > $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.vcf.gz
 
-		# gunzip $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.vcf.gz
+		gunzip $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.vcf.gz
 
-		# python $SCRIPT_PIPELINE/header_fix.py \
-		# -f $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.vcf \
-		# -v S > $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.fix.vcf
+		python $SCRIPT_PIPELINE/header_fix.py \
+		-f $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.vcf \
+		-v S > $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.fix.vcf
 
-		# $BCFTOOLS norm -m -both \
-		# -f $REF \
-		# $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.fix.vcf \
- 	# 	> $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.norm.vcf
+		$BCFTOOLS norm -m -both \
+		-f $REF \
+		$VARIANT_CALLING/Samtools/$FILENAME\_Samtools.fix.vcf \
+ 		> $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.norm.vcf
 
-		# rm -f $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.fix.vcf
-		# rm -f $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.vcf
+		rm -f $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.fix.vcf
+		rm -f $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.vcf
 
-		# mv $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.norm.vcf $RUN_OUT/
+		mv $VARIANT_CALLING/Samtools/$FILENAME\_Samtools.norm.vcf $RUN_OUT/
 
- 	# 	#---------- PLATYPUS ----------------
+ 		#---------- PLATYPUS ----------------
 
- 	#  	python $PLATYPUS callVariants --bamFiles=$BAMLIST \
- 	#  	--refFile=$REF \
- 	#  	--regions=$TARGET_Cardio_1000_BED \
- 	#  	--nCPU=6 \
- 	#  	--maxSize=5000 \
- 	#  	--output=$VARIANT_CALLING/Platypus/$FILENAME\_Platypus_Dup.vcf
+ 	 	python $PLATYPUS callVariants --bamFiles=$BAMLIST \
+ 	 	--refFile=$REF \
+ 	 	--regions=$PLATXT \
+ 	 	--nCPU=6 \
+ 	 	--maxSize=5000 \
+ 	 	--output=$VARIANT_CALLING/Platypus/$FILENAME\_Platypus_Dup.vcf
 
- 	#  	#Rimuovo righe duplicate
-	 # 	awk '!a[$0]++' $VARIANT_CALLING/Platypus/$FILENAME\_Platypus_Dup.vcf > $VARIANT_CALLING/Platypus/$FILENAME\_Platypus.vcf
+ 	 	#Rimuovo righe duplicate
+	 	awk '!a[$0]++' $VARIANT_CALLING/Platypus/$FILENAME\_Platypus_Dup.vcf > $VARIANT_CALLING/Platypus/$FILENAME\_Platypus.vcf
 
-	 # 	rm -f $VARIANT_CALLING/Platypus/$FILENAME\_Platypus_Dup.vcf
+	 	rm -f $VARIANT_CALLING/Platypus/$FILENAME\_Platypus_Dup.vcf
 
-	 # 	python $SCRIPT_PIPELINE/header_fix.py \
-	 # 	-f $VARIANT_CALLING/Platypus/$FILENAME\_Platypus.vcf \
-	 # 	-v P > $VARIANT_CALLING/Platypus/$FILENAME\_Platypus.fix.vcf
+	 	python $SCRIPT_PIPELINE/header_fix.py \
+	 	-f $VARIANT_CALLING/Platypus/$FILENAME\_Platypus.vcf \
+	 	-v P > $VARIANT_CALLING/Platypus/$FILENAME\_Platypus.fix.vcf
 
-	 # 	$BCFTOOLS norm -m -both \
-		# -f $REF \
-		# $VARIANT_CALLING/Platypus/$FILENAME\_Platypus.fix.vcf \
- 	# 	> $VARIANT_CALLING/Platypus/$FILENAME\_Platypus.norm.vcf
+	 	$BCFTOOLS norm -m -both \
+		-f $REF \
+		$VARIANT_CALLING/Platypus/$FILENAME\_Platypus.fix.vcf \
+ 		> $VARIANT_CALLING/Platypus/$FILENAME\_Platypus.norm.vcf
 
-		# mv $VARIANT_CALLING/Platypus/$FILENAME\_Platypus.norm.vcf $RUN_OUT/
+		mv $VARIANT_CALLING/Platypus/$FILENAME\_Platypus.norm.vcf $RUN_OUT/
 
 		#-------------------------- SINGLE SAMPLE SNVer -------------------------
 
-		for file in *.bam
+		# for file in *.bam
 
-  			do
+  # 			do
 
-  				SAMPLE_NAME=$(echo $file| cut -d'.' -f 1 | cut -d'_' -f1-3 )
+  # 				SAMPLE_NAME=$(echo $file| cut -d'.' -f 1 | cut -d'_' -f1-3 )
 
-  				echo $SAMPLE_NAME
+  # 				echo $SAMPLE_NAME
 
-		  		java -jar -Xmx8g $SNVER \
-				-i $file \
-				-l $BED \
-				-r $REF \
-				-o $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer
+		#   		java -jar -Xmx8g $SNVER \
+		# 		-i $file \
+		# 		-l $BED \
+		# 		-r $REF \
+		# 		-o $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer
 
-				rm -f /home/minime/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/20160426_03_Conn_SNVer.failed.log
+		# 		rm -f ~/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/20160426_03_Conn_SNVer.failed.log
 
-				bgzip $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.filter.vcf
-				bgzip $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.indel.filter.vcf
-				tabix $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.filter.vcf.gz
-				tabix $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.indel.filter.vcf.gz
+		# 		bgzip $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.filter.vcf
+		# 		bgzip $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.indel.filter.vcf
+		# 		tabix $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.filter.vcf.gz
+		# 		tabix $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.indel.filter.vcf.gz
 
-				vcf-concat $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.filter.vcf.gz $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.indel.filter.vcf.gz > $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.concat.vcf
-				vcf-sort -c $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.concat.vcf > $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.sort.vcf
+		# 		vcf-concat $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.filter.vcf.gz $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.indel.filter.vcf.gz > $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.concat.vcf
+		# 		vcf-sort -c $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.concat.vcf > $VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.sort.vcf
 
-				rm -f /home/minime/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.filter.vcf.gz
-				rm -f /home/minime/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.filter.vcf.gz.tbi
-				rm -f /home/minime/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.indel.filter.vcf.gz
-				rm -f /home/minime/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.indel.filter.vcf.gz.tbi
-				rm -f /home/minime/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.failed.log
-				rm -f /home/minime/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.raw.vcf
-				rm -f /home/minime/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.indel.raw.vcf
+		# 		rm -f ~/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.filter.vcf.gz
+		# 		rm -f ~/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.filter.vcf.gz.tbi
+		# 		rm -f ~/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.indel.filter.vcf.gz
+		# 		rm -f ~/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.indel.filter.vcf.gz.tbi
+		# 		rm -f ~/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.failed.log
+		# 		rm -f ~/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.raw.vcf
+		# 		rm -f ~/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.indel.raw.vcf
 
-				$BCFTOOLS norm -m -both \
-				-f $REF \
-				$VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.sort.vcf \
- 				> $RUN_OUT/$SAMPLE_NAME\_SNVer.norm.vcf
+		# 		$BCFTOOLS norm -m -both \
+		# 		-f $REF \
+		# 		$VARIANT_CALLING/SNVer/$SAMPLE_NAME\_SNVer.sort.vcf \
+ 	# 			> $RUN_OUT/$SAMPLE_NAME\_SNVer.norm.vcf
 
- 				rm -f /home/minime/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.sort.vcf
-  				rm -f /home/minime/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.concat.vcf
+ 	# 			rm -f ~/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.sort.vcf
+  # 				rm -f ~/NGS_ANALYSIS/PROCESSING/6_Variant/SNVer/$SAMPLE_NAME\_SNVer.concat.vcf
 
-			done
+		# 	done
 
 		#VCF_SCALPEL=$WORKDIR/VARIANT_CALLING/$2\_Scalpel.vcf
 
