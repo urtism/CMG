@@ -154,8 +154,8 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser('\n\nQuesto tool estrae le varianti dai vcf a partire da una lista di varianti in tab delimited. BenchMark-Extractor prende la variante (deve avere nel tab delimited i campi CHR POS REF ALT ID e CLASS con ID riferito al codice paziente e CLASS riferito alla classe che puo essere PASS o FILTER (verificata in sanger o wt) e va a controllare in tutti i file forniti nel list a quale run appartiene e poi estra l inter riga del vcf in un nuovo file (UNO PER OGNI VARIANT CALLER) tab delimited con tutti i campi del vcf splittati correttamente. PREREQUISITO: data in ID paziente uguale a data in ID run nel nome del file. Es: ID_PAZ = 20160724_01_Conn mentre nome del file = 20150716_Cardio_iEVA_GATK.vcf --> Basta che 20160724 sia presente anche nel file.\n')
 	parser.add_argument('-I','--input',help="File tab delimited contenente le varianti confermate in sanger")
-	parser.add_argument('-L','--list',default=None,help="file contenente i path ai vcf file in cui cercare le varianti.I file devono essere nominati DATA_NUMPAZ_PANNELLO_VARIANTCALLER.* se è singlesample e DATA_PANNELLO_VARIANTCALLER.* se multisample")
-	parser.add_argument('-f','--features_list',help="file contenente gli attributi da estrarre dai file vcf. Un attributo per riga preceduto da INFO- se è confenuto nelle info , da FORMAT- se contenuto nel formato o IEVA- se è una feature di iEVA.")
+	parser.add_argument('-L','--list',default=None,help="file contenente i path ai vcf file in cui cercare le varianti.I file devono essere nominati DATA_NUMPAZ_PANNELLO_VARIANTCALLER.* se e' singlesample e DATA_PANNELLO_VARIANTCALLER.* se multisample")
+	parser.add_argument('-f','--features_list',help="file contenente gli attributi da estrarre dai file vcf. Un attributo per riga preceduto da INFO- se e' confenuto nelle info , da FORMAT- se contenuto nel formato o IEVA- se e' una feature di iEVA.")
 	parser.add_argument('-O','--outfile',help="file di output in tab delimited format.")
 
 	global opts
@@ -262,7 +262,7 @@ if __name__ == '__main__':
 		del features[features.index('IEVA-iACR')]
 
 
-	out.write('\t'.join(['SAMPLE_ID']+['VAR_ID']+features)+'\n')
+	out.write(','.join(['SAMPLE_ID']+['VAR_ID']+features)+'\n')
 
 	for line in out_bm:
 			out.write(line +'\n')
