@@ -118,6 +118,13 @@ def extract_feat_from_vcf(file,var_list,features,sample):
 										newv = ['0/1']
 									else:
 										newv = [format_sample[format_split.index(tag)]]
+								if tag == 'AF':
+									ad = float(format_sample[format_split.index('NV')])
+									dp = float(format_sample[format_split.index('NR')])
+									try:
+										newv = [str(round(ad/dp,3))]
+									except:
+										newv = ['?']
 							else:
 								if format_sample[format_split.index(tag)] == '.':
 									newv = ['?']
