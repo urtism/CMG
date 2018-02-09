@@ -61,7 +61,7 @@ ANNOTATION () {
 		--vcf
 	fi
 
-	mv $1 $DELETE
+	#mv $1 $DELETE
 	#mv ${1%.*}.ANN.nosort.vcf $DELETE
 	INPUT=${1%.*}.ANN.vcf
 	printf $'\n =========>	ANNOTATION: DONE\n'
@@ -79,14 +79,14 @@ ADD_ANNOTATION() {
   	-o  ${2%.*}.ANN.tsv
  	
 
- 	mv $2 $DELETE
+ 	cp $2 $DELETE
  	
  	sort -V ${2%.*}.ANN.tsv > $2
   	 	
  	cp $2 $STORAGE
- 	mv $2 $OUT
+ 	cp $2 $OUT
 
-  	mv ${2%.*}.ANN.tsv $DELETE
+  	cp ${2%.*}.ANN.tsv $DELETE
   	printf $'\n =========>	ADD ANNOTATION: DONE\n'
 }
 

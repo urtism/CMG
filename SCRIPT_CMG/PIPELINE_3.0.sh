@@ -27,6 +27,7 @@ LOCATLT=~/NGS_TOOLS/AGeNT/LocatIt_v3.5.1.46.jar
 SCALPEL=~/NGS_TOOLS/scalpel-0.5.3/scalpel-discovery
 SNVER_INDIVIDUAL=~/NGS_TOOLS/SNVer-0.5.3/SNVerIndividual.jar
 SNVER_POOL=~/NGS_TOOLS/SNVer-0.5.3/SNVerPool.jar
+PLATYPUS=~/NGS_TOOLS/Platypus_0.8.1/Platypus.py
 
 VEP=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/
 VEPANN=~/NGS_TOOLS/ensembl-tools-release-86/scripts/variant_effect_predictor/variant_effect_predictor.pl
@@ -53,8 +54,10 @@ TARGET_CARDIO_1000=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a_ESTESO+-1000
 TARGET_CARDIO_1000_BED=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a_ESTESO+-1000.bed
 TARGET_CARDIO=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a.list
 TARGET_CARDIO_BED=~/NGS_ANALYSIS/TARGET/trusight_cardio_manifest_a.bed
-TARGET_BRCA=~/NGS_ANALYSIS/TARGET/AFP2_manifest_v1.list
-TARGET_BRCA_BED=~/NGS_ANALYSIS/TARGET/AFP2_manifest_v1.bed
+TARGET_ILLUMINA_BRCA=~/NGS_ANALYSIS/TARGET/AFP2_manifest_v1.list
+TARGET_ILLUMINA_BRCA_BED=~/NGS_ANALYSIS/TARGET/AFP2_manifest_v1.bed
+TARGET_MULTIPLICOM_BRCA_BED=/home/jarvis/NGS_ANALYSIS/TARGET/MULTIPLICOM_BRCA/IFU423_BRCA_MASTR_Plus_SeqNext_v170133.noheader.bed
+TARGET_MULTIPLICOM_BRCA=/home/jarvis/NGS_ANALYSIS/TARGET/MULTIPLICOM_BRCA/IFU423_BRCA_MASTR_Plus_SeqNext_v170133.noheader.list
 TARGET_BRCA_FREEBAYES=~/NGS_ANALYSIS/TARGET/BRCA_FreeBayes_amplicon.bed
 TARGET_EXOME_1000=~/NGS_ANALYSIS/TARGET/TruSight_One_v1.1_ESTESO+-1000.list
 TARGET_EXOME_1000_BED=~/NGS_ANALYSIS/TARGET/TruSight_One_v1.1_ESTESO+-1000.bed
@@ -65,7 +68,8 @@ TARGET_CANCER_1000_BED=~/NGS_ANALYSIS/TARGET/trusight_cancer_manifest_a_ESTESO+-
 TARGET_HALOPLEX=~/NGS_ANALYSIS/TARGET/HaloPlex_Covered.list
 TARGET_HALOPLEX_BED=~/NGS_ANALYSIS/TARGET/HaloPlex_Covered.bed
 TARGET_SURESELECT=~/NGS_ANALYSIS/TARGET/Meloni_SureSelect_target_files/3066331/3066331_Covered.list
-TARGET_SURESELECT_BED=~/NGS_ANALYSIS/TARGET/Meloni_SureSelect_target_files/3066331/3066331_Covered.bed
+TARGET_SURESELECT_BED=~/NGS_ANALYSIS/TARGET/Meloni_SureSelect_target_files/3066331/3066331_Covered_senza_browser.bed
+
 AMPLICONS_HALOPLEX_BED=~/NGS_ANALYSIS/TARGET/HaloPlex_target_files/HaloPlex_Amplicons.bed
 
 HELP () {
@@ -122,8 +126,10 @@ CHECK_PANNELLO () {
 	elif [ "$PANNELLO" == "BRCA" ]
 	then
 		DESIGN="AMPLICON"
-		TARGET=$TARGET_BRCA
-		TARGETBED=$TARGET_BRCA_BED
+		#TARGET=$TARGET_ILLUMINA_BRCA
+		#TARGETBED=$TARGET_ILLUMINA_BRCA_BED
+		TARGET=$TARGET_MULTIPLICOM_BRCA
+		TARGETBED=$TARGET_MULTIPLICOM_BRCA_BED
 		TRANSCR_LIST=$TRASCR_BRCA
 
 	elif [ "$PANNELLO" == "CellFree" ]
@@ -177,16 +183,30 @@ PIPELINE_GERMLINE () {
 	fi
 	if [[ "$START" == *"E"* ]]
 	then
-		ANNOTATION $INPUT NOCANONICAL
-		SPLIT_TRANSCRIPTS $INPUT $TRANSCR_LIST
-		ANNOTATION $INPUT2 CANONICAL
-		MERGE_2VCF $INPUT1 $INPUT
-
-		cat $WORKDIR/Sample_list.txt | while read line
+		cat $CFG | while read line
 		do
-			SAMPLE=$(echo "$line" | cut -f1)
-			ADD_ANNOTATION $INPUT $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE.tsv
+			INPUT=$(echo "$line" | cut -f1)
+			if [ "$PANNELLO" == "SureSelect" ]
+				then
+					ANNOTATION $INPUT CANONICAL
+			elif [ "$PANNELLO" == "BRCA" ]
+				then
+				echo "brca"
+					ANNOTATION $INPUT NOCANONICAL
+					SPLIT_TRANSCRIPTS $INPUT $TRANSCR_LIST
+			else
+				ANNOTATION $INPUT NOCANONICAL
+				SPLIT_TRANSCRIPTS $INPUT $TRANSCR_LIST
+				ANNOTATION $INPUT2 CANONICAL
+				MERGE_2VCF $INPUT1 $INPUT
+			fi
+			cat $WORKDIR/Sample_list.txt | while read line
+			do
+				SAMPLE=$(echo "$line" | cut -f1)
+				ADD_ANNOTATION $INPUT $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE.tsv
+			done
 		done
+		
 	fi	
 }
 
@@ -232,7 +252,7 @@ PIPELINE_SOMATIC () {
 	fi	
 }
 
-PIPELINE_SANGER () {
+PIPELINE_SINGLESAMPLE () {
 
 	cat $LOGHI/logo_cmg.txt
 
@@ -250,7 +270,31 @@ PIPELINE_SANGER () {
 	fi
 	if [[ "$START" == *"F"* ]]
 	then
-		Features_extraction_sanger $CFG
+		Features_extraction_germline $CFG
+	fi
+	if [[ "$START" == *"E"* ]]
+	then
+		cat $CFG | while read line
+		do
+			INPUT=$(echo "$line" | cut -f1)
+			SAMPLE_NAME=$(echo "$line" | cut -f2)
+			if [ "$PANNELLO" == "SureSelect" ]
+				then
+					ANNOTATION $INPUT CANONICAL
+			elif [ "$PANNELLO" == "BRCA" ]
+				then
+					ANNOTATION $INPUT NOCANONICAL
+					SPLIT_TRANSCRIPTS $INPUT $TRANSCR_LIST
+			else
+				ANNOTATION $INPUT NOCANONICAL
+				SPLIT_TRANSCRIPTS $INPUT $TRANSCR_LIST
+				ANNOTATION $INPUT2 CANONICAL
+				MERGE_2VCF $INPUT1 $INPUT
+			fi
+			ADD_ANNOTATION $INPUT $WORKDIR/VARIANT_CALLING/FEATURES_EXTRACTION/$SAMPLE_NAME.tsv
+
+		done
+		
 	fi	
 }
 
@@ -400,9 +444,10 @@ elif [ "$ANALISI" == "CellFree" ]
 then
 	PIPELINE_CELLFREE
 
-elif [ "$ANALISI" == "Sanger" ] 
+elif [ "$ANALISI" == "SingleSample" ] 
 then
-	PIPELINE_SANGER
+	ANN_LIST=$ANN_LIST_GERMLINE
+	PIPELINE_SINGLESAMPLE
 fi
 
 ENDTIME=$(date +%s)

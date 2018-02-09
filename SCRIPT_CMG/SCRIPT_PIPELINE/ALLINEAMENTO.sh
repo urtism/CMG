@@ -94,7 +94,7 @@ ALLINEAMENTO() {
 	rm -f $WORKDIR/PostAlignment.cfg
 	CFG=$WORKDIR/PostAlignment.cfg
 
-	if [ "$ANALISI" == "Germline" ]
+	if [ "$ANALISI" == "Germline" ] || [ "$ANALISI" == "SingleSample" ]
 		then
 		cat $1 | while read line
 		do 	
@@ -119,7 +119,7 @@ ALLINEAMENTO() {
 				FASTQ2=$(echo "$line" | cut -f2)
 				SAMPLE_NAME=$(echo "$line" | cut -f3)
 
-				SureCallTrimmer $FASTQ1 $FASTQ2 -qxt
+				#SureCallTrimmer $FASTQ1 $FASTQ2 -qxt
 				BWAMEM $FASTQ1 $FASTQ2
 				SamFormatConverter $INPUT
 				SortSam $INPUT
@@ -132,7 +132,6 @@ ALLINEAMENTO() {
 				BWAMEM $FASTQ1 $FASTQ2
 				SamFormatConverter $INPUT
 				SortSam $INPUT
-				
 			fi
 			
 			printf $"$INPUT\t$SAMPLE_NAME\n" >> $CFG
