@@ -10,6 +10,7 @@ import random as r
 
 def prRed(prt): print("\033[91m {}\033[00m" .format(prt))
 def prGreen(prt): print("\033[92m {}\033[00m" .format(prt))
+
 def makedirs(dirs):
     for d in dirs:
         if not os.path.exists(d):
@@ -65,8 +66,6 @@ def vars_from_db(db,num_snv,num_indel,out):
 			continue
 	vcf.close()
 	return out
-
-
 
 def check_simul_vars(log_bs_dir,bam,vars,outpath):
 
@@ -183,7 +182,6 @@ def print_vcf(analisi,log_bs_dir,outpath,reference):
 
 								vcf.write('\t'.join((chrom, start, '.', ref, alt, '.', 'PASS', analisi+';VAF=' + vaf , 'GT', gt))+'\n')
 					subprocess.call("mv " + log_bs_dir+'/'+pathname+ '/'+filename + ' ' + log_bs_dir+'/'+pathname+ '/'+filename +'.checked', shell=True)
-
 
 def Vcf_to_bamsurgeon(vars,min,max,err):
 	print vars

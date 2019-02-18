@@ -38,11 +38,11 @@ def main():
 						fenotipo='.'
 					
 					if gene.split('\t')[0] in symbol.split(','):
-						print gene + '\t' + '\t'.join([nome,fenotipo])
+						print gene + '\tCancer\t' + '\t'.join([nome,fenotipo])
 						find=1
 						break
 			omim.close()
 			if find==0:
-				print gene + '\t' + '\t'.join(['.','.'])
+				print gene + '\tCancer\t' + '\t'.join(['.','.'])
 
 main()

@@ -57,22 +57,25 @@ def extract_info(varianti,hash_var,pazienti):
 
 
 			if var_id in hash_var.keys():
+				try:
 
-				if variante[index_of_gen].split('/')[0] == variante[index_of_gen].split('/')[1]:
-					#print "gia presente",hash_var[var_id],AC,AN
-					hash_var[var_id][1] = hash_var[var_id][1] + 1
-					try:
-						hash_var[var_id][2][1] = hash_var[var_id][2][1] + [pazienti[id][0]]
-					except:
-						hash_var[var_id][2][1] = hash_var[var_id][2][1] + [id]
-				else: 
-					
-					hash_var[var_id][0] = hash_var[var_id][0] + 1
+					if variante[index_of_gen].split('/')[0] == variante[index_of_gen].split('/')[1]:
+						#print "gia presente",hash_var[var_id],AC,AN
+						hash_var[var_id][1] = hash_var[var_id][1] + 1
+						try:
+							hash_var[var_id][2][1] = hash_var[var_id][2][1] + [pazienti[id][0]]
+						except:
+							hash_var[var_id][2][1] = hash_var[var_id][2][1] + [id]
+					else: 
+						
+						hash_var[var_id][0] = hash_var[var_id][0] + 1
 
-					try:
-						hash_var[var_id][2][0] = hash_var[var_id][2][0] + [pazienti[id][0]]
-					except:
-						hash_var[var_id][2][0] = hash_var[var_id][2][0] + [id]
+						try:
+							hash_var[var_id][2][0] = hash_var[var_id][2][0] + [pazienti[id][0]]
+						except:
+							hash_var[var_id][2][0] = hash_var[var_id][2][0] + [id]
+				except:
+					print variante
 
 				hash_var[var_id][3] = HGVSc
 				hash_var[var_id][4] = HGVSp
@@ -84,24 +87,25 @@ def extract_info(varianti,hash_var,pazienti):
 
 
 			else:
-				if variante[index_of_gen].split('/')[0] == variante[index_of_gen].split('/')[1]:
-					if '22014162' in var_id: 
-						print [pazienti[id][0]]
-					try:
-						hash_var[var_id] = [0,1,[[],[pazienti[id][0]]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
-					except:
-						hash_var[var_id] = [0,1,[[],[id]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
-							
-				else:
-					try:
-						hash_var[var_id] = [1,0,[[pazienti[id][0]],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
-					except:
-						hash_var[var_id] = [0,1,[[id],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
+				try:
+					if variante[index_of_gen].split('/')[0] == variante[index_of_gen].split('/')[1]:
+						try:
+							hash_var[var_id] = [0,1,[[],[pazienti[id][0]]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
+						except:
+							hash_var[var_id] = [0,1,[[],[id]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
+								
+					else:
+						try:
+							hash_var[var_id] = [1,0,[[pazienti[id][0]],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
+						except:
+							hash_var[var_id] = [0,1,[[id],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
+				except:
+					print variante
 				#print "nuova variante",hash_var[var_id],AC,AN
 
 
-def extract_var_from_gene(varianti,vc):
-	var_list = open(opts.out + '/lista_varianti_' + opts.gene + '_' + vc + '.list','a+')
+def extract_var_from_gene(varianti):
+	var_list = open(opts.out + '/lista_varianti_' + opts.gene+ '.list','a+')
 	var_array = var_list.readlines()
 	index_of_gene = 0
 	
@@ -181,17 +185,8 @@ def main():
 
 	for filename in glob2.glob(os.path.join(opts.path,'*.tsv')):
 		num_paz = num_paz + 1
-		#print filename
-		if 'FREEBAYES' in filename:
-			vc = 'FREEBAYES'
-		elif 'GATK_Other' in filename:
-			vc = 'GATK_Other'
-		elif 'VarScan' in filename:
-			vc = 'VarScan'
-		elif 'GATK' in filename:
-			vc = 'GATK'
 
-		extract_var_from_gene(open(filename,'r'),vc)
+		extract_var_from_gene(open(filename,'r'))
 	
 	#print num_paz
 

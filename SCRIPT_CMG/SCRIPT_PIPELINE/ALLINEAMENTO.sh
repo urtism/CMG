@@ -119,7 +119,7 @@ ALLINEAMENTO() {
 				FASTQ2=$(echo "$line" | cut -f2)
 				SAMPLE_NAME=$(echo "$line" | cut -f3)
 
-				#SureCallTrimmer $FASTQ1 $FASTQ2 -qxt
+				SureCallTrimmer $FASTQ1 $FASTQ2 -qxt
 				BWAMEM $FASTQ1 $FASTQ2
 				SamFormatConverter $INPUT
 				SortSam $INPUT

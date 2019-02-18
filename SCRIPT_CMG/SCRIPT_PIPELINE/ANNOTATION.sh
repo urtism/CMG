@@ -14,9 +14,11 @@ ANNOTATION () {
 		perl $VEPANN -i ${1%.*}.sort.vcf \
 		-o ${1%.*}.ANN.vcf \
 		--stats_file ${1%.*}.ANN.html \
+		--fasta $REF \
 		--cache \
-		--assembly GRCh37 \
 		--offline \
+		--assembly GRCh37 \
+		--merged \
 		--force_overwrite \
 		-v \
 		--fork 2 \
@@ -28,7 +30,7 @@ ANNOTATION () {
 		--protein \
 		--canonical \
 		--check_existing \
-		--gmaf \
+		--af \
 		--pubmed \
 		--species homo_sapiens \
 		--failed 1 \
@@ -40,8 +42,10 @@ ANNOTATION () {
 		perl $VEPANN -i ${1%.*}.sort.vcf \
 		-o ${1%.*}.ANN.vcf \
 		--stats_file ${1%.*}.ANN.html \
+		--fasta $REF \
 		--cache \
 		--assembly GRCh37 \
+		--merged \
 		--offline \
 		--force_overwrite \
 		-v \
@@ -52,9 +56,8 @@ ANNOTATION () {
 		--vcf_info_field ANN \
 		--hgvs \
 		--protein \
-		--canonical \
 		--check_existing \
-		--gmaf \
+		--af \
 		--pubmed \
 		--species homo_sapiens \
 		--failed 1 \

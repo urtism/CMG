@@ -40,6 +40,7 @@ LISTAFEATURES_SOMATIC=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_somati
 ANN_LIST_GERMLINE=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_annotazione.list
 ANN_LIST_SOMATIC=~/NGS_ANALYSIS/TARGET/Features_lists/lista_features_annotazione.list
 REF=~/NGS_TOOLS/hg19/ucsc.hg19.fasta
+#REF=/home/jarvis/Scrivania/TEST/SimulVar/AMPLICON/NO_ERR_AMPLICON/TEST1/ucsc.hg19.bed.fasta
 REF_DICT=~/NGS_TOOLS/hg19/ucsc.hg19.dict
 MILLS=~/NGS_TOOLS/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf
 #DBSNP=~/NGS_TOOLS/hg19/common_all_20170710.vcf

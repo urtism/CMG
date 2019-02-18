@@ -141,7 +141,7 @@ def fix_format_values(line_var,s_list,i,format):
 	else:
 		for form in (line_var[i])[-1]:
 			null_format='./.'
-			if form.startswith('.:'):
+			if form.startswith('.:') or form.startswith('./.'):
 				for a in format.split(':')[1:]:
 					null_format=null_format + ':.'
 				format_sample = format_sample + [null_format]

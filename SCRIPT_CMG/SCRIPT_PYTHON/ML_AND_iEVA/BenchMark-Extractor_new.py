@@ -16,7 +16,7 @@ def extract_feat_from_vcf(file,var_list,features,sample):
 				line = line.rstrip()
 				if line.startswith('#CHROM'):
 					header = line.rstrip().split('\t')
-				if line.startswith(var_id):
+				if line.startswith(var_id) and sample in header:
 					chr,pos,id,ref,alt,filter,qual,info,format = line.split('\t')[:9]
 					var = [sample,chr+':'+pos+'-'+ref+'-'+alt]
 					try:
@@ -26,6 +26,7 @@ def extract_feat_from_vcf(file,var_list,features,sample):
 						format_sample = line.split('\t')[header.index(new_sample)].split(':')
 					format_split = format.split(':')
 					info_split = info.split(';')
+					
 					for f in features[:-1]:
 						newv = ['?']
 						htag,tag = f.split('-')
@@ -100,7 +101,10 @@ def extract_feat_from_vcf(file,var_list,features,sample):
 									except:
 										newv = ['?']
 								elif tag == 'GL':
-									newv = format_sample[format_split.index(tag)].split(',')
+									try:
+										newv = format_sample[format_split.index(tag)].split(',')
+									except:
+										newv = ['.','.','.']
 								else:
 									if format_sample[format_split.index(tag)] == '.':
 										newv = ['?']
@@ -119,33 +123,47 @@ def extract_feat_from_vcf(file,var_list,features,sample):
 									else:
 										newv = [format_sample[format_split.index(tag)]]
 							else:
-								if format_sample[format_split.index(tag)] == '.':
-									newv = ['?']
-								if format_sample[format_split.index(tag)] == '1/0':
-									newv = ['0/1']
-								else:
-									newv = [format_sample[format_split.index(tag)]]
-									print newv
+								try:
+									if format_sample[format_split.index(tag)] == '.':
+										newv = ['?']
+									if format_sample[format_split.index(tag)] == '1/0':
+										newv = ['0/1']
+									else:
+										newv = [format_sample[format_split.index(tag)]]
+								except:
+									print newv,VariantCaller
 
 						elif htag == 'IEVA' or htag == 'iEVA':
-							if tag == 'SR' or tag == 'SRL' or tag == 'PNC' or tag == 'SRU' or tag == 'RM' or tag == 'GC' or tag == 'VC':
+							
+							if tag == 'iSR' or tag == 'iSRL' or tag == 'iPNC' or tag == 'iSRU' or tag == 'iRM' or tag == 'iGC' or tag == 'iVC':
 								for itag in info_split:
+									#print itag
 									if itag.startswith(tag + '='):
-										if tag == 'PNC':
+										
+										if tag == 'iPNC':
 											newv = itag.split('=')[-1].split(',')
+
 										else:
 											newv = [itag.split('=')[-1]]
+
 										break
 							else:
 								if tag == 'iAD' or tag == 'iSBD' or tag == 'iQual' or tag == 'iAMMQ' or tag == 'iAAS' or tag == 'iAXS' or tag == 'iAXS0' or tag == 'iAMQ0' or tag == 'iACR':
 									newv = format_sample[format_split.index(tag)].split(',')
 								else:
+									#print file,format_sample
 									newv = [format_sample[format_split.index(tag)]]
-
-						var += newv
+									
+						newvv=[]
+						for w in newv:
+							if w == '.':
+								w='?'
+							newvv += [w]
+						var += newvv
 		var+=[CLASS]
 		if var[2] != 'NON TROVATA':
-			vars += ['\t'.join(var)]	
+			vars += ['\t'.join(var)]
+
 					
 	return  vars
 
@@ -154,8 +172,8 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser('\n\nQuesto tool estrae le varianti dai vcf a partire da una lista di varianti in tab delimited. BenchMark-Extractor prende la variante (deve avere nel tab delimited i campi CHR POS REF ALT ID e CLASS con ID riferito al codice paziente e CLASS riferito alla classe che puo essere PASS o FILTER (verificata in sanger o wt) e va a controllare in tutti i file forniti nel list a quale run appartiene e poi estra l inter riga del vcf in un nuovo file (UNO PER OGNI VARIANT CALLER) tab delimited con tutti i campi del vcf splittati correttamente. PREREQUISITO: data in ID paziente uguale a data in ID run nel nome del file. Es: ID_PAZ = 20160724_01_Conn mentre nome del file = 20150716_Cardio_iEVA_GATK.vcf --> Basta che 20160724 sia presente anche nel file.\n')
 	parser.add_argument('-I','--input',help="File tab delimited contenente le varianti confermate in sanger")
-	parser.add_argument('-L','--list',default=None,help="file contenente i path ai vcf file in cui cercare le varianti.I file devono essere nominati DATA_NUMPAZ_PANNELLO_VARIANTCALLER.* se è singlesample e DATA_PANNELLO_VARIANTCALLER.* se multisample")
-	parser.add_argument('-f','--features_list',help="file contenente gli attributi da estrarre dai file vcf. Un attributo per riga preceduto da INFO- se è confenuto nelle info , da FORMAT- se contenuto nel formato o IEVA- se è una feature di iEVA.")
+	parser.add_argument('-L','--list',default=None,help="file contenente i path ai vcf file in cui cercare le varianti.I file devono essere nominati DATA_NUMPAZ_PANNELLO_VARIANTCALLER. se singlesample e DATA_PANNELLO_VARIANTCALLER. se multisample")
+	parser.add_argument('-f','--features_list',help="file contenente gli attributi da estrarre dai file vcf. Un attributo per riga preceduto da INFO- se confenuto nelle info , da FORMAT- se contenuto nel formato o IEVA- se una feature di iEVA.")
 	parser.add_argument('-O','--outfile',help="file di output in tab delimited format.")
 
 	global opts
@@ -174,12 +192,14 @@ if __name__ == '__main__':
 	with open(opts.list) as fl:
 		for file in fl:
 			try:
-				sample = '_'.join(file.rstrip().split('/')[-1].split('.')[0].split('_')[:3])
-				VariantCaller = file.rstrip().split('/')[-1].split('.')[0].split('_')[3]
+				data,num,pannello,VariantCaller= file.rstrip().split('/')[-1].split('.')[0].split('_')[:4]
+				sample = '_'.join([data,num,pannello])
+				#print sample,VariantCaller
 				ss_files[sample] = file.rstrip()
 			except:
-				sample = '_'.join(file.rstrip().split('/')[-1].split('.')[0].split('_')[:2])
-				VariantCaller = file.rstrip().split('/')[-1].split('.')[0].split('_')[2]
+				sample = '_'.join(file.rstrip().split('/')[-1].split('.')[0].split('_')[:1])
+				VariantCaller = file.rstrip().split('/')[-1].split('.')[0].split('_')[-1]
+				#print sample,VariantCaller
 				ms_files[sample] = file.rstrip()
 	
 	samples = dict()
@@ -197,9 +217,12 @@ if __name__ == '__main__':
 					samples[id] = vars
 				else:
 					samples[id] = [[var_id,CLASS]]
+
 	out_bm = []
 	for sample in samples.keys():
+		#print ss_files.keys()
 		if sample in ss_files.keys():
+
 			vcf_sample = ss_files[sample]
 			vars_sample = samples[sample]
 			var = extract_feat_from_vcf(vcf_sample,vars_sample,features,sample)
@@ -207,18 +230,14 @@ if __name__ == '__main__':
 				out_bm += ['\n'.join(var)]
 		else:
 			data = sample.split('_')[0]
-			if data == '20150914' and VariantCaller == 'Platypus':
-				continue
-			elif data == '20161125' and VariantCaller == 'FreeBayes':
-				continue
-			else:
-				for file in ms_files.keys():
-					if file.startswith(data):
-						vcf_sample = ms_files[file]
-						vars_sample = samples[sample]
-						var = extract_feat_from_vcf(vcf_sample,vars_sample,features,sample)
-						if var != []:
-							out_bm += ['\n'.join(var)]
+
+			for file in ms_files.keys():
+				if file.startswith(data) and sample in samples.keys():
+					vcf_sample = ms_files[file]
+					vars_sample = samples[sample]
+					var = extract_feat_from_vcf(vcf_sample,vars_sample,features,sample)
+					if var != []:
+						out_bm += ['\n'.join(var)]
 	
 
 	out = open(opts.outfile,'w')
@@ -230,9 +249,9 @@ if __name__ == '__main__':
 		features[features.index('FORMAT-GL'):features.index('FORMAT-GL')] = ['FORMAT-GL 0/0', 'FORMAT-GL 0/1','FORMAT-GL 1/1']
 		del features[features.index('FORMAT-GL')]
 
-	if "IEVA-PNC" in features:
-		features[features.index('IEVA-PNC'):features.index('IEVA-PNC')] = ['IEVA-PNC AA','IEVA-PNC AC', 'IEVA-PNC AG', 'IEVA-PNC AT', 'IEVA-PNC CA', 'IEVA-PNC CC', 'IEVA-PNC CG', 'IEVA-PNC CT', 'IEVA-PNC GA', 'IEVA-PNC GC', 'IEVA-PNC GG', 'IEVA-PNC GT', 'IEVA-PNC TA', 'IEVA-PNC TC', 'IEVA-PNC TG', 'IEVA-PNC TT']
-		del features[features.index('IEVA-PNC')]
+	if "IEVA-iPNC" in features:
+		features[features.index('IEVA-iPNC'):features.index('IEVA-iPNC')] = ['IEVA-iPNC AA','IEVA-iPNC AC', 'IEVA-iPNC AG', 'IEVA-iPNC AT', 'IEVA-iPNC CA', 'IEVA-iPNC CC', 'IEVA-iPNC CG', 'IEVA-iPNC CT', 'IEVA-iPNC GA', 'IEVA-iPNC GC', 'IEVA-iPNC GG', 'IEVA-iPNC GT', 'IEVA-iPNC TA', 'IEVA-iPNC TC', 'IEVA-iPNC TG', 'IEVA-iPNC TT']
+		del features[features.index('IEVA-iPNC')]
 	if "IEVA-iAD" in features:
 		features[features.index('IEVA-iAD'):features.index('IEVA-iAD')] = ['IEVA-iAD REF','IEVA-iAD ALT']
 		del features[features.index('IEVA-iAD')]

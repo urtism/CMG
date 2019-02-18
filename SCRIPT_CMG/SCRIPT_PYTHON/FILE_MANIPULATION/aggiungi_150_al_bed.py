@@ -11,7 +11,7 @@ for line in open(bed,'r'):
 	start=line.split('\t')[1]
 	stop=line.split('\t')[2]
 
-	start=int(start)-150
-	stop=int(stop)+150
+	start=int(start)-10
+	stop=int(stop)+10
 
 	print '\t'.join([chr,str(start),str(stop)])
