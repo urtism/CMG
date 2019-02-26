@@ -30,7 +30,7 @@ ANNOTATION () {
 		--protein \
 		--canonical \
 		--check_existing \
-		--af \
+		--gmaf \
 		--pubmed \
 		--species homo_sapiens \
 		--failed 1 \
@@ -57,7 +57,7 @@ ANNOTATION () {
 		--hgvs \
 		--protein \
 		--check_existing \
-		--af \
+		--gmaf \
 		--pubmed \
 		--species homo_sapiens \
 		--failed 1 \

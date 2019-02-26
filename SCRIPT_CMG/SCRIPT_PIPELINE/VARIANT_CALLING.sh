@@ -670,7 +670,7 @@ VARIANT_CALLING_GERMLINE () {
 	
 	rm -f $WORKDIR/Bam_list.txt
 	rm -f $WORKDIR/Sample_list.txt
-	rm -f $WORKDIR/gvcf.list
+	#rm -f $WORKDIR/gvcf.list
 	rm -f $WORKDIR/PostVariantCalling.cfg
 	CFG=$WORKDIR/PostVariantCalling.cfg
 
@@ -680,7 +680,7 @@ VARIANT_CALLING_GERMLINE () {
 		BAM=$(echo "$line" | cut -f1)
 		SAMPLE_NAME=$(echo "$line" | cut -f2)
 			
-		HaplotypeCaller $BAM $SAMPLE_NAME
+		#HaplotypeCaller $BAM $SAMPLE_NAME
 
 		printf $"$BAM\n" >> $WORKDIR/Bam_list.txt
 		printf $"$SAMPLE_NAME\n" >> $WORKDIR/Sample_list.txt
@@ -689,19 +689,22 @@ VARIANT_CALLING_GERMLINE () {
 
 	SAMPLE_NAME=$DATA\_$PANNELLO
 	
-	GenotypeGVCFs $WORKDIR/gvcf.list $SAMPLE_NAME
+	#GenotypeGVCFs $WORKDIR/gvcf.list $SAMPLE_NAME
 	
-	FreeBayes_multisample $WORKDIR/Bam_list.txt $WORKDIR/Sample_list.txt $SAMPLE_NAME
+	#FreeBayes_multisample $WORKDIR/Bam_list.txt $WORKDIR/Sample_list.txt $SAMPLE_NAME
 
-	VarScan2_germline_multisample $WORKDIR/Bam_list.txt $WORKDIR/Sample_list.txt $SAMPLE_NAME
+	#VarScan2_germline_multisample $WORKDIR/Bam_list.txt $WORKDIR/Sample_list.txt $SAMPLE_NAME
 
 	#Platypus_multisample $WORKDIR/Bam_list.txt
 
 	#samtools_vc_multisample $WORKDIR/Bam_list.txt
 
 	#save_in_storage $WORKDIR/Bam_list.txt
+	VCF_GATK='/home/jarvis/NGS_ANALYSIS_TEMP/20190215_Run_Prova1_Germline_Cardio_1/VARIANT_CALLING/20190215_Cardio_GATK.norm.vcf'
+	VCF_VARSCAN='/home/jarvis/NGS_ANALYSIS_TEMP/20190215_Run_Prova1_Germline_Cardio_1/VARIANT_CALLING/20190215_Cardio_VarScan.norm.vcf'
+	VCF_FREEBAYES='/home/jarvis/NGS_ANALYSIS_TEMP/20190215_Run_Prova1_Germline_Cardio_1/VARIANT_CALLING/20190215_Cardio_FreeBayes.norm.vcf'
 
-	Vcf_merge $VCF_GATK $VCF_FREEBAYES $VCF_VARSCAN
+	#Vcf_merge $VCF_GATK $VCF_FREEBAYES $VCF_VARSCAN
 
 	
 	printf $"$VCF_GATK\t$VCF_FREEBAYES\t$VCF_VARSCAN\t$SAMPLE_NAME\n" >> $CFG
