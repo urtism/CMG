@@ -117,9 +117,9 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
             L += ['IEVA-iACR']
         return X,L
 
-def Split_datasets(ds,size,outpath,stratify=None):
+def Split_datasets(ds,size,outpath,stratify):
 
-    if stratify:
+    if stratify is not None:
         split = StratifiedShuffleSplit(n_splits=1, test_size=size)
         for train_index, test_index  in  split.split(ds, ds[stratify]):
             train_set =   ds.iloc[train_index]
@@ -280,7 +280,7 @@ if __name__ == '__main__':
 
 #PROVA: invece di eliminare le features ref, ho generato della features miste con ref e alt con la formula ref-alt/ref+alt [-1,+1]
     if 'NF' in pipe:
-        #attr_adder = CombinedAttributesAdder()
+        
         attr_adder = CombinedAttributesAdder(iQual = True, iAMQ = True, iAAS = True, iAXS = True, iAXS0 = True, iAMQ0 = True, iACR = True, iGC = True)
         dataset_extra_attribs, dataset_extra_columns = attr_adder.transform(dataset)
         dataset = pd.DataFrame(dataset_extra_attribs, columns=dataset_extra_columns)
