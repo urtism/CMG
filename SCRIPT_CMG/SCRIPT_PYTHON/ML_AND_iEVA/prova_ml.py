@@ -14,17 +14,19 @@ from pandas.plotting import scatter_matrix
 
 from ggplot import *
 
-from sklearn.model_selection import StratifiedShuffleSplit, train_test_split, StratifiedKFold, cross_val_predict
-from sklearn.feature_selection import mutual_info_classif, VarianceThreshold
+from functools import partial
+
+from sklearn.model_selection import StratifiedShuffleSplit, train_test_split, StratifiedKFold, cross_val_predict, cross_val_score, cross_validate
+from sklearn.feature_selection import mutual_info_classif, VarianceThreshold, RFE
 from sklearn.preprocessing import LabelBinarizer, OneHotEncoder, Imputer, StandardScaler, MaxAbsScaler, MinMaxScaler
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from sklearn.base import clone, BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, auc, precision_recall_curve, roc_curve, make_scorer, recall_score, precision_score, balanced_accuracy_score, f1_score
 
 class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
-    def __init__(self, iQual = False, iAMQ = False, iAAS = False, iAXS = False, iAXS0 = False, iAMQ0 = False, iACR = False, iGC = True, ID = True):  #   no  *args   or  **kargs
+    def __init__(self, iQual = False, iAMQ = False, iAAS = False, iAXS = False, iAXS0 = False, iAMQ0 = False, iACR = False, iGC = False, ID = True):  #   no  *args   or  **kargs
         self.iQual = iQual
         self.iAMQ = iAMQ
         self.iAAS = iAAS
@@ -42,10 +44,14 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
         X = DS.values
         L = DS.columns.tolist()
         if  self.ID:
-
-            ID = (X[:, L.index('SAMPLE_ID') ]+'-'+X[:,  L.index('VAR_ID')] )
-            X = np.c_[X, ID]
-            L += ['ID']
+            try:
+                ID = (X[:, L.index('SAMPLE_ID') ]+'-'+X[:,  L.index('VAR_ID')] )
+                X = np.c_[X, ID]
+                L += ['ID']
+            except:
+                ID = DS.index
+                X = np.c_[X, ID]
+                L += ['ID']
 
         if  self.iGC:
 
@@ -114,21 +120,24 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
 def Split_datasets(ds,size,outpath,stratify=None):
 
     if stratify:
-        split = StratifiedShuffleSplit(n_splits=1, test_size=size, random_state=42)
+        split = StratifiedShuffleSplit(n_splits=1, test_size=size)
         for train_index, test_index  in  split.split(ds, ds[stratify]):
-            train_set =   ds.loc[train_index]
-            test_set  =   ds.loc[test_index]
+            train_set =   ds.iloc[train_index]
+            test_set  =   ds.iloc[test_index]
     else:
-        train_set, test_set = train_test_split(ds, test_size=size, random_state=42)
+        train_set, test_set = train_test_split(ds, test_size=size, random_state=41)
 
-    test_set.set_index(['SAMPLE_ID','VAR_ID'], inplace =True)
-    train_set.set_index(['SAMPLE_ID','VAR_ID'], inplace =True)
+    try:
+        test_set.set_index(['SAMPLE_ID','VAR_ID'], inplace =True)
+        train_set.set_index(['SAMPLE_ID','VAR_ID'], inplace =True)
+    except:
+        pass
 
     test_set.to_csv(path_or_buf=outpath+'.TEST.csv',sep='\t')
     train_set.to_csv(path_or_buf=outpath+'.TRAIN.csv',sep='\t')
     return train_set,test_set
 
-def print_stats(dataset):
+def print_stats(dataset,OUTPUT = False):
 
     if dataset is None:
         dataset_list= ['/home/jarvis/Scrivania/TEST/bam-ieva/ENRICHMENT/out/INDEL/PANDAS/INTARGET/BK-ENR.SNV.Freebayes+-10.tsv',
@@ -150,8 +159,14 @@ def print_stats(dataset):
 
 
     for DATASET_PATH in dataset_list:
-        out = open(DATASET_PATH+'.STATS','w')
-        dataset = pd.read_csv(DATASET_PATH,sep='\t')
+        
+        try:
+            dataset = pd.read_csv(DATASET_PATH,sep='\t')
+            out = open(DATASET_PATH+'.STATS','w')
+        except:
+            dataset = DATASET_PATH.copy()
+            if OUTPUT:
+                out = open(OUTPUT+'.STATS','w')
         #corr_matrix = dataset.corr()
         out.write('\t'.join(['PASS','FILTER'])+'\n')
         try:
@@ -232,12 +247,25 @@ if __name__ == '__main__':
     if opts.dataset is not None:
 
         try:
-            fulldataset = pd.read_csv(opts.dataset,sep='\t', index_col=['ID'])
+            fulldataset = pd.read_csv(opts.dataset,sep='\t')
+            fulldataset.set_index(['ID'], inplace =True)
             dataset = fulldataset.drop('CLASS',axis=1)
+            print_stats(opts.dataset)
+
         except:
             fulldataset = pd.read_csv(opts.dataset,sep='\t')
+            attr_adder = CombinedAttributesAdder()
+            dataset_extra_attribs, dataset_extra_columns = attr_adder.transform(fulldataset)
+            fulldataset = pd.DataFrame(dataset_extra_attribs, columns=dataset_extra_columns).reindex()
+            
+            if 'VAR_ID' in fulldataset.columns or 'SAMPLE_ID' in fulldataset.columns:
+                fulldataset = fulldataset.drop(['VAR_ID','SAMPLE_ID'], axis=1)
+
+            fulldataset.set_index(['ID'], inplace =True)
+            fulldataset.to_csv(path_or_buf=opts.outpath+'.ID.csv',sep='\t')
             dataset = fulldataset.drop(['CLASS'],axis=1)
-        print_stats(opts.dataset)
+            print 'ATTENZIONE:\nUtilizare come nuovo dataset il dataset: '+opts.outpath+'.ID.csv'
+            exit()
 
     OUTPUT = opts.outpath
 
@@ -252,10 +280,18 @@ if __name__ == '__main__':
 
 #PROVA: invece di eliminare le features ref, ho generato della features miste con ref e alt con la formula ref-alt/ref+alt [-1,+1]
     if 'NF' in pipe:
-
-        attr_adder = CombinedAttributesAdder(iQual = True, iAMQ = True, iAAS = True, iAXS = True, iAXS0 = True, iAMQ0 = True, iACR = True)
+        #attr_adder = CombinedAttributesAdder()
+        attr_adder = CombinedAttributesAdder(iQual = True, iAMQ = True, iAAS = True, iAXS = True, iAXS0 = True, iAMQ0 = True, iACR = True, iGC = True)
         dataset_extra_attribs, dataset_extra_columns = attr_adder.transform(dataset)
         dataset = pd.DataFrame(dataset_extra_attribs, columns=dataset_extra_columns)
+        try:
+            dataset.set_index(['ID'], inplace =True)
+        except:
+            pass
+        try:
+            dataset = dataset.drop(['IEVA-iGC'], axis=1)
+        except:
+            pass
         
         OUTPUT += '.NF'
 
@@ -263,8 +299,10 @@ if __name__ == '__main__':
             dataset = dataset.drop(['VAR_ID','SAMPLE_ID'], axis=1)
 
         dataset_to_print=pd.concat([dataset,fulldataset['CLASS']],axis=1)
-        dataset.set_index(['ID'], inplace =True)
-        dataset_to_print.set_index(['ID'], inplace =True)
+        try:
+            dataset_to_print.set_index(['ID'], inplace =True)
+        except:
+            pass
         dataset_to_print.to_csv(path_or_buf=OUTPUT+'.csv',sep='\t')
         print_stats(OUTPUT+'.csv')
 
@@ -305,6 +343,7 @@ if __name__ == '__main__':
 
 
     if 'NORM' in pipe:
+        refill=[]
 
         donotNORM = ['INFO-MLEAF',
             'IEVA-iGCfraz',
@@ -323,10 +362,22 @@ if __name__ == '__main__':
             'IEVA-iAXS0',
             'IEVA-iAMQ0',
             'IEVA-iACR',
-            'IEVA-iSR','IEVA-iRM',]
+            'IEVA-iRM',
+            'FORMAT-GT-0/0',
+            'FORMAT-GT-0/1',
+            'FORMAT-GT-1/1',
+            'IEVA-SR-0',
+            'IEVA-SR-SRS',
+            'IEVA-SR-HP']
         
         num_dataset = dataset.drop(dataset.select_dtypes(['object']),axis=1)
-        num_dataset = num_dataset.drop(donotNORM,axis=1)
+
+        for f in donotNORM:
+            try:
+                num_dataset = num_dataset.drop(f,axis=1)
+                refill += [f]
+            except:
+                continue
         #scaler = StandardScaler()
         #scaler = MinMaxScaler()
         scaler = MaxAbsScaler()
@@ -335,7 +386,7 @@ if __name__ == '__main__':
         X = pd.DataFrame(I, columns=num_dataset.columns)
         X.set_index(dataset.index, inplace =True)
         
-        dataset = pd.concat([X,dataset.select_dtypes(['object']),dataset[donotNORM]], axis=1)
+        dataset = pd.concat([X,dataset.select_dtypes(['object']),dataset[refill]], axis=1)
 
         OUTPUT += '.NORM'
         dataset_to_print=pd.concat([dataset,fulldataset['CLASS']],axis=1)
@@ -345,18 +396,22 @@ if __name__ == '__main__':
         except:
             pass
         dataset_to_print.to_csv(path_or_buf=OUTPUT+'.csv',sep='\t')
+        
         print_stats(OUTPUT+'.csv')
 
 
 # 3) Utilizzo un LabelBinarizer per splittare le features di tipo object in features binarie (solo FORMAT-GT)
     if 'LB' in pipe:
         lb = LabelBinarizer()
-        FORMATGT_lb = pd.DataFrame(lb.fit_transform(fulldataset['FORMAT-GT']), columns=['FORMAT-GT-O/O','FORMAT-GT-O/1','FORMAT-GT-1/1'], index=dataset.index)
-        IEVAISR_lb = pd.DataFrame(lb.fit_transform(fulldataset['IEVA-iSR']), columns=['IEVA-SR-0','IEVA-SR-SRS','IEVA-SR-HP'], index=dataset.index)
-        IEVAIRM_lb = pd.DataFrame(lb.fit_transform(fulldataset['IEVA-iRM']), columns=['IEVA-RM'], index=dataset.index)
-        
-        dataset = dataset.drop(['FORMAT-GT','IEVA-iSR'], axis=1)
-        dataset = pd.concat([dataset, FORMATGT_lb, IEVAISR_lb, IEVAIRM_lb ], axis=1)
+        #print dataset.index
+        FORMATGT_lb = pd.DataFrame(lb.fit_transform(dataset['FORMAT-GT']), columns=['FORMAT-GT-0/0','FORMAT-GT-0/1','FORMAT-GT-1/1'], index= dataset.index)       
+        dataset = dataset.drop(['FORMAT-GT'], axis=1)
+        dataset = pd.concat([dataset, FORMATGT_lb], axis=1)
+
+
+        IEVAISR_lb = pd.DataFrame(lb.fit_transform(dataset['IEVA-iSR']), columns=['IEVA-SR-0','IEVA-SR-SRS','IEVA-SR-HP'], index= dataset.index)
+        dataset = dataset.drop(['IEVA-iSR'], axis=1)
+        dataset = pd.concat([dataset,IEVAISR_lb ], axis=1)
 
         OUTPUT += '.LB'
         dataset_to_print=pd.concat([dataset,fulldataset['CLASS']],axis=1)
@@ -371,52 +426,35 @@ if __name__ == '__main__':
 
 # 
     if 'DROP' in pipe:
+
+        TODROP = ['IEVA-iUnMap'] # unmap sempre 0
+        TODROP += ['IEVA-iSRU','IEVA-iVC'] #sequenza ripetuta nei SR e tipo di variante (snv o indel)
+        TODROP += ['IEVA-iSBD RF', 'IEVA-iSBD RR', 'IEVA-iSBD AF', 'IEVA-iSBD AR'] # sono utilizzati nello SB
+        TODROP += ['IEVA-iAMMQ REF', 'IEVA-iQual REF', 'IEVA-iAAS REF', 'IEVA-iAXS REF'] # missing values > 15%
+        TODROP += ['IEVA-iAXS0 REF', 'IEVA-iACR REF'] # riferite al REF, li togliamo?
+        #TODROP += ['IEVA-iAMMQ ALT', 'IEVA-iQual ALT', 'IEVA-iAAS ALT', 'IEVA-iAXS ALT'] # perche abbiamo tolto i ref?
+        #TODROP += ['IEVA-iAXS0 ALT', 'IEVA-iACR ALT'] # perche abbiamo tolto i ref?
+        TODROP += ['IEVA-iCRT', 'IEVA-iQRT', 'IEVA-iMRT', 'IEVA-iPRT']  # missing values > 15%
+        TODROP += ['IEVA-iACR', 'IEVA-iAXS', 'IEVA-iAXS0', 'IEVA-iAMQ0','IEVA-iSA','IEVA-iNP'] # SONO SEMPRE 0
+
         if opts.droplist is not None:
             droplist += [(f.rstrip() for f in open(opts.droplist,'r').readlines())]
             dataset = dataset.drop(droplist, axis=1)
         else:
             dataset = drop_pseudonucleotidi(dataset)
-            dataset = dataset.drop([
-                #'FORMAT-GT',
-                #'INFO-TYPE',
-                'IEVA-iUnMap',
-                "IEVA-iAMQ0 REF",
-                "IEVA-iAMQ0 ALT",
-                'IEVA-iAXS0',
-                'IEVA-iAMQ0',
-                'IEVA-iACR',
-                'IEVA-iSRU',
-                'IEVA-iVC',
-                "IEVA-iAD REF",
-                "IEVA-iAD ALT",
-                "IEVA-iFREQ",
-                "IEVA-iSBD RF",
-                "IEVA-iSBD RR",
-                "IEVA-iSBD AF",
-                "IEVA-iSBD AR",
-                "IEVA-iQual REF",
-                "IEVA-iQual ALT",
-                "IEVA-iAMMQ REF",
-                "IEVA-iAMMQ ALT",
-                "IEVA-iAAS REF",
-                "IEVA-iAAS ALT",
-                "IEVA-iAXS REF",
-                "IEVA-iAXS ALT",
-                "IEVA-iAXS0 REF",
-                "IEVA-iAXS0 ALT",
-                "IEVA-iACR REF",
-                "IEVA-iACR ALT"],axis=1)
+            dataset = dataset.drop(TODROP,axis=1)
+            try:
+                dataset = dataset.drop(['INFO-TYPE'],axis=1) #FREEBAYES ONLY
+            except:
+                pass
         #         'IEVA-iQRT',
         #         'IEVA-iMRT',
         #         'IEVA-iPRT',
         #       'IEVA-iCRT'],axis=1)
 
-
-        #dataset = drop_pseudonucleotidi(dataset)
-
         dataset_to_print=pd.concat([dataset,fulldataset['CLASS']],axis=1)
+        OUTPUT += '.DROP'
         #OUTPUT += '.DROP'
-        OUTPUT += '.DROP.NO_PSNC'
         try:
             dataset.set_index(['ID'], inplace =True)
             dataset_to_print.set_index(['ID'], inplace =True)
@@ -563,40 +601,174 @@ if __name__ == '__main__':
         #plt.show()
 
 
-    #9)  k-fold cross validation utilizzando la random forest
+    #9) Recursive Feature Elimination
+
+    if 'RFE' in pipe:
+
+        out=open(OUTPUT + '.RFE-RESULTS.csv','w')
+        out.write('FEATURE 1 ELIMINATA' + '\t'+ 'FEATURE 2 ELIMINATA' + '\t'+'TN'+'\t'+'FP'+'\t'+'FN'+'\t'+'TP'+'\n')
+        Y_dataset = fulldataset['CLASS']
+        for feat in dataset.columns:
+            ds = dataset.drop(feat,axis=1).reset_index()
+            forest_clf = RandomForestClassifier(class_weight = 'balanced', random_state=42)
+            skfolds = StratifiedKFold(n_splits=3, random_state=42)
+            y_train_pred = cross_val_predict(forest_clf, ds.drop(['ID'], axis=1), Y_dataset, cv=3)
+            tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
+            out.write(feat + '\t'+ '\t'+ str(tn) +'\t'+str(fp) +'\t'+ str(fn) +'\t'+ str(tp)+'\n')
+
+            ds = ds.drop('ID',axis=1)
+            for feat2 in ds.columns:
+
+                X_dataset = ds.drop(feat2,axis=1).reset_index()
+                forest_clf = RandomForestClassifier(random_state=42,class_weight = 'balanced')
+                skfolds = StratifiedKFold(n_splits=3, random_state=42)
+                y_train_pred = cross_val_predict(forest_clf, X_dataset, Y_dataset, cv=3)
+                tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
+                out.write(feat + '\t'+ feat2 +'\t'+ str(tn) +'\t'+str(fp) +'\t'+ str(fn) +'\t'+ str(tp)+'\n')
+
+        out.close()
+
+        out=open(OUTPUT + '.RFE-RANKING-RESULTS.csv','w')
+        forest_clf = RandomForestClassifier(class_weight = 'balanced', random_state=42)
+        selector = RFE(forest_clf, step=1)
+        selector = selector.fit(dataset, Y_dataset)
+        for f in dataset.columns.tolist():
+            out.write(f +'\t'+ str(selector.ranking_[ dataset.columns.tolist().index(f)])+'\n')
+
+    
+    if 'RFI' in pipe:
+
+        out=open(OUTPUT + '.RFI-RESULTS.csv','w')
+        out.write('FEATURE INSERITA' + '\t'+'TN'+'\t'+'FP'+'\t'+'FN'+'\t'+'TP'+'\n')
+        ds1 = dataset.copy()
+        Y_dataset = fulldataset['CLASS']
+        flist = []
+
+        for f in dataset.columns:
+            if f.startswith('IEVA'):
+                flist += [f] 
+                ds1 = ds1.drop([f],axis=1)
+
+        forest_clf = RandomForestClassifier(class_weight = 'balanced',n_estimators = 40, random_state=42)
+        skfolds = StratifiedKFold(n_splits=3, random_state=42)
+        y_train_pred = cross_val_predict(forest_clf, ds1, Y_dataset, cv=3)
+        tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
+        out.write('\t'+ str(tn) +'\t'+str(fp) +'\t'+ str(fn) +'\t'+ str(tp)+'\n')
+
+        for feat in flist:
+            ds = pd.concat([ds1,dataset[feat]],axis=1).reset_index()
+            forest_clf = RandomForestClassifier(class_weight = 'balanced',n_estimators = 40, random_state=42)
+            skfolds = StratifiedKFold(n_splits=3, random_state=42)
+            y_train_pred = cross_val_predict(forest_clf, ds.drop(['ID'], axis=1), Y_dataset, cv=3)
+            tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
+            out.write(feat + '\t'+ str(tn) +'\t'+str(fp) +'\t'+ str(fn) +'\t'+ str(tp)+'\n')
+
+        ds = pd.concat([ds1,dataset[flist]],axis=1).reset_index()
+
+        forest_clf = RandomForestClassifier(class_weight = 'balanced',n_estimators = 40, random_state=42)
+        skfolds = StratifiedKFold(n_splits=3, random_state=42)
+        y_train_pred = cross_val_predict(forest_clf, ds.drop(['ID'], axis=1), Y_dataset, cv=3)
+        tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
+        out.write('ALL IEVA\t'+ str(tn) +'\t'+str(fp) +'\t'+ str(fn) +'\t'+ str(tp)+'\n')
+            
+
+    #9)  k-fold cross validation utilizzando la random forest  
+
+    if 'TUNING' in pipe:
+
+        X_dataset = dataset.copy()
+        Y_dataset = fulldataset['CLASS']
+        Y_dataset2 = pd.factorize(fulldataset['CLASS'])[0]
+        
+        
+        out=open(OUTPUT + '.TUNING-RESULTS.csv','w')
+        out.write('NUM TREE\n')
+        cv = 4
+
+        for n_tree in range(110)[10::10]:
+            forest_clf = RandomForestClassifier(class_weight = 'balanced',n_estimators = n_tree,  random_state=42)
+            skfolds = StratifiedKFold(n_splits=cv, random_state=42)
+            
+            y_train_pred = cross_val_predict(forest_clf, X_dataset, Y_dataset, cv=cv)
+            tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
+            
+            #balanced_accuracy_scorer = make_scorer(partial(balanced_accuracy_score))
+            precision_scorer = make_scorer(partial(precision_score, pos_label=0))
+            recall_scorer = make_scorer(partial(recall_score, pos_label=0))
+            f1_scorer = make_scorer(partial(f1_score, pos_label=0))
+            
+            scores = cross_validate(forest_clf, X_dataset, Y_dataset2, cv=cv, scoring=['roc_auc','precision','recall','balanced_accuracy','f1_weighted'])
+            recall = cross_validate(forest_clf, X_dataset, Y_dataset2, cv=cv, scoring=recall_scorer)
+            precision = cross_validate(forest_clf, X_dataset, Y_dataset2, cv=cv, scoring=precision_scorer)
+            f1_scores = cross_validate(forest_clf, X_dataset, Y_dataset2, cv=3, scoring=f1_scorer)
+
+            #print 'racall',recall['test_score'].mean(), scores['test_recall'].mean(),recall['test_score'].max(), scores['test_recall'].max()
+            #print 'precision',precision['test_score'].mean(), scores['test_precision'].mean(),precision['test_score'].max(), scores['test_precision'].max()
+            #print 'acc',scores['test_balanced_accuracy'].mean(),scores['test_balanced_accuracy'].max()
+            #print 'f1_scores',f1_scores['test_score'].mean(), scores['test_f1_weighted'].mean(),f1_scores['test_score'].max(),scores['test_f1_weighted'].max()
+            #print scores['test_recall'],recall
+            out.write(str(n_tree)+'\t'+ str(tn) +'\t'+str(fp) +'\n\t'+ str(fn) +'\t'+ str(tp)+'\n'+
+                'AUC' + '\t' + str(scores['test_roc_auc'].mean()) + '\n'+
+                'PRECISION' + '\t' + str(scores['test_precision'].mean()) +'\n'+
+                'RECALL' + '\t' + str(scores['test_recall'].mean()) + '\n'+
+                'B ACCURACY' + '\t' + str(scores['test_balanced_accuracy'].mean()) + '\n'+ 
+                'F1 SCORE' + '\t' + str(scores['test_f1_weighted'].mean()) + '\n\n')
 
     if 'KFOLD' in pipe:
 
         X_dataset = dataset.reset_index()
         Y_dataset = fulldataset['CLASS']
-        forest_clf = RandomForestClassifier(random_state=42)
-        skfolds = StratifiedKFold(n_splits=3, random_state=42)
+
+        cv = 4
+        forest_clf = RandomForestClassifier(class_weight = 'balanced',n_estimators = 20)
+        skfolds = StratifiedKFold(n_splits=cv)
        
         out=open(OUTPUT + '.KFOLD-RESULTS.csv','w')
         
-        j=0
-        for train_index, test_index  in  skfolds.split(X_dataset,  Y_dataset):
-            j += 1
-            out.write('NUM FOLD:'+str(j) +'\n')
+        # j=0
+        # for train_index, test_index  in  skfolds.split(X_dataset,  Y_dataset):
+        #     j += 1
+        #     out.write('NUM FOLD:'+str(j) +'\n')
 
-            clone_clf = clone(forest_clf)
-            X_train_folds = X_dataset.drop(['ID'], axis=1).loc[train_index]
-            X_train_folds_index = X_dataset.loc[train_index]['ID']
+        #     clone_clf = clone(forest_clf)
+        #     X_train_folds = X_dataset.drop(['ID'], axis=1).loc[train_index]
+        #     X_train_folds_index = X_dataset.loc[train_index]['ID']
 
-            y_train_folds = (Y_dataset[train_index])
-            X_test_fold = X_dataset.drop(['ID'], axis=1).loc[test_index]
-            X_test_fold_index = X_dataset.loc[test_index]['ID']
-            y_test_fold = (Y_dataset[test_index])
+        #     y_train_folds = (Y_dataset[train_index])
+        #     X_test_fold = X_dataset.drop(['ID'], axis=1).loc[test_index]
+        #     X_test_fold_index = X_dataset.loc[test_index]['ID']
+        #     y_test_fold = (Y_dataset[test_index])
 
-            clone_clf.fit(X_train_folds, y_train_folds)
+        #     clone_clf.fit(X_train_folds, y_train_folds)
             
-            y_pred = clone_clf.predict(X_test_fold)
-            n_correct = sum(y_pred == y_test_fold)
-            tn, fp, fn, tp = confusion_matrix(y_test_fold, y_pred).ravel()
+        #     y_pred = clone_clf.predict(X_test_fold)
+        #     n_correct = sum(y_pred == y_test_fold)
+        #     tn, fp, fn, tp = confusion_matrix(y_test_fold, y_pred).ravel()
             
+        #     out.write('\t'+ str(tn) +'\t'+str(fp) +'\n\t'+ str(fn) +'\t'+ str(tp)+'\n')
+
+        #     result = pd.concat([pd.DataFrame(y_test_fold).reset_index(), pd.DataFrame(y_pred,columns=['PRED'])], axis=1)
+        #     FN = result[result['CLASS'] == 'PASS']
+        #     FN = FN[FN['PRED'] == 'FILTER']
+            
+        #     FP = result[result['CLASS'] == 'FILTER']
+        #     FP = FP[FP['PRED'] == 'PASS']
+        #     #print FP.apply('\t'.join)
+        #     FN = re.sub('\n\t','\n',re.sub(' ','\t',re.sub("[\[\]\']","",np.array2string(FN.values))))
+        #     FP = re.sub('\n\t','\n',re.sub(' ','\t',re.sub("[\[\]\']","",np.array2string(FP.values))))
+        #     #out.write(np.array2string(FN.values) +'\n')
+        #     out.write('ID' +'\t' +'CLASS' + '\t' + 'PRED'+'\n')
+        #     out.write(FN+'\n'+ FP+'\n')
+
+        
+        for j in range(10):
+            forest_clf = RandomForestClassifier(class_weight = 'balanced',n_estimators = 20)
+            out.write('REP:'+str(j)+'\n')
+            y_train_pred = cross_val_predict(forest_clf, X_dataset.drop(['ID'], axis=1), Y_dataset, cv=cv)
+            tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
             out.write('\t'+ str(tn) +'\t'+str(fp) +'\n\t'+ str(fn) +'\t'+ str(tp)+'\n')
 
-            result = pd.concat([pd.DataFrame(y_test_fold).reset_index(), pd.DataFrame(y_pred,columns=['PRED'])], axis=1)
+            result = pd.concat([pd.DataFrame(Y_dataset).reset_index(), pd.DataFrame(y_train_pred,columns=['PRED'])], axis=1)
             FN = result[result['CLASS'] == 'PASS']
             FN = FN[FN['PRED'] == 'FILTER']
             
@@ -608,25 +780,6 @@ if __name__ == '__main__':
             #out.write(np.array2string(FN.values) +'\n')
             out.write('ID' +'\t' +'CLASS' + '\t' + 'PRED'+'\n')
             out.write(FN+'\n'+ FP+'\n')
-
-
-        out.write('TOT FOLD:'+'\n')
-        y_train_pred = cross_val_predict(forest_clf, X_dataset.drop(['ID'], axis=1), Y_dataset, cv=3)
-        tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
-        out.write('\t'+ str(tn) +'\t'+str(fp) +'\n\t'+ str(fn) +'\t'+ str(tp)+'\n')
-
-        result = pd.concat([pd.DataFrame(Y_dataset).reset_index(), pd.DataFrame(y_train_pred,columns=['PRED'])], axis=1)
-        FN = result[result['CLASS'] == 'PASS']
-        FN = FN[FN['PRED'] == 'FILTER']
-        
-        FP = result[result['CLASS'] == 'FILTER']
-        FP = FP[FP['PRED'] == 'PASS']
-        #print FP.apply('\t'.join)
-        FN = re.sub('\n\t','\n',re.sub(' ','\t',re.sub("[\[\]\']","",np.array2string(FN.values))))
-        FP = re.sub('\n\t','\n',re.sub(' ','\t',re.sub("[\[\]\']","",np.array2string(FP.values))))
-        #out.write(np.array2string(FN.values) +'\n')
-        out.write('ID' +'\t' +'CLASS' + '\t' + 'PRED'+'\n')
-        out.write(FN+'\n'+ FP+'\n')
 
     #     #pd.concat([pd.DataFrame(y_test_fold),pd.DataFrame( y_pred)], axis=1).to_csv(path_or_buf=OUTPUT+'y_pred.csv',sep='\t')
     #     #pd.DataFrame(y_test_fold)
@@ -649,7 +802,7 @@ if __name__ == '__main__':
         TRAIN=pd.read_csv(opts.train,sep='\t', index_col=['ID'])
         X_train = TRAIN.drop(['CLASS'], axis=1)
         y_train = TRAIN['CLASS']
-        forest_clf = RandomForestClassifier(random_state=42)
+        forest_clf = RandomForestClassifier(class_weight = 'balanced',n_estimators = 50)
         forest_clf.fit(X_train, y_train)
         dump(forest_clf, OUTPUT+'.RFclassifier.joblib')
 
@@ -660,11 +813,10 @@ if __name__ == '__main__':
             y_test = TEST['CLASS']
             y_pred = forest_clf.predict(X_test)
 
-            conf_matrix = confusion_matrix(y_test, y_pred)
-
+            tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
             out=open(OUTPUT + '.TEST-EVALUATION-RESULTS.csv','w')
             out.write('CONFUSION MATRIX TEST SET:'+'\n')
-            out.write(str(conf_matrix[0][0]) +'\t'+str(conf_matrix[0][1]) +'\n'+ str(conf_matrix[1][0]) +'\t'+ str(conf_matrix[1][1])+'\n')
+            out.write('\t' +str(tn) +'\t'+str(fp) +'\n\t'+ str(fn) +'\t'+ str(tp)+'\n')
 
     if opts.model is not None:
 
@@ -675,7 +827,7 @@ if __name__ == '__main__':
         y_test = TEST['CLASS']
         y_pred = clf.predict(X_test)
 
-        conf_matrix = confusion_matrix(y_test, y_pred)
+        tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
         out=open(OUTPUT + '.TEST-EVALUATION-RESULTS.csv','w')
         out.write('CONFUSION MATRIX TEST SET:'+'\n')
-        out.write(str(conf_matrix[0][0]) +'\t'+str(conf_matrix[0][1]) +'\n'+ str(conf_matrix[1][0]) +'\t'+ str(conf_matrix[1][1])+'\n')
+        out.write(str(tn) +'\t'+str(fp) +'\n\t'+ str(fn) +'\t'+ str(tp)+'\n')
