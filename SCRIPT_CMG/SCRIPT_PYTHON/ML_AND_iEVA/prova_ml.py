@@ -16,8 +16,8 @@ from ggplot import *
 
 from functools import partial
 
-from sklearn.model_selection import StratifiedShuffleSplit, train_test_split, StratifiedKFold, cross_val_predict, cross_val_score, cross_validate
-from sklearn.feature_selection import mutual_info_classif, VarianceThreshold, RFE
+from sklearn.model_selection import StratifiedShuffleSplit, train_test_split, StratifiedKFold, cross_val_predict, cross_val_score, cross_validate, RandomizedSearchCV, GridSearchCV
+from sklearn.feature_selection import mutual_info_classif, VarianceThreshold, RFE, RFECV
 from sklearn.preprocessing import LabelBinarizer, OneHotEncoder, Imputer, StandardScaler, MaxAbsScaler, MinMaxScaler
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
@@ -237,7 +237,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', default=None, help="Classificatore allenato da utilizzare per la classificazione di un nuovo dataset")
     parser.add_argument('-tr', '--train', default=None, help="train set")
     parser.add_argument('-ts', '--test', default=None, help="test set")
-    parser.add_argument('-p', '--pipe', default=None, help=" list of action to do in data clining and features extraction")
+    parser.add_argument('-p', '--pipe', default=None, help=" list of action to do in data cleaning and features extraction")
     parser.add_argument('-dl', '--droplist',default=None, help="List of features to be dropped from the dataset")
     parser.add_argument('-O', '--outpath',default=None, help="Path di output")
 
@@ -251,6 +251,7 @@ if __name__ == '__main__':
             fulldataset.set_index(['ID'], inplace =True)
             dataset = fulldataset.drop('CLASS',axis=1)
             print_stats(opts.dataset)
+
 
         except:
             fulldataset = pd.read_csv(opts.dataset,sep='\t')
@@ -280,7 +281,7 @@ if __name__ == '__main__':
 
 #PROVA: invece di eliminare le features ref, ho generato della features miste con ref e alt con la formula ref-alt/ref+alt [-1,+1]
     if 'NF' in pipe:
-        
+
         attr_adder = CombinedAttributesAdder(iQual = True, iAMQ = True, iAAS = True, iAXS = True, iAXS0 = True, iAMQ0 = True, iACR = True, iGC = True)
         dataset_extra_attribs, dataset_extra_columns = attr_adder.transform(dataset)
         dataset = pd.DataFrame(dataset_extra_attribs, columns=dataset_extra_columns)
@@ -427,34 +428,55 @@ if __name__ == '__main__':
 # 
     if 'DROP' in pipe:
 
-        TODROP = ['IEVA-iUnMap'] # unmap sempre 0
-        TODROP += ['IEVA-iSRU','IEVA-iVC'] #sequenza ripetuta nei SR e tipo di variante (snv o indel)
+        TODROP = []
+
+        #FEATURES COMPOSTE DA CONTEGGIO DI READS
+        TODROP += ['IEVA-iAD REF', 'IEVA-iAD ALT']
         TODROP += ['IEVA-iSBD RF', 'IEVA-iSBD RR', 'IEVA-iSBD AF', 'IEVA-iSBD AR'] # sono utilizzati nello SB
-        TODROP += ['IEVA-iAMMQ REF', 'IEVA-iQual REF', 'IEVA-iAAS REF', 'IEVA-iAXS REF'] # missing values > 15%
-        TODROP += ['IEVA-iAXS0 REF', 'IEVA-iACR REF'] # riferite al REF, li togliamo?
+        TODROP += ['IEVA-iAXS0 ALT', 'IEVA-iACR ALT', 'IEVA-iAMQ0 ALT']
+        TODROP += ['IEVA-iAXS0 REF', 'IEVA-iACR REF', 'IEVA-iAMQ0 REF']
+
+        #FEATURES DI TIPO CATEGORICO INUTILE AI FINI DEL ML
+        TODROP += ['IEVA-iSRU','IEVA-iVC','INFO-TYPE'] #sequenza ripetuta nei SR e tipo di variante (snv o indel)
+
+        #FEATURES SEMPRE 0
+        TODROP += ['IEVA-iUnMap', 'IEVA-iSA', 'IEVA-iNP']
+        TODROP += ['IEVA-iACR', 'IEVA-iAXS', 'IEVA-iAXS0', 'IEVA-iAMQ0']
+
+        #FEATURES STRETTAMENTE LEGATE AD ALTRE
+        TODROP += ['FORMAT-GT-0/0', 'FORMAT-GT-0/1', 'FORMAT-GT-1/1'] #strettamente legata a FORMAT-PL
+        TODROP += ['IEVA-iDP', 'IEVA-iFREQ']
+        #TODROP += ['FORMAT-DP', 'FORMAT-AF']
+
+        #FEATURES CON INFO GAIN CIRCA 0
+        TODROP += ['IEVA-SR-HP', 'IEVA-SR-0']
+
+
+        TODROP += ['INFO-MLEAC', 'INFO-ReadPosRankSum', 'FORMAT-GQ', 'FORMAT-PL 0/1', 'IEVA-iSRL', 'IEVA-iMQ', 'IEVA-iMQ0', 'IEVA-iNPA', 'IEVA-iNPP', 'IEVA-iXS', 'IEVA-iBQVA', 'IEVA-iAMMQ REF', 'IEVA-iAMMQ ALT', 'IEVA-iAAS REF', 'IEVA-iAXS REF', 'IEVA-iANRP', 'INFO-MLEAF', 'IEVA-iMIU', 'IEVA-iDUP', 'IEVA-iCRT', 'IEVA-iMRT', 'IEVA-iAMQ', 'IEVA-iRM', 'IEVA-SR-SRS']
+
+        #LE TENGO E VEDO DOPO SE FILTRARLE
+        #TODROP += ['IEVA-iAMMQ REF', 'IEVA-iQual REF', 'IEVA-iAAS REF', 'IEVA-iAXS REF'] # missing values > 15%
         #TODROP += ['IEVA-iAMMQ ALT', 'IEVA-iQual ALT', 'IEVA-iAAS ALT', 'IEVA-iAXS ALT'] # perche abbiamo tolto i ref?
-        #TODROP += ['IEVA-iAXS0 ALT', 'IEVA-iACR ALT'] # perche abbiamo tolto i ref?
-        TODROP += ['IEVA-iCRT', 'IEVA-iQRT', 'IEVA-iMRT', 'IEVA-iPRT']  # missing values > 15%
-        TODROP += ['IEVA-iACR', 'IEVA-iAXS', 'IEVA-iAXS0', 'IEVA-iAMQ0','IEVA-iSA','IEVA-iNP'] # SONO SEMPRE 0
+        #TODROP += ['IEVA-iCRT', 'IEVA-iQRT', 'IEVA-iMRT', 'IEVA-iPRT']  # missing values > 15%
+
 
         if opts.droplist is not None:
             droplist += [(f.rstrip() for f in open(opts.droplist,'r').readlines())]
             dataset = dataset.drop(droplist, axis=1)
         else:
-            dataset = drop_pseudonucleotidi(dataset)
-            dataset = dataset.drop(TODROP,axis=1)
             try:
-                dataset = dataset.drop(['INFO-TYPE'],axis=1) #FREEBAYES ONLY
+                dataset = drop_pseudonucleotidi(dataset)
             except:
                 pass
-        #         'IEVA-iQRT',
-        #         'IEVA-iMRT',
-        #         'IEVA-iPRT',
-        #       'IEVA-iCRT'],axis=1)
+            for f in TODROP:
+                try:
+                    dataset = dataset.drop(f,axis=1)
+                except:
+                    continue
 
         dataset_to_print=pd.concat([dataset,fulldataset['CLASS']],axis=1)
+        #OUTPUT += '.DROP.NOPSNC'
         OUTPUT += '.DROP'
-        #OUTPUT += '.DROP'
         try:
             dataset.set_index(['ID'], inplace =True)
             dataset_to_print.set_index(['ID'], inplace =True)
@@ -544,28 +566,14 @@ if __name__ == '__main__':
 
     if 'IGFilter' in pipe:
         #7/A) FACOLTATIVO: Filtro le features in base a una soglia di varianza: 0.9999
-        selector = VarianceThreshold(0.9999)
-        dataset = fulldataset.drop('CLASS', axis=1)
-        fulldataset.set_index('INDEX', inplace = True)
+        selector = VarianceThreshold(0.0)
         selector.fit_transform(dataset,fulldataset['CLASS'])
-        features = selector.get_support(indices = True)
-        df2 = dataset.loc[:,selector.get_support(indices=False)]
-        dataset = X_pca = pd.concat([df2,fulldataset['CLASS']], axis=1)
+        ds = dataset.loc[:,selector.get_support(indices=False)]
+        dataset  = pd.concat([ds,fulldataset['CLASS']], axis=1)
 
-        OUTPUT += '.VAR0.999'
+        OUTPUT += '.IGF'
         dataset.to_csv(path_or_buf=OUTPUT+'.csv',sep='\t')
-
-
-    #7/B) FACOLTATIVO: Filtro le features con varianza e infogain 0
-
-        dataset = fulldataset.drop(["IEVA-iNP",
-        "IEVA-iSA",
-        "IEVA-iUnMap",
-        "IEVA-iAMQ0 ALT"], axis=1)
-
-        fulldataset.set_index('INDEX', inplace = True)
-        OUTPUT += '.NO_VAR0'
-        dataset.to_csv(path_or_buf=OUTPUT+'.csv',sep='\t')
+        print_stats(OUTPUT+'.csv')
     
     
     # 8)Calcolo della matrice di correlazione
@@ -589,6 +597,7 @@ if __name__ == '__main__':
         ax.tick_params(labelsize=7)
         plt.xticks(rotation=90)
         plt.show()
+        plt.savefig(OUTPUT + 'CORR-MATRIX.png')
 
         print_full(corr_matrix.to_csv)
 
@@ -606,27 +615,65 @@ if __name__ == '__main__':
     if 'RFE' in pipe:
 
         out=open(OUTPUT + '.RFE-RESULTS.csv','w')
-        out.write('FEATURE 1 ELIMINATA' + '\t'+ 'FEATURE 2 ELIMINATA' + '\t'+'TN'+'\t'+'FP'+'\t'+'FN'+'\t'+'TP'+'\n')
-        Y_dataset = fulldataset['CLASS']
+        out.write('\t'.join(['FEATURE ELIMINATA','TN','FP','FN','TP','AUC','BALANCED ACC','RECALL','PRECISION','F1 SCORE'])+'\n')
+        
+        class_map = {'PASS': 1, 'FILTER': 0}
+        Y_dataset = fulldataset['CLASS'].map(class_map)
+
+        ROC_AUC=[]
+        PRECISION = []
+        RECALL = []
+        BACC = []
+        F1 = []
+        
+        cv = 4
+
         for feat in dataset.columns:
             ds = dataset.drop(feat,axis=1).reset_index()
+            X_dataset = ds.drop(['ID'], axis=1)
             forest_clf = RandomForestClassifier(class_weight = 'balanced', random_state=42)
-            skfolds = StratifiedKFold(n_splits=3, random_state=42)
-            y_train_pred = cross_val_predict(forest_clf, ds.drop(['ID'], axis=1), Y_dataset, cv=3)
+            #skfolds = StratifiedKFold(n_splits=3, random_state=42)
+            y_train_pred = cross_val_predict(forest_clf, X_dataset, Y_dataset, cv=cv)
             tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
-            out.write(feat + '\t'+ '\t'+ str(tn) +'\t'+str(fp) +'\t'+ str(fn) +'\t'+ str(tp)+'\n')
 
-            ds = ds.drop('ID',axis=1)
-            for feat2 in ds.columns:
+            scores = cross_validate(forest_clf, X_dataset, Y_dataset, cv=cv, scoring=['roc_auc','precision','recall','balanced_accuracy','f1_weighted'])
+            
+            out.write(feat +'\t'+ str(tn) +'\t'+str(fp) +'\t'+ str(fn) +'\t'+ str(tp)+'\t')
+            out.write(
+                str(scores['test_roc_auc'].mean()) + '\t'+
+                str(scores['test_precision'].mean()) +'\t'+
+                str(scores['test_recall'].mean()) + '\t'+
+                str(scores['test_balanced_accuracy'].mean()) + '\t'+ 
+                str(scores['test_f1_weighted'].mean()) + '\n')
 
-                X_dataset = ds.drop(feat2,axis=1).reset_index()
-                forest_clf = RandomForestClassifier(random_state=42,class_weight = 'balanced')
-                skfolds = StratifiedKFold(n_splits=3, random_state=42)
-                y_train_pred = cross_val_predict(forest_clf, X_dataset, Y_dataset, cv=3)
-                tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
-                out.write(feat + '\t'+ feat2 +'\t'+ str(tn) +'\t'+str(fp) +'\t'+ str(fn) +'\t'+ str(tp)+'\n')
+            ROC_AUC += [scores['test_roc_auc'].mean()]
+            PRECISION += [scores['test_precision'].mean()]
+            RECALL += [scores['test_recall'].mean()]
+            BACC += [scores['test_balanced_accuracy'].mean()]
+            F1 += [scores['test_f1_weighted'].mean()]
 
+        fig, ax = plt.subplots()
+        ax.plot(BACC, label='Balanced Accuracy')
+        ax.plot(ROC_AUC, label='ROC auc')
+        ax.plot(RECALL, label='Recall')
+        ax.plot(PRECISION, label='Precision')
+        ax.set(xlabel='Eliminated Feature',
+            title='Recursive Feature Elimination')
+        xticks = np.arange(0,len(dataset.columns),1)
+        yticks = np.arange(0.95,1.000,0.001)
+        
+        ax.set_xticks(xticks)
+        ax.set_xticklabels(dataset.columns.tolist())
+        plt.xticks(rotation=90)
+
+        ax.set_yticks(yticks)
+
+        ax.grid()
+        plt.legend()
+
+        plt.show()
         out.close()
+        plt.savefig(OUTPUT + 'RFE.png')
 
         out=open(OUTPUT + '.RFE-RANKING-RESULTS.csv','w')
         forest_clf = RandomForestClassifier(class_weight = 'balanced', random_state=42)
@@ -635,167 +682,218 @@ if __name__ == '__main__':
         for f in dataset.columns.tolist():
             out.write(f +'\t'+ str(selector.ranking_[ dataset.columns.tolist().index(f)])+'\n')
 
+
+    if 'RFECV' in pipe:
+        
+        X_dataset = dataset.copy()
+        class_map = {'PASS': 1, 'FILTER': 0}
+        Y_dataset = fulldataset['CLASS'].map(class_map)
+        # Create the RFE object and compute a cross-validated score.
+        forest_clf = RandomForestClassifier(class_weight = 'balanced')
+        # The "accuracy" scoring is proportional to the number of correct
+        # classifications
+        rfecv = RFECV(estimator=forest_clf, step=1, cv=StratifiedKFold(4),
+                      scoring='balanced_accuracy')
+        rfecv.fit(X_dataset, Y_dataset)
+
+        
+
+        # Plot number of features VS. cross-validation scores
+        fig, ax = plt.subplots()
+        ax.set(xlabel="Number of features selected",
+            ylabel= "Cross validation score (Balanced Accuracy)",
+            title='Cross Validation RFE')
+
+        ax.set_xticks(np.arange(1, len(rfecv.grid_scores_) + 1,1))
+        ax.set_yticks(np.arange(min(rfecv.grid_scores_)-0.002,1.000,0.001))
+        ax.plot(rfecv.grid_scores_)
+        plt.grid()
+        plt.show()
+
+        plt.savefig(OUTPUT + 'RFECV.png')
+
+        out=open(OUTPUT + '.RFECV-RANKING-RESULTS.csv','w')
+        out.write("Optimal number of features :\t %d \n" % rfecv.n_features_)
+        for f in dataset.columns.tolist():
+            out.write(f +'\t'+ str(rfecv.ranking_[ dataset.columns.tolist().index(f)])+'\n')
+
     
-    if 'RFI' in pipe:
-
-        out=open(OUTPUT + '.RFI-RESULTS.csv','w')
-        out.write('FEATURE INSERITA' + '\t'+'TN'+'\t'+'FP'+'\t'+'FN'+'\t'+'TP'+'\n')
-        ds1 = dataset.copy()
-        Y_dataset = fulldataset['CLASS']
-        flist = []
-
-        for f in dataset.columns:
-            if f.startswith('IEVA'):
-                flist += [f] 
-                ds1 = ds1.drop([f],axis=1)
-
-        forest_clf = RandomForestClassifier(class_weight = 'balanced',n_estimators = 40, random_state=42)
-        skfolds = StratifiedKFold(n_splits=3, random_state=42)
-        y_train_pred = cross_val_predict(forest_clf, ds1, Y_dataset, cv=3)
-        tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
-        out.write('\t'+ str(tn) +'\t'+str(fp) +'\t'+ str(fn) +'\t'+ str(tp)+'\n')
-
-        for feat in flist:
-            ds = pd.concat([ds1,dataset[feat]],axis=1).reset_index()
-            forest_clf = RandomForestClassifier(class_weight = 'balanced',n_estimators = 40, random_state=42)
-            skfolds = StratifiedKFold(n_splits=3, random_state=42)
-            y_train_pred = cross_val_predict(forest_clf, ds.drop(['ID'], axis=1), Y_dataset, cv=3)
-            tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
-            out.write(feat + '\t'+ str(tn) +'\t'+str(fp) +'\t'+ str(fn) +'\t'+ str(tp)+'\n')
-
-        ds = pd.concat([ds1,dataset[flist]],axis=1).reset_index()
-
-        forest_clf = RandomForestClassifier(class_weight = 'balanced',n_estimators = 40, random_state=42)
-        skfolds = StratifiedKFold(n_splits=3, random_state=42)
-        y_train_pred = cross_val_predict(forest_clf, ds.drop(['ID'], axis=1), Y_dataset, cv=3)
-        tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
-        out.write('ALL IEVA\t'+ str(tn) +'\t'+str(fp) +'\t'+ str(fn) +'\t'+ str(tp)+'\n')
-            
-
     #9)  k-fold cross validation utilizzando la random forest  
 
     if 'TUNING' in pipe:
 
         X_dataset = dataset.copy()
-        Y_dataset = fulldataset['CLASS']
-        Y_dataset2 = pd.factorize(fulldataset['CLASS'])[0]
-        
+        class_map = {'PASS': 1, 'FILTER': 0}
+        Y_dataset = fulldataset['CLASS'].map(class_map)
+
+        ROC_AUC=[]
+        PRECISION = []
+        RECALL = []
+        BACC = []
+        F1 = []    
         
         out=open(OUTPUT + '.TUNING-RESULTS.csv','w')
-        out.write('NUM TREE\n')
+        #out.write('NUM TREE\n')
+        out.write('\t'.join(['N ESTIMATORS','TN','FP','FN','TP','AUC','BALANCED ACC','RECALL','PRECISION','F1 SCORE'])+'\n')
         cv = 4
 
-        for n_tree in range(110)[10::10]:
+        for n_tree in range(421)[10::30]:
             forest_clf = RandomForestClassifier(class_weight = 'balanced',n_estimators = n_tree,  random_state=42)
-            skfolds = StratifiedKFold(n_splits=cv, random_state=42)
             
             y_train_pred = cross_val_predict(forest_clf, X_dataset, Y_dataset, cv=cv)
             tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
-            
-            #balanced_accuracy_scorer = make_scorer(partial(balanced_accuracy_score))
-            precision_scorer = make_scorer(partial(precision_score, pos_label=0))
-            recall_scorer = make_scorer(partial(recall_score, pos_label=0))
-            f1_scorer = make_scorer(partial(f1_score, pos_label=0))
-            
-            scores = cross_validate(forest_clf, X_dataset, Y_dataset2, cv=cv, scoring=['roc_auc','precision','recall','balanced_accuracy','f1_weighted'])
-            recall = cross_validate(forest_clf, X_dataset, Y_dataset2, cv=cv, scoring=recall_scorer)
-            precision = cross_validate(forest_clf, X_dataset, Y_dataset2, cv=cv, scoring=precision_scorer)
-            f1_scores = cross_validate(forest_clf, X_dataset, Y_dataset2, cv=3, scoring=f1_scorer)
+          
+            scores = cross_validate(forest_clf, X_dataset, Y_dataset, cv=cv, scoring=['roc_auc','precision','recall','balanced_accuracy','f1_weighted'])
+        
+            out.write(str(n_tree)+'\t'+ str(tn) +'\t'+str(fp) +'\t'+ str(fn) +'\t'+ str(tp)+'\t'+
+                str(scores['test_roc_auc'].mean()) + '\t'+
+                str(scores['test_precision'].mean()) +'\t'+
+                str(scores['test_recall'].mean()) + '\t'+
+                str(scores['test_balanced_accuracy'].mean()) + '\t'+ 
+                str(scores['test_f1_weighted'].mean()) + '\n')
 
-            #print 'racall',recall['test_score'].mean(), scores['test_recall'].mean(),recall['test_score'].max(), scores['test_recall'].max()
-            #print 'precision',precision['test_score'].mean(), scores['test_precision'].mean(),precision['test_score'].max(), scores['test_precision'].max()
-            #print 'acc',scores['test_balanced_accuracy'].mean(),scores['test_balanced_accuracy'].max()
-            #print 'f1_scores',f1_scores['test_score'].mean(), scores['test_f1_weighted'].mean(),f1_scores['test_score'].max(),scores['test_f1_weighted'].max()
-            #print scores['test_recall'],recall
-            out.write(str(n_tree)+'\t'+ str(tn) +'\t'+str(fp) +'\n\t'+ str(fn) +'\t'+ str(tp)+'\n'+
-                'AUC' + '\t' + str(scores['test_roc_auc'].mean()) + '\n'+
-                'PRECISION' + '\t' + str(scores['test_precision'].mean()) +'\n'+
-                'RECALL' + '\t' + str(scores['test_recall'].mean()) + '\n'+
-                'B ACCURACY' + '\t' + str(scores['test_balanced_accuracy'].mean()) + '\n'+ 
-                'F1 SCORE' + '\t' + str(scores['test_f1_weighted'].mean()) + '\n\n')
+            ROC_AUC += [scores['test_roc_auc'].mean()]
+            PRECISION += [scores['test_precision'].mean()]
+            RECALL += [scores['test_recall'].mean()]
+            BACC += [scores['test_balanced_accuracy'].mean()]
+            F1 += [scores['test_f1_weighted'].mean()]
+
+        fig, ax = plt.subplots()
+        ax.plot(BACC, label='Balanced Accuracy')
+        ax.plot(ROC_AUC, label='ROC auc')
+        ax.plot(RECALL, label='Recall')
+        ax.plot(PRECISION, label='Precision')
+        ax.set(xlabel='Num Estimators',
+            title='Number of Estimators Tuning')
+
+        xticks = np.arange(0,len(range(421)[10::30]),1)
+        yticks = np.arange(0.96,1.000,0.001)
+
+        ax.set_xticks(xticks)
+        ax.set_xticklabels(range(421)[10::30])
+        plt.xticks(rotation=90)
+
+        ax.set_yticks(yticks)
+        ax.grid()
+        plt.legend()
+
+        plt.show()
+        plt.savefig(OUTPUT + '.N_tree-TUNING.png')
+
+
+        # Number of trees in random forest
+        n_estimators = [int(x) for x in np.linspace(start = 20, stop = 400, num = 20)]
+        #n_estimators = [280]
+        # Number of features to consider at every split
+        max_features = ['auto', 'sqrt']
+        # Maximum number of levels in tree
+        max_depth = [int(x) for x in np.linspace(10, 110, num = 11)]
+        max_depth.append(None)
+        # Minimum number of samples required to split a node
+        min_samples_split = [2, 5, 10]
+        # Minimum number of samples required at each leaf node
+        min_samples_leaf = [1, 2, 4]
+        # Method of selecting samples for training each tree
+        bootstrap = [True, False]
+
+        # Create the random grid
+        random_grid = {'n_estimators': n_estimators,
+                       'max_features': max_features,
+                       'max_depth': max_depth,
+                       'min_samples_split': min_samples_split,
+                       'min_samples_leaf': min_samples_leaf,
+                       'bootstrap': bootstrap}
+
+
+        rf = RandomForestClassifier()
+        rf_random = RandomizedSearchCV(estimator = rf, param_distributions = random_grid, n_iter = 100, cv = 4, verbose=0, random_state=42, n_jobs = -1)
+        rf_random.fit(X_dataset, Y_dataset)
+        print rf_random.best_params_
+        BP =rf_random.best_params_
+
+        #grid_search = GridSearchCV(estimator = rf, param_grid = random_grid, cv = 4, n_jobs = -1, verbose = 0)
+        #grid_search.fit(X_dataset, Y_dataset)
+        #print grid_search.best_params_
+
+        out.write('BEST HYPERPARAMETERS (RANDOM GRID):'+'\n'+
+                        'n_estimators' +'\t' + str(BP['n_estimators']) +'\n'
+                        'max_features' +'\t' + str(BP['max_features']) +'\n'
+                        'max_depth' +'\t' + str(BP['max_depth']) +'\n'
+                        'min_samples_split' +'\t' + str(BP['min_samples_split']) +'\n'
+                        'min_samples_leaf' +'\t' + str(BP['min_samples_leaf']) +'\n'
+                        'bootstrap' +'\t' + str(BP['bootstrap']))
+        
+        #grid_search = GridSearchCV(estimator = rf, param_grid = random_grid, cv = 4, n_jobs = -1, verbose = 0)
+        #grid_search.fit(X_dataset, Y_dataset)
+        #print grid_search.best_params_
+
 
     if 'KFOLD' in pipe:
+        X_dataset = dataset.copy()
+        class_map = {'PASS': 1, 'FILTER': 0}
+        Y_dataset = fulldataset['CLASS'].map(class_map)
 
-        X_dataset = dataset.reset_index()
-        Y_dataset = fulldataset['CLASS']
+        # parametri tunati per dataset IEVA
+        n_estimators = 180
+        max_features = 'sqrt'
+        max_depth = 40
+        min_samples_split = 5
+        min_samples_leaf = 1
+        bootstrap = False
+
+        # ## parametri tunati per dataset NOIEVA
+        # n_estimators = 20
+        # max_features = 'auto'
+        # max_depth = 20
+        # min_samples_split = 2
+        # min_samples_leaf = 2
+        # bootstrap = False
 
         cv = 4
-        forest_clf = RandomForestClassifier(class_weight = 'balanced',n_estimators = 20)
-        skfolds = StratifiedKFold(n_splits=cv)
-       
         out=open(OUTPUT + '.KFOLD-RESULTS.csv','w')
-        
-        # j=0
-        # for train_index, test_index  in  skfolds.split(X_dataset,  Y_dataset):
-        #     j += 1
-        #     out.write('NUM FOLD:'+str(j) +'\n')
 
-        #     clone_clf = clone(forest_clf)
-        #     X_train_folds = X_dataset.drop(['ID'], axis=1).loc[train_index]
-        #     X_train_folds_index = X_dataset.loc[train_index]['ID']
-
-        #     y_train_folds = (Y_dataset[train_index])
-        #     X_test_fold = X_dataset.drop(['ID'], axis=1).loc[test_index]
-        #     X_test_fold_index = X_dataset.loc[test_index]['ID']
-        #     y_test_fold = (Y_dataset[test_index])
-
-        #     clone_clf.fit(X_train_folds, y_train_folds)
-            
-        #     y_pred = clone_clf.predict(X_test_fold)
-        #     n_correct = sum(y_pred == y_test_fold)
-        #     tn, fp, fn, tp = confusion_matrix(y_test_fold, y_pred).ravel()
-            
-        #     out.write('\t'+ str(tn) +'\t'+str(fp) +'\n\t'+ str(fn) +'\t'+ str(tp)+'\n')
-
-        #     result = pd.concat([pd.DataFrame(y_test_fold).reset_index(), pd.DataFrame(y_pred,columns=['PRED'])], axis=1)
-        #     FN = result[result['CLASS'] == 'PASS']
-        #     FN = FN[FN['PRED'] == 'FILTER']
-            
-        #     FP = result[result['CLASS'] == 'FILTER']
-        #     FP = FP[FP['PRED'] == 'PASS']
-        #     #print FP.apply('\t'.join)
-        #     FN = re.sub('\n\t','\n',re.sub(' ','\t',re.sub("[\[\]\']","",np.array2string(FN.values))))
-        #     FP = re.sub('\n\t','\n',re.sub(' ','\t',re.sub("[\[\]\']","",np.array2string(FP.values))))
-        #     #out.write(np.array2string(FN.values) +'\n')
-        #     out.write('ID' +'\t' +'CLASS' + '\t' + 'PRED'+'\n')
-        #     out.write(FN+'\n'+ FP+'\n')
-
-        
+        RF_ARRAY = []
+        BACC_ARRAY = []
         for j in range(10):
-            forest_clf = RandomForestClassifier(class_weight = 'balanced',n_estimators = 20)
-            out.write('REP:'+str(j)+'\n')
-            y_train_pred = cross_val_predict(forest_clf, X_dataset.drop(['ID'], axis=1), Y_dataset, cv=cv)
+            forest_clf = RandomForestClassifier(class_weight = 'balanced',
+                                                n_estimators = n_estimators,
+                                                max_features = max_features,
+                                                max_depth = max_depth,
+                                                min_samples_split = min_samples_split,
+                                                min_samples_leaf = min_samples_leaf,
+                                                bootstrap = bootstrap)
+
+            out.write('\t'.join(['N REPETITION','TN','FP','FN','TP','AUC','BALANCED ACC','RECALL','PRECISION','F1 SCORE'])+'\n')
+            y_train_pred = cross_val_predict(forest_clf, X_dataset, Y_dataset, cv=cv)
+            scores = cross_validate(forest_clf, X_dataset, Y_dataset, cv=cv, scoring=['roc_auc','precision','recall','balanced_accuracy','f1_weighted'])
+            
             tn, fp, fn, tp = confusion_matrix(Y_dataset, y_train_pred).ravel()
-            out.write('\t'+ str(tn) +'\t'+str(fp) +'\n\t'+ str(fn) +'\t'+ str(tp)+'\n')
+
+            out.write(str(j)+'\t'+ str(tn) +'\t'+str(fp) +'\t'+ str(fn) +'\t'+ str(tp)+'\t'+
+                str(scores['test_roc_auc'].mean()) + '\t'+
+                str(scores['test_precision'].mean()) +'\t'+
+                str(scores['test_recall'].mean()) + '\t'+
+                str(scores['test_balanced_accuracy'].mean()) + '\t'+ 
+                str(scores['test_f1_weighted'].mean()) + '\n')
 
             result = pd.concat([pd.DataFrame(Y_dataset).reset_index(), pd.DataFrame(y_train_pred,columns=['PRED'])], axis=1)
-            FN = result[result['CLASS'] == 'PASS']
-            FN = FN[FN['PRED'] == 'FILTER']
-            
-            FP = result[result['CLASS'] == 'FILTER']
-            FP = FP[FP['PRED'] == 'PASS']
+
+            FN = result[result['CLASS'] == 1]
+            FN = FN[FN['PRED'] == 0]
+            FP = result[result['CLASS'] == 0]
+            FP = FP[FP['PRED'] == 1]
             #print FP.apply('\t'.join)
             FN = re.sub('\n\t','\n',re.sub(' ','\t',re.sub("[\[\]\']","",np.array2string(FN.values))))
             FP = re.sub('\n\t','\n',re.sub(' ','\t',re.sub("[\[\]\']","",np.array2string(FP.values))))
+
+            RF_ARRAY += [forest_clf]
+            BACC_ARRAY += [scores['test_balanced_accuracy'].mean()]
             #out.write(np.array2string(FN.values) +'\n')
             out.write('ID' +'\t' +'CLASS' + '\t' + 'PRED'+'\n')
             out.write(FN+'\n'+ FP+'\n')
 
-    #     #pd.concat([pd.DataFrame(y_test_fold),pd.DataFrame( y_pred)], axis=1).to_csv(path_or_buf=OUTPUT+'y_pred.csv',sep='\t')
-    #     #pd.DataFrame(y_test_fold)
-    #     #pd.DataFrame(y_test_fold).to_csv(path_or_buf=OUTPUT+'.y_test_fold.csv',sep='\t')
-    #     #pd.DataFrame(y_pred).to_csv(path_or_buf=OUTPUT+'.y_pred.csv',sep='\t')
-        
-    #     pd.concat([pd.DataFrame(y_test_fold), pd.DataFrame(y_pred),pd.DataFrame(X_test_fold_index)], axis=1, ignore_index=True).to_csv(path_or_buf=OUTPUT+'.y_pred.csv',sep='\t')
+            dump(RF_ARRAY[BACC_ARRAY.index(max(BACC_ARRAY))], OUTPUT+'.BESTCV_RFclassifier.joblib') 
 
-    #    # print(y_pred.all('FILTER'))
-    #     #print(y_train_folds == 'PASS')
-
-    # pd.concat([dataset['ID'],Y_dataset, pd.DataFrame(y_train_pred)], axis=1, ignore_index=True).to_csv(path_or_buf=OUTPUT+'.y_train_pred.csv',sep='\t')
-
-    # print confusion_matrix(Y_dataset,   y_train_pred)
-
-    # dump(forest_clf, OUTPUT+'.RFclassifier.joblib') 
 
     if opts.train is not None:
 

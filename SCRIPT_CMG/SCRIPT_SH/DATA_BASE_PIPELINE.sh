@@ -267,20 +267,20 @@ if [ "$PANNELLO" == "Cardio" ]
 		TRANSCR_LIST=$TRASCR_BRCA
 fi
 
-# ls $GVCF_PATH/*.g.vcf > $OUT_PATH/Samples_list.list
+ls $GVCF_PATH/*.g.vcf > $OUT_PATH/Samples_list.list
 
 mkdir $GVCF_PATH/TMP
 echo "Faccio il merge dei gvcf"
 
-# python /home/jarvis/git/CMG/SCRIPT_CMG/SCRIPT_PYTHON/DATABASE_SCRIPTING/merge_gvcf.py \
-# -R /home/jarvis/NGS_TOOLS/hg19/ucsc.hg19.fasta \
-# -V $gvcflist \
-# -L $TARGET \
-# -g 10 \
-# -O $GVCF_PATH/TMP/$tipo.merge.g.vcf
+python /home/jarvis/git/CMG/SCRIPT_CMG/SCRIPT_PYTHON/DATABASE_SCRIPTING/merge_gvcf.py \
+-R /home/jarvis/NGS_TOOLS/hg19/ucsc.hg19.fasta \
+-V $gvcflist \
+-L $TARGET \
+-g 10 \
+-O $GVCF_PATH/TMP/$tipo.merge.g.vcf
 
-#MGVCF=$GVCF_PATH/$tipo.merge.g.vcf
-MGVCF="/media/jarvis/HD1/DB.gvcf/CARDIO/TMP/Cardio-Conn.merge.g.vcf"
+MGVCF=$GVCF_PATH/TMP/$tipo.merge.g.vcf
+#MGVCF="/media/jarvis/HD1/DB.gvcf/CARDIO/TMP/Cardio-Conn.merge.g.vcf"
 #MGVCF="/home/jarvis/Scrivania/DB_GENI_VAR/CANCER_20181108/TMP/Cancer.merge.g.vcf"
 
 echo "Faccio il Variant Calling"
