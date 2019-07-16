@@ -21,6 +21,7 @@ def extract_info(varianti,hash_var,pazienti):
 			index_of_an = line.split('\t').index('AN')
 			index_of_exon = line.split('\t').index('EXON')
 			index_of_intron = line.split('\t').index('INTRON')
+			index_of_clinvar = line.split('\t').index('CLIN_SIG')
 
 			#print line
 			
@@ -52,6 +53,7 @@ def extract_info(varianti,hash_var,pazienti):
 			AN = variante[index_of_an]
 			INTRON = variante[index_of_intron]
 			EXON = variante[index_of_exon]
+			CLINVAR = variante[index_of_clinvar]
 			info = variante[4:]
 			var_id = '\t'.join([chrom,pos,ref,alt])
 
@@ -84,21 +86,35 @@ def extract_info(varianti,hash_var,pazienti):
 				hash_var[var_id][7] = AN
 				hash_var[var_id][8] = EXON
 				hash_var[var_id][9] = INTRON
-
+				hash_var[var_id][10] = CLINVAR
 
 			else:
 				try:
 					if variante[index_of_gen].split('/')[0] == variante[index_of_gen].split('/')[1]:
 						try:
-							hash_var[var_id] = [0,1,[[],[pazienti[id][0]]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
+							hash_var[var_id] = [0,1,[[],[pazienti[id][0]]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON,CLINVAR]
 						except:
-							hash_var[var_id] = [0,1,[[],[id]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
+							if 'Conn' in id:
+								id = re.sub('Conn','Cardio',id)
+							elif 'Cardio' in id:
+								id = re.sub('Cardio','Conn',id)
+							try:
+								hash_var[var_id] = [0,1,[[],[pazienti[id][0]]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON,CLINVAR]
+							except:	
+								hash_var[var_id] = [0,1,[[],[id]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON,CLINVAR]
 								
 					else:
 						try:
-							hash_var[var_id] = [1,0,[[pazienti[id][0]],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
+							hash_var[var_id] = [1,0,[[pazienti[id][0]],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON,CLINVAR]
 						except:
-							hash_var[var_id] = [0,1,[[id],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON]
+							if 'Conn' in id:
+								id = re.sub('Conn','Cardio',id)
+							elif 'Cardio' in id:
+								id = re.sub('Cardio','Conn',id)
+							try:
+								hash_var[var_id] = [1,0,[[pazienti[id][0]],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON,CLINVAR]
+							except:
+								hash_var[var_id] = [1,0,[[id],[]],HGVSc,HGVSp,CONSEQUENCE,AC,AN,EXON,INTRON,CLINVAR]
 				except:
 					print variante
 				#print "nuova variante",hash_var[var_id],AC,AN
@@ -125,9 +141,10 @@ def extract_var_from_gene(varianti):
 			index_of_gene = line_split.index('SYMBOL')
 			index_of_exon = line_split.index('EXON')
 			index_of_intron = line_split.index('INTRON')
+			index_of_clinvar = line_split.index('CLIN_SIG')
 
 
-			header = '\t'.join(var_id + ['HGVSc','HGVSp','Consequence','SYMBOL','GT','AC','AN','EXON','INTRON']) + '\n'
+			header = '\t'.join(var_id + ['HGVSc','HGVSp','Consequence','SYMBOL','GT','AC','AN','EXON','INTRON','CLIN_SIG']) + '\n'
 			if header not in var_array: 
 				var_list.write(header)
 			
@@ -135,7 +152,7 @@ def extract_var_from_gene(varianti):
 			if line_split[index_of_gene].rstrip() == opts.gene.rstrip():
 				#print "si"
 				var_id = line_split[0:5]
-				var_list.write('\t'.join(var_id + [line_split[index_of_HGVSc],line_split[index_of_HGVSp],line_split[index_of_conseq],line_split[index_of_gene],line_split[index_of_gen],line_split[index_of_ac],line_split[index_of_an],line_split[index_of_exon],line_split[index_of_intron]]) + '\n')
+				var_list.write('\t'.join(var_id + [line_split[index_of_HGVSc],line_split[index_of_HGVSp],line_split[index_of_conseq],line_split[index_of_gene],line_split[index_of_gen],line_split[index_of_ac],line_split[index_of_an],line_split[index_of_exon],line_split[index_of_intron],line_split[index_of_clinvar]]) + '\n')
 			
 def extract_paz_name(pazienti):
 	id_info={}
@@ -204,8 +221,8 @@ def main():
 	ws1.title = "range names"
 
 
-	statistiche.write('CHROM'+'\t' + 'POS'+'\t' + 'REF'+'\t' + 'ALT' +'\t' +'HGVSc'+'\t' + 'HGVSp'+'\t'+'EXON'+'\t'+'INTRON'+'\t'+'CONSEQUENCE'+'\t'+ 'FRAZ_ALLELICA'+'\t' + 'FRAZ_PERC'+'\t' + 'MAF'+'\t'+'ETERO'+'\t'+ 'HOM'+'\t'+'NUM_PAZ_MUTATI'+'\t'+'PAZIENTI_HET'+'\t'+'PAZIENTI_HOM'+'\n')
-	header=['CHROM','POS','REF','ALT','HGVSc','HGVSp','EXON','INTRON','CONSEQUENCE','FRAZ_ALLELICA','FRAZ_PERC','MAF','ETERO','HOM','NUM_PAZ_MUTATI','PAZIENTI_HET','PAZIENTI_HOM']
+	statistiche.write('CHROM'+'\t' + 'POS'+'\t' + 'REF'+'\t' + 'ALT' +'\t' +'HGVSc'+'\t' + 'HGVSp'+'\t'+'EXON'+'\t'+'INTRON'+'\t'+'CONSEQUENCE'+'\t'+ 'CLINVAR'+'\t'+ 'FRAZ_ALLELICA'+'\t' + 'FRAZ_PERC'+'\t' + 'MAF'+'\t'+'ETERO'+'\t'+ 'HOM'+'\t'+'NUM_PAZ_MUTATI'+'\t'+'PAZIENTI_HET'+'\t'+'PAZIENTI_HOM'+'\n')
+	header=['CHROM','POS','REF','ALT','HGVSc','HGVSp','EXON','INTRON','CONSEQUENCE','CLINVAR','FRAZ_ALLELICA','FRAZ_PERC','MAF','ETERO','HOM','NUM_PAZ_MUTATI','PAZIENTI_HET','PAZIENTI_HOM']
 	ws1.append(header)
 
 	for var in hash_var.keys():
@@ -217,12 +234,12 @@ def main():
 		fraz = str(hash_var[var][6]) + '/' + str(hash_var[var][7])
 		perc = str(maf*100) + '%'
 		paz_mut = str(int(hash_var[var][0]) + int(hash_var[var][1])) + '/' + str((num_paz))
-		info_var = str(hash_var[var][3]) + '\t' + str(hash_var[var][4])+  '\t' + str(hash_var[var][8])+ '\t' + str(hash_var[var][9]) +'\t' + str(hash_var[var][5])
+		info_var = str(hash_var[var][3]) + '\t' + str(hash_var[var][4])+  '\t' + str(hash_var[var][8])+ '\t' + str(hash_var[var][9]) +'\t' + str(hash_var[var][5] +'\t' + str(hash_var[var][10]))
 		stats = fraz + '\t' + perc + '\t' +  str(maf) + '\t' + str(hash_var[var][0]) + '\t' + str(hash_var[var][1]) + '\t' + str(paz_mut) + '\t' + ';'.join(hash_var[var][2][0])+ '\t' + ';'.join(hash_var[var][2][1])
 		statistiche.write(var + '\t' +info_var + '\t' + stats + '\n')
 
 		var_split1 = var.split('\t')
-		info_var1 = [str(hash_var[var][3]),str(hash_var[var][4]),str(hash_var[var][8]),str(hash_var[var][9]),str(hash_var[var][5])]
+		info_var1 = [str(hash_var[var][3]),str(hash_var[var][4]),str(hash_var[var][8]),str(hash_var[var][9]),str(hash_var[var][5]),str(hash_var[var][10])]
 		stats1 = [fraz,perc, str(maf),str(hash_var[var][0]),str(hash_var[var][1]),str(paz_mut),';'.join(hash_var[var][2][0]),';'.join(hash_var[var][2][1])]
 		to_print=var_split1+info_var1+stats1
 		ws1.append(to_print)

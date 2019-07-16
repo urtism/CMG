@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="1de1cce1-56da-4311-a2fe-25329932c55b" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/SCRIPT_CMG/SCRIPT_PYTHON/DATABASE_SCRIPTING/DB_per_Gene.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPT_CMG/SCRIPT_PYTHON/DATABASE_SCRIPTING/DB_per_Gene.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPT_CMG/SCRIPT_PYTHON/ML_AND_iEVA/BenchMark-Extractor_new.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPT_CMG/SCRIPT_PYTHON/ML_AND_iEVA/BenchMark-Extractor_new.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPT_CMG/SCRIPT_PYTHON/ML_AND_iEVA/prova_ml.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPT_CMG/SCRIPT_PYTHON/ML_AND_iEVA/prova_ml.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPT_CMG/SCRIPT_PYTHON/parse_ical.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPT_CMG/SCRIPT_PYTHON/parse_ical.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPT_CMG/SCRIPT_SH/DATA_BASE_PIPELINE.sh" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPT_CMG/SCRIPT_SH/DATA_BASE_PIPELINE.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Powercall/CFG/Powercall.default.cfg.json" beforeDir="false" afterPath="$PROJECT_DIR$/../Powercall/CFG/Powercall.default.cfg.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Powercall/Functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/../Powercall/Functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Powercall/Pipeline.py" beforeDir="false" afterPath="$PROJECT_DIR$/../Powercall/Pipeline.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Powercall/Powercall.py" beforeDir="false" afterPath="$PROJECT_DIR$/../Powercall/Powercall.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Powercall/scripts/annotation_extractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/../Powercall/scripts/annotation_extractor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Powercall/tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/../Powercall/tools.py" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="CMG" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="65" />
+    <option name="y" value="-4" />
+    <option name="width" value="1398" />
+    <option name="height" value="1006" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator currentView="Scope" currentSubView="Scope 'Project Files'; set:Project Files; class com.intellij.psi.search.scope.ProjectFilesScope" proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="CMG" type="b2602c69:ProjectViewProjectNode" />
+              <item name="CMG" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="1de1cce1-56da-4311-a2fe-25329932c55b" name="Default Changelist" comment="" />
+      <created>1552909210193</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1552909210193</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="65" y="24" width="1615" height="1026" extended-state="6" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49499443" visible="true" weight="0.2530274" />
+      <window_info id="Structure" order="1" sideWeight="0.50500554" side_tool="true" visible="true" weight="0.2530274" />
+      <window_info id="Favorites" order="2" sideWeight="0.50053936" side_tool="true" weight="0.24984066" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="10" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="R Graphics" order="3" />
+      <window_info anchor="right" id="R Packages" order="4" />
+    </layout>
+  </component>
+</project>

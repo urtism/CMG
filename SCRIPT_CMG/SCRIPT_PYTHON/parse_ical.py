@@ -108,6 +108,9 @@ if __name__ == '__main__':
 
 		event = {
 			'DTSTART':'',
+			'DTEND':'',
+			'DEND':'',
+			'TEND':'',
 			'TSTART':'',
 			'DTSEND':'',
 			'TSEND':'',
@@ -224,7 +227,9 @@ if __name__ == '__main__':
 	out.write('\t'.join(['DTSTART','TSTART','DTEND','TEND','DTSTAMP','TSTAMP','UID','CREATED','DESCRIPTION','LAST-MODIFIED','LOCATION','SEQUENCE','STATUS','SUMMARY'])+'\n')
 
 	for event in calendar['event_arr']:
-
-		out.write('\t'.join([event['DTSTART'],event['TSTART'],event['DTEND'],event['TEND'],event['DTSTAMP'],event['TSTAMP'],event['UID'],event['CREATED'],event['DESCRIPTION'],
-			event['LAST-MODIFIED'],event['LOCATION'],event['SEQUENCE'],event['STATUS'],event['SUMMARY']])+'\n')
+		try:
+			out.write('\t'.join([event['DTSTART'],event['TSTART'],event['DTEND'],event['TEND'],event['DTSTAMP'],event['TSTAMP'],event['UID'],event['CREATED'],event['DESCRIPTION'],
+				event['LAST-MODIFIED'],event['LOCATION'],event['SEQUENCE'],event['STATUS'],event['SUMMARY']])+'\n')
+		except:
+			print event
 	#print event_arr

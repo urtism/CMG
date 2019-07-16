@@ -85,7 +85,7 @@ def extract_feat_from_vcf(file,var_list,features,sample):
 									if format_sample[format_split.index(tag)] == '1/0':
 										newv = ['0/1']
 									if format_sample[format_split.index(tag)] == './.':
-										newv = ['Undef']
+										newv = ['?']
 
 							elif VariantCaller == 'GATK':
 								if tag == 'AF':
@@ -109,7 +109,7 @@ def extract_feat_from_vcf(file,var_list,features,sample):
 									if format_sample[format_split.index(tag)] == '1/0':
 										newv = ['0/1']
 									if format_sample[format_split.index(tag)] == './.':
-										newv = ['Undef']
+										newv = ['?']
 									else:
 										oldv = [format_sample[format_split.index(tag)]]
 										newv = [x if x != '.' else '?' for x in oldv]
@@ -122,22 +122,19 @@ def extract_feat_from_vcf(file,var_list,features,sample):
 									except:
 										newv = ['?']
 								elif tag == 'GL':
-<<<<<<< HEAD
 									try:
-										newv = format_sample[format_split.index(tag)].split(',')
+										oldv = format_sample[format_split.index(tag)].split(',')
+										newv = [x if x != '.' else '?' for x in oldv]
 									except:
-										newv = ['.','.','.']
-=======
-									oldv = format_sample[format_split.index(tag)].split(',')
-									newv = [x if x != '.' else '?' for x in oldv]
->>>>>>> branch 'master' of https://github.com/urtism/CMG.git
+										oldv = format_sample[format_split.index('PL')].split(',')
+										newv = [x if x != '.' else '?' for x in oldv]
 								else:
 									if format_sample[format_split.index(tag)] == '.':
 										newv = ['?']
 									if format_sample[format_split.index(tag)] == '1/0':
 										newv = ['0/1']
 									if format_sample[format_split.index(tag)] == './.':
-										newv = ['Undef']
+										newv = ['?']
 									else:
 										oldv = [format_sample[format_split.index(tag)]]
 										newv = [x if x != '.' else '?' for x in oldv]
@@ -151,93 +148,74 @@ def extract_feat_from_vcf(file,var_list,features,sample):
 										newv = [str(round(ad/dp,3))]
 									except:
 										newv = ['?']
+								elif tag == 'DP':
+									newv = float(format_sample[format_split.index('NR')])
 								else:
 									if format_sample[format_split.index(tag)] == '.':
 										newv = ['?']
 									if format_sample[format_split.index(tag)] == '1/0':
 										newv = ['0/1']
 									if format_sample[format_split.index(tag)] == './.':
-										newv = ['Undef']
+										newv = ['?']
 									else:
 										oldv = [format_sample[format_split.index(tag)]]
 										newv = [x if x != '.' else '?' for x in oldv]
-							else:
-<<<<<<< HEAD
-								try:
+
+							elif VariantCaller == 'Samtools':
+							
+								if tag == 'PL':
+									if ',' in format_sample[format_split.index(tag)]:
+										oldv = format_sample[format_split.index(tag)].split(',')
+										newv = [x if x != '.' else '?' for x in oldv]
+									else:
+										format_sample[format_split.index(tag)] = '.,.,.'
+										oldv = format_sample[format_split.index(tag)].split(',')
+										newv = [x if x != '.' else '?' for x in oldv]
+								else:
+
 									if format_sample[format_split.index(tag)] == '.':
 										newv = ['?']
 									if format_sample[format_split.index(tag)] == '1/0':
 										newv = ['0/1']
+									if format_sample[format_split.index(tag)] == './.':
+										newv = ['?']
 									else:
-										newv = [format_sample[format_split.index(tag)]]
-								except:
-									print newv,VariantCaller
-=======
+										oldv = [format_sample[format_split.index(tag)]]
+										newv = [x if x != '.' else '?' for x in oldv]
+								
+							else:
 								if format_sample[format_split.index(tag)] == '.':
 									newv = ['?']
 								if format_sample[format_split.index(tag)] == '1/0':
 									newv = ['0/1']
 								if format_sample[format_split.index(tag)] == './.':
-									newv = ['Undef']
+									newv = ['?']
 								else:
 									oldv = [format_sample[format_split.index(tag)]]
 									newv = [x if x != '.' else '?' for x in oldv]
->>>>>>> branch 'master' of https://github.com/urtism/CMG.git
 
 						elif htag == 'IEVA' or htag == 'iEVA':
-<<<<<<< HEAD
-							
-=======
->>>>>>> branch 'master' of https://github.com/urtism/CMG.git
 							if tag == 'iSR' or tag == 'iSRL' or tag == 'iPNC' or tag == 'iSRU' or tag == 'iRM' or tag == 'iGC' or tag == 'iVC':
 								for itag in info_split:
-									#print itag
+									
 									if itag.startswith(tag + '='):
-<<<<<<< HEAD
-										
-=======
->>>>>>> branch 'master' of https://github.com/urtism/CMG.git
 										if tag == 'iPNC':
 											newv = itag.split('=')[-1].split(',')
-
 										else:
-<<<<<<< HEAD
-											newv = [itag.split('=')[-1]]
-
-=======
 											oldv = [itag.split('=')[-1]]
 											newv = [x if x != '.' else '?' for x in oldv]
->>>>>>> branch 'master' of https://github.com/urtism/CMG.git
 										break
 							else:
 								if tag == 'iAD' or tag == 'iSBD' or tag == 'iQual' or tag == 'iAMMQ' or tag == 'iAAS' or tag == 'iAXS' or tag == 'iAXS0' or tag == 'iAMQ0' or tag == 'iACR':
 									oldv = format_sample[format_split.index(tag)].split(',')
 									newv = [x if x != '.' else '?' for x in oldv]
 								else:
-<<<<<<< HEAD
-									#print file,format_sample
-									newv = [format_sample[format_split.index(tag)]]
-									
-						newvv=[]
-						for w in newv:
-							if w == '.':
-								w='?'
-							newvv += [w]
-						var += newvv
-=======
 									oldv = [format_sample[format_split.index(tag)]]
 									newv = [x if x != '.' else '?' for x in oldv]
-
 						var += newv
->>>>>>> branch 'master' of https://github.com/urtism/CMG.git
 		var+=[CLASS]
 		if var[2] != 'NON TROVATA':
-<<<<<<< HEAD
 			vars += ['\t'.join(var)]
-
-=======
-			vars += [','.join(var)]	
->>>>>>> branch 'master' of https://github.com/urtism/CMG.git
 					
 	return  vars
 
@@ -246,13 +224,8 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser('\n\nQuesto tool estrae le varianti dai vcf a partire da una lista di varianti in tab delimited. BenchMark-Extractor prende la variante (deve avere nel tab delimited i campi CHR POS REF ALT ID e CLASS con ID riferito al codice paziente e CLASS riferito alla classe che puo essere PASS o FILTER (verificata in sanger o wt) e va a controllare in tutti i file forniti nel list a quale run appartiene e poi estra l inter riga del vcf in un nuovo file (UNO PER OGNI VARIANT CALLER) tab delimited con tutti i campi del vcf splittati correttamente. PREREQUISITO: data in ID paziente uguale a data in ID run nel nome del file. Es: ID_PAZ = 20160724_01_Conn mentre nome del file = 20150716_Cardio_iEVA_GATK.vcf --> Basta che 20160724 sia presente anche nel file.\n')
 	parser.add_argument('-I','--input',help="File tab delimited contenente le varianti confermate in sanger")
-<<<<<<< HEAD
 	parser.add_argument('-L','--list',default=None,help="file contenente i path ai vcf file in cui cercare le varianti.I file devono essere nominati DATA_NUMPAZ_PANNELLO_VARIANTCALLER. se singlesample e DATA_PANNELLO_VARIANTCALLER. se multisample")
 	parser.add_argument('-f','--features_list',help="file contenente gli attributi da estrarre dai file vcf. Un attributo per riga preceduto da INFO- se confenuto nelle info , da FORMAT- se contenuto nel formato o IEVA- se una feature di iEVA.")
-=======
-	parser.add_argument('-L','--list',default=None,help="file contenente i path ai vcf file in cui cercare le varianti.I file devono essere nominati DATA_NUMPAZ_PANNELLO_VARIANTCALLER.* se e' singlesample e DATA_PANNELLO_VARIANTCALLER.* se multisample")
-	parser.add_argument('-f','--features_list',help="file contenente gli attributi da estrarre dai file vcf. Un attributo per riga preceduto da INFO- se e' confenuto nelle info , da FORMAT- se contenuto nel formato o IEVA- se e' una feature di iEVA.")
->>>>>>> branch 'master' of https://github.com/urtism/CMG.git
 	parser.add_argument('-O','--outfile',help="file di output in tab delimited format.")
 
 	global opts
@@ -288,7 +261,7 @@ if __name__ == '__main__':
 			if line.startswith('Nome'):
 				header = line.split('\t')
 			else:
-				Nome,id,chr,pos,ref,alt,HGVSc,HGVSp,GT_CLASS,CLASS=line.split('\t')
+				Nome,id,chr,pos,ref,alt,HGVSc,HGVSp,GT_CLASS,CLASS=line.split('\t')[:10]
 				var_id = '\t'.join([chr,pos,'.',ref,alt])
 				if id in samples.keys():
 					vars = samples[id]
@@ -329,11 +302,7 @@ if __name__ == '__main__':
 		del features[features.index('FORMAT-GL')]
 
 	if "IEVA-iPNC" in features:
-<<<<<<< HEAD
-		features[features.index('IEVA-iPNC'):features.index('IEVA-iPNC')] = ['IEVA-iPNC AA','IEVA-iPNC AC', 'IEVA-iPNC AG', 'IEVA-iPNC AT', 'IEVA-iPNC CA', 'IEVA-iPNC CC', 'IEVA-iPNC CG', 'IEVA-iPNC CT', 'IEVA-iPNC GA', 'IEVA-iPNC GC', 'IEVA-iPNC GG', 'IEVA-iPNC GT', 'IEVA-iPNC TA', 'IEVA-iPNC TC', 'IEVA-iPNC TG', 'IEVA-iPNC TT']
-=======
 		features[features.index('IEVA-iPNC'):features.index('IEVA-iPNC')] = ['IEVA-iPNC-AA','IEVA-iPNC-AC', 'IEVA-iPNC-AG', 'IEVA-iPNC-AT', 'IEVA-iPNC-CA', 'IEVA-iPNC-CC', 'IEVA-iPNC-CG', 'IEVA-iPNC-CT', 'IEVA-iPNC-GA', 'IEVA-iPNC-GC', 'IEVA-iPNC-GG', 'IEVA-iPNC-GT', 'IEVA-iPNC-TA', 'IEVA-iPNC-TC', 'IEVA-iPNC-TG', 'IEVA-iPNC-TT']
->>>>>>> branch 'master' of https://github.com/urtism/CMG.git
 		del features[features.index('IEVA-iPNC')]
 	if "IEVA-iAD" in features:
 		features[features.index('IEVA-iAD'):features.index('IEVA-iAD')] = ['IEVA-iAD-REF','IEVA-iAD-ALT']
@@ -364,7 +333,7 @@ if __name__ == '__main__':
 		del features[features.index('IEVA-iACR')]
 
 
-	out.write(','.join(['SAMPLE_ID']+['VAR_ID']+features)+'\n')
+	out.write('\t'.join(['SAMPLE_ID']+['VAR_ID']+features)+'\n')
 
 	for line in out_bm:
 			out.write(line +'\n')

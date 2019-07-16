@@ -3,6 +3,7 @@ import tarfile
 import argparse
 import pandas as pd
 import hashlib
+import seaborn
 import re
 import numpy as np
 import matplotlib.pyplot as plt
@@ -42,8 +43,9 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
     def transform(self, DS, y=None):
 
         X = DS.values
-        L = DS.columns.tolist()
-        if  self.ID:
+        L = DS.columns.tolist()            
+
+        if self.ID:
             try:
                 ID = (X[:, L.index('SAMPLE_ID') ]+'-'+X[:,  L.index('VAR_ID')] )
                 X = np.c_[X, ID]
@@ -53,13 +55,13 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
                 X = np.c_[X, ID]
                 L += ['ID']
 
-        if  self.iGC:
+        if self.iGC:
 
             iGC = (X[:, L.index('IEVA-iGC') ]/100.0)
             X = np.c_[X, iGC]
             L += ['IEVA-iGCfraz']
 
-        if  self.iQual:
+        if self.iQual:
             try:
                 iQual = (X[:, L.index('IEVA-iQual REF') ]-X[:,  L.index('IEVA-iQual ALT')] )/ (X[:, L.index('IEVA-iQual REF')] + X[:, L.index('IEVA-iQual ALT')])
             except:
@@ -67,14 +69,13 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
             X = np.c_[X, iQual]
             L += ['IEVA-iQual']
 
-        if  self.iAMQ:
+        if self.iAMQ:
             try:
                 iAMQ = (X[:, L.index('IEVA-iAMMQ REF') ]-X[:,  L.index('IEVA-iAMMQ ALT')] )/ (X[:, L.index('IEVA-iAMMQ REF')] + X[:, L.index('IEVA-iAMMQ ALT')])
             except:
                 iAMQ = np.empty(len(X))
             X = np.c_[X, iAMQ]
             L += ['IEVA-iAMQ']
-
         if  self.iAAS:
             try:
                 iAAS = (X[:, L.index('IEVA-iAAS REF') ]-X[:,  L.index('IEVA-iAAS ALT')] )/ (X[:, L.index('IEVA-iAAS REF')] + X[:, L.index('IEVA-iAAS ALT')])
@@ -280,11 +281,106 @@ if __name__ == '__main__':
         train_set,test_set = Split_datasets(fulldataset,float(opts.split),opts.outpath,stratify=opts.stratsplit)
 
 #PROVA: invece di eliminare le features ref, ho generato della features miste con ref e alt con la formula ref-alt/ref+alt [-1,+1]
+    if 'SELECT' in pipe:
+        toselect = ['GATK_INFO-FS',
+            'GATK_INFO-QD',
+            'GATK_FORMAT-DP',
+            'GATK_FORMAT-AF',
+            'GATK_FORMAT-GQ',
+            'GATK_FORMAT-GT',
+            'GATK_FORMAT-PL-0/0',
+            'GATK_FORMAT-PL-0/1',
+            'GATK_FORMAT-PL-1/1',
+            'FB_FORMAT-GT',
+            'FB_FORMAT-AF',
+            'FB_FORMAT-DP',
+            'FB_FORMAT-GL-0/0',
+            'FB_FORMAT-GL-0/1',
+            'FB_FORMAT-GL-1/1',
+            'FB_FORMAT-GQ',
+            'FB_FORMAT-QA',
+            'VS_FORMAT-GT',
+            'VS_FORMAT-GQ',
+            'VS_FORMAT-FREQ',
+            'VS_FORMAT-PVAL',
+            'VS_FORMAT-ABQ',
+            'VS_FORMAT-DP',
+            'PT_INFO-SbPval',
+            'PT_INFO-MQ',
+            'PT_INFO-QD',
+            'PT_FORMAT-GT',
+            'PT_FORMAT-GL-0/0',
+            'PT_FORMAT-GL-0/1',
+            'PT_FORMAT-GL-1/1',
+            'PT_FORMAT-GQ',
+            'PT_FORMAT-NR',
+            'PT_FORMAT-AF',
+            'ST_INFO-MQ',
+            'ST_FORMAT-GQ',
+            'ST_FORMAT-PL-0/0',
+            'ST_FORMAT-PL-0/1',
+            'ST_FORMAT-PL-1/1',
+            'ST_FORMAT-GT',
+            'SV_INFO-AF',
+            'SV_INFO-DP',
+            'SV_FORMAT-GT',
+            'SV_FORMAT-PL-0/0',
+            'SV_FORMAT-PL-0/1',
+            'SV_FORMAT-PL-1/1']
+
+        for c in dataset.columns:
+            if c.startswith('IEVA'):
+                toselect += [c]
+
+        dataset1 = dataset[toselect]
+
+        OUTPUT += '.SELECT'
+
+        dataset_to_print=pd.concat([dataset1,fulldataset['CLASS']],axis=1)
+        try:
+            dataset_to_print.set_index(['ID'], inplace =True)
+        except:
+            pass
+        dataset_to_print.to_csv(path_or_buf=OUTPUT+'.csv',sep='\t')
+        print_stats(OUTPUT+'.csv')
+
+        for f in toselect:
+            try:
+                if f.startswith('IEVA'):
+                    continue
+                else:
+                    dataset = dataset.drop(f,axis=1)
+            except:
+                continue
+
+        dataset_to_print=pd.concat([dataset,fulldataset['CLASS']],axis=1)
+        try:
+            dataset.set_index(['ID'], inplace =True)
+            dataset_to_print.set_index(['ID'], inplace =True)
+        except:
+            pass
+        
+        dataset_to_print.to_csv(path_or_buf=OUTPUT+'.NOSELECT.csv',sep='\t')
+        print_stats(OUTPUT+'.NOSELECT.csv')
+
+
     if 'NF' in pipe:
 
-        attr_adder = CombinedAttributesAdder(iQual = True, iAMQ = True, iAAS = True, iAXS = True, iAXS0 = True, iAMQ0 = True, iACR = True, iGC = True)
+        attr_adder = CombinedAttributesAdder(iQual = True, iAMQ = True, iAAS = True, iAXS = True, iAXS0 = True, iAMQ0 = True, iACR = True, iGC = True )
         dataset_extra_attribs, dataset_extra_columns = attr_adder.transform(dataset)
         dataset = pd.DataFrame(dataset_extra_attribs, columns=dataset_extra_columns)
+
+        gt_map = {'0/0': '0', '0/1': '1','1/0': '1','1/1': '2', '':'','Undef':''}
+        #dataset['FORMAT-GT'] = dataset['FORMAT-GT'].map(gt_map)
+
+        dataset['GATK_FORMAT-GT'] = dataset['GATK_FORMAT-GT'].map(gt_map)
+        dataset['FB_FORMAT-GT'] = dataset['FB_FORMAT-GT'].map(gt_map)
+        dataset['VS_FORMAT-GT'] = dataset['VS_FORMAT-GT'].map(gt_map)
+        dataset['PT_FORMAT-GT'] = dataset['PT_FORMAT-GT'].map(gt_map)
+        dataset['ST_FORMAT-GT'] = dataset['ST_FORMAT-GT'].map(gt_map)
+        dataset['SV_FORMAT-GT'] = dataset['SV_FORMAT-GT'].map(gt_map)
+
+
         try:
             dataset.set_index(['ID'], inplace =True)
         except:
@@ -317,7 +413,27 @@ if __name__ == '__main__':
 
     #2.4)utilizzo imputer di sklearn con la mediana
     if 'MV' in pipe:
+
         dataset['IEVA-iSRL'] = dataset['IEVA-iSRL'].fillna(0.0)
+
+        dataset['GATK_FORMAT-GT'] = dataset['GATK_FORMAT-GT'].fillna(-1)
+        dataset['FB_FORMAT-GT'] = dataset['FB_FORMAT-GT'].fillna(-1)
+        dataset['VS_FORMAT-GT'] = dataset['VS_FORMAT-GT'].fillna(-1)
+        dataset['PT_FORMAT-GT'] = dataset['PT_FORMAT-GT'].fillna(-1)
+        dataset['ST_FORMAT-GT'] = dataset['ST_FORMAT-GT'].fillna(-1)
+        dataset['SV_FORMAT-GT'] = dataset['SV_FORMAT-GT'].fillna(-1)
+
+        dataset['GATK_FORMAT-DP'] = dataset['GATK_FORMAT-DP'].fillna(0.0)
+        dataset['FB_FORMAT-DP'] = dataset['FB_FORMAT-DP'].fillna(0.0)
+        dataset['VS_FORMAT-DP'] = dataset['VS_FORMAT-DP'].fillna(0.0)
+        dataset['SV_INFO-DP'] = dataset['SV_INFO-DP'].fillna(0.0)
+
+        dataset['GATK_FORMAT-AF'] = dataset['GATK_FORMAT-AF'].fillna(0.0)
+        dataset['FB_FORMAT-AF'] = dataset['FB_FORMAT-AF'].fillna(0.0)
+        dataset['VS_FORMAT-FREQ'] = dataset['VS_FORMAT-FREQ'].fillna(0.0)
+        dataset['PT_FORMAT-AF'] = dataset['FB_FORMAT-AF'].fillna(0.0)
+        dataset['SV_INFO-AF'] = dataset['SV_INFO-AF'].fillna(0.0)
+
 
         num_dataset = dataset.drop(dataset.select_dtypes(['object']),axis=1)
 
@@ -346,9 +462,8 @@ if __name__ == '__main__':
     if 'NORM' in pipe:
         refill=[]
 
-        donotNORM = ['INFO-MLEAF',
+        donotNORM = [
             'IEVA-iGCfraz',
-            'FORMAT-AF',
             'IEVA-iMIU',
             'IEVA-iDUP',
             'IEVA-iSB',
@@ -364,12 +479,32 @@ if __name__ == '__main__':
             'IEVA-iAMQ0',
             'IEVA-iACR',
             'IEVA-iRM',
-            'FORMAT-GT-0/0',
-            'FORMAT-GT-0/1',
-            'FORMAT-GT-1/1',
-            'IEVA-SR-0',
-            'IEVA-SR-SRS',
-            'IEVA-SR-HP']
+            'IEVA-SR']
+
+        donotNORM += ['GATK_FORMAT-GT','FB_FORMAT-GT','VS_FORMAT-GT','PT_FORMAT-GT','ST_FORMAT-GT','SV_FORMAT-GT']
+        donotNORM += ['GATK_FORMAT-AF','FB_FORMAT-AF','VS_FORMAT-FREQ','PT_FORMAT-AF','SV_INFO-AF']
+        donotNORM += ['GATK_INFO-InbreedingCoeff','GATK_INFO-MLEAF',
+            'FB_INFO-AB','FB_INFO-PAIRED','FB_INFO-PAIREDR',
+            'VS_FORMAT-PVAL',
+            'PT_INFO-FR','PT_INFO-SbPval','PT_INFO-BRF',
+            'ST_INFO-RPB','ST_INFO-BQB','ST_INFO-MQSB','ST_INFO-MQ0F','ST_INFO-ICB','ST_INFO-HOB','SV_INFO-PV','SV_INFO-SP','SV_INFO-FS']
+
+        donotNORM += ['IEVA-iPNC AA',
+            'IEVA-iPNC AC',
+            'IEVA-iPNC AG',
+            'IEVA-iPNC AT',
+            'IEVA-iPNC CA',
+            'IEVA-iPNC CC',
+            'IEVA-iPNC CG',
+            'IEVA-iPNC CT',
+            'IEVA-iPNC GA',
+            'IEVA-iPNC GC',
+            'IEVA-iPNC GG',
+            'IEVA-iPNC GT',
+            'IEVA-iPNC TA',
+            'IEVA-iPNC TC',
+            'IEVA-iPNC TG',
+            'IEVA-iPNC TT']
         
         num_dataset = dataset.drop(dataset.select_dtypes(['object']),axis=1)
 
@@ -431,43 +566,60 @@ if __name__ == '__main__':
         TODROP = []
 
         #FEATURES COMPOSTE DA CONTEGGIO DI READS
-        TODROP += ['IEVA-iAD REF', 'IEVA-iAD ALT']
-        TODROP += ['IEVA-iSBD RF', 'IEVA-iSBD RR', 'IEVA-iSBD AF', 'IEVA-iSBD AR'] # sono utilizzati nello SB
-        TODROP += ['IEVA-iAXS0 ALT', 'IEVA-iACR ALT', 'IEVA-iAMQ0 ALT']
-        TODROP += ['IEVA-iAXS0 REF', 'IEVA-iACR REF', 'IEVA-iAMQ0 REF']
+        #TODROP += ['IEVA-iAD REF', 'IEVA-iAD ALT']
+        # TODROP += ['IEVA-iAD REF']
+        #TODROP += ['IEVA-iSBD RF', 'IEVA-iSBD RR', 'IEVA-iSBD AF', 'IEVA-iSBD AR'] # sono utilizzati nello SB
+        # TODROP += ['IEVA-iAXS0 ALT', 'IEVA-iACR ALT', 'IEVA-iAMQ0 ALT']
+        # TODROP += ['IEVA-iAXS0 REF', 'IEVA-iACR REF', 'IEVA-iAMQ0 REF']
 
-        #FEATURES DI TIPO CATEGORICO INUTILE AI FINI DEL ML
-        TODROP += ['IEVA-iSRU','IEVA-iVC','INFO-TYPE'] #sequenza ripetuta nei SR e tipo di variante (snv o indel)
+        # #FEATURES DI TIPO CATEGORICO INUTILE AI FINI DEL ML
+        TODROP += ['FB_INFO-TYPE','IEVA-iSRU','IEVA-iVC'] #sequenza ripetuta nei SR e tipo di variante (snv o indel)
 
-        #FEATURES SEMPRE 0
-        TODROP += ['IEVA-iUnMap', 'IEVA-iSA', 'IEVA-iNP']
+        # #FEATURES SEMPRE 0
+        TODROP += ['IEVA-iUnMap', 'IEVA-iSA', 'IEVA-iNP','IEVA-iAMQ0-REF','IEVA-iAMQ0-ALT']
         TODROP += ['IEVA-iACR', 'IEVA-iAXS', 'IEVA-iAXS0', 'IEVA-iAMQ0']
-
-        #FEATURES STRETTAMENTE LEGATE AD ALTRE
-        TODROP += ['FORMAT-GT-0/0', 'FORMAT-GT-0/1', 'FORMAT-GT-1/1'] #strettamente legata a FORMAT-PL
-        TODROP += ['IEVA-iDP', 'IEVA-iFREQ']
-        #TODROP += ['FORMAT-DP', 'FORMAT-AF']
-
-        #FEATURES CON INFO GAIN CIRCA 0
-        TODROP += ['IEVA-SR-HP', 'IEVA-SR-0']
+        TODROP += ['IEVA-iQual','IEVA-iAMQ','IEVA-iAAS']
 
 
-        TODROP += ['INFO-MLEAC', 'INFO-ReadPosRankSum', 'FORMAT-GQ', 'FORMAT-PL 0/1', 'IEVA-iSRL', 'IEVA-iMQ', 'IEVA-iMQ0', 'IEVA-iNPA', 'IEVA-iNPP', 'IEVA-iXS', 'IEVA-iBQVA', 'IEVA-iAMMQ REF', 'IEVA-iAMMQ ALT', 'IEVA-iAAS REF', 'IEVA-iAXS REF', 'IEVA-iANRP', 'INFO-MLEAF', 'IEVA-iMIU', 'IEVA-iDUP', 'IEVA-iCRT', 'IEVA-iMRT', 'IEVA-iAMQ', 'IEVA-iRM', 'IEVA-SR-SRS']
+        # #FEATURES STRETTAMENTE LEGATE AD ALTRE
+        # TODROP += ['FORMAT-GT-0/0', 'FORMAT-GT-0/1', 'FORMAT-GT-1/1'] #strettamente legata a FORMAT-PL
+        #TODROP += ['IEVA-iDP', 'IEVA-iFREQ']
+        # #TODROP += ['FORMAT-DP', 'FORMAT-AF']
 
-        #LE TENGO E VEDO DOPO SE FILTRARLE
-        #TODROP += ['IEVA-iAMMQ REF', 'IEVA-iQual REF', 'IEVA-iAAS REF', 'IEVA-iAXS REF'] # missing values > 15%
-        #TODROP += ['IEVA-iAMMQ ALT', 'IEVA-iQual ALT', 'IEVA-iAAS ALT', 'IEVA-iAXS ALT'] # perche abbiamo tolto i ref?
-        #TODROP += ['IEVA-iCRT', 'IEVA-iQRT', 'IEVA-iMRT', 'IEVA-iPRT']  # missing values > 15%
+        # #FEATURES CON INFO GAIN CIRCA 0
+        # #TODROP += ['IEVA-SR-HP', 'IEVA-SR-0']
 
+        
+        # TODROP += ['INFO-MLEAC','INFO-MLEAF']
+        # TODROP += ['IEVA-iMQ','IEVA-iQual REF','IEVA-iAMMQ REF','IEVA-iANRP','IEVA-iAS','IEVA-iBQVA','']
+
+        # #LE TENGO E VEDO DOPO SE FILTRARLE
+        # #TODROP += ['IEVA-iAMMQ REF', 'IEVA-iQual REF', 'IEVA-iAAS REF', 'IEVA-iAXS REF'] # missing values > 15%
+        # #TODROP += ['IEVA-iAMMQ ALT', 'IEVA-iQual ALT', 'IEVA-iAAS ALT', 'IEVA-iAXS ALT'] # perche abbiamo tolto i ref?
+        # #TODROP += ['IEVA-iCRT', 'IEVA-iQRT', 'IEVA-iMRT', 'IEVA-iPRT']  # missing values > 15%
+
+
+        #FEATURES DA ELIMINARE DA CLUSTERMAP
+
+        # TODROP += ['IEVA-iUnMap', 'IEVA-iSA', 'IEVA-iNP', 'IEVA-iAS','IEVA-iRM',]
+        # TODROP += ['IEVA-iACR', 'IEVA-iAXS', 'IEVA-iAXS0', 'IEVA-iAMQ0']
+        # TODROP += ['IEVA-iMIU', 'IEVA-iNPA', 'IEVA-iMQ0', 'IEVA-iAMQ','IEVA-iDUP', 'IEVA-iNPP']
+        # TODROP += ['IEVA-iAD REF','IEVA-iQual REF']
+        # TODROP += ['IEVA-iAAS REF','IEVA-iAAS ALT']
+        # TODROP += ['IEVA-iSBD RF', 'IEVA-iSBD RR', 'IEVA-iSBD AF', 'IEVA-iSBD AR'] # sono utilizzati nello SB
+       # TODROP += ['IEVA-iAXS0 ALT','IEVA-iAXS ALT', 'IEVA-iACR ALT', 'IEVA-iAMQ0 ALT','IEVA-iAMMQ ALT']
+       # TODROP += ['IEVA-iAXS0 REF','IEVA-iAXS REF', 'IEVA-iACR REF', 'IEVA-iAMQ0 REF','IEVA-iAMMQ REF']
+        # TODROP += ['IEVA-iDP', 'IEVA-iFREQ','IEVA-iMQ']
+        # TODROP += ['FORMAT-RO','IEVA-iAD ALT']
 
         if opts.droplist is not None:
             droplist += [(f.rstrip() for f in open(opts.droplist,'r').readlines())]
             dataset = dataset.drop(droplist, axis=1)
         else:
-            try:
-                dataset = drop_pseudonucleotidi(dataset)
-            except:
-                pass
+            # try:
+            #     dataset = drop_pseudonucleotidi(dataset)
+            # except:
+            #     pass
             for f in TODROP:
                 try:
                     dataset = dataset.drop(f,axis=1)
@@ -554,12 +706,27 @@ if __name__ == '__main__':
         df_tsne['TSNE 1'] = X_tsne[1]
         print ggplot(df_tsne,aes(x='TSNE 0',y='TSNE 1',color='CLASS')) + geom_point() + ggtitle("T-SNE IEVA") #+ facet_wrap("CLASS")
 
+    
+    if 'CLUSTERING' in pipe:
+        print dataset.columns[dataset.nunique() == 1]
+        class_map = {'PASS': 1, 'FILTER': 0}
+        Y_dataset = fulldataset['CLASS'].map(class_map)
+
+        lut = dict(zip(Y_dataset.unique(), "rbg"))
+        row_colors = Y_dataset.map(lut)
+
+        ds = pd.concat([dataset,Y_dataset],axis=1)
+
+        CLUSTERMAP = seaborn.clustermap(dataset,method='average', metric='correlation', row_colors=row_colors, xticklabels=1, cmap='bwr')
+
+        ax = CLUSTERMAP.ax_heatmap
+        plt.show()
+
 # 6) Scegliere le features piu informative con INFOGAIN
     if 'IG' in pipe:
     # 6.1) calcolo dell' Info Gain
         out = open(OUTPUT +'.MUTUAL-INFOGAIN','w')
-        res = dict(zip(dataset.columns.values.tolist(), mutual_info_classif(dataset, fulldataset['CLASS'], discrete_features=True)
-                   ))
+        res = dict(zip(dataset.columns.values.tolist(), mutual_info_classif(dataset, fulldataset['CLASS'], discrete_features=True)))
         
         for r in res.keys():
             out.write(r+'\t'+str(res[r])+'\n')
@@ -834,20 +1001,20 @@ if __name__ == '__main__':
         Y_dataset = fulldataset['CLASS'].map(class_map)
 
         # parametri tunati per dataset IEVA
-        n_estimators = 180
-        max_features = 'sqrt'
-        max_depth = 40
-        min_samples_split = 5
-        min_samples_leaf = 1
-        bootstrap = False
+        # n_estimators = 100
+        # max_features = 'auto'
+        # max_depth = None
+        # min_samples_split = 5
+        # min_samples_leaf = 1
+        # bootstrap = True
 
         # ## parametri tunati per dataset NOIEVA
-        # n_estimators = 20
-        # max_features = 'auto'
-        # max_depth = 20
-        # min_samples_split = 2
-        # min_samples_leaf = 2
-        # bootstrap = False
+        n_estimators = 120
+        max_features = 'sqrt'
+        max_depth = 70
+        min_samples_split = 5
+        min_samples_leaf = 4
+        bootstrap = False
 
         cv = 4
         out=open(OUTPUT + '.KFOLD-RESULTS.csv','w')

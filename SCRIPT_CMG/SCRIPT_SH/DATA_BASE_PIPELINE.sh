@@ -237,8 +237,8 @@ if [ "$PANNELLO" == "Cardio" ]
 		TRANSCR_LIST=$TRASCR_CARDIO
 		tipo=Cardio-Conn
 		echo "Aggiungo i gvcf alla lista"
-		#scarica_gvcf $PANNELLO Cardio
-		#scarica_gvcf $PANNELLO Conn
+		scarica_gvcf $PANNELLO Cardio
+		scarica_gvcf $PANNELLO Conn
 
 		
 	elif [ "$PANNELLO" == "Cancer" ]
@@ -267,7 +267,7 @@ if [ "$PANNELLO" == "Cardio" ]
 		TRANSCR_LIST=$TRASCR_BRCA
 fi
 
-ls $GVCF_PATH/*.g.vcf > $OUT_PATH/Samples_list.list
+##ls $GVCF_PATH/*.g.vcf > $gvcflist
 
 mkdir $GVCF_PATH/TMP
 echo "Faccio il merge dei gvcf"
@@ -281,7 +281,7 @@ python /home/jarvis/git/CMG/SCRIPT_CMG/SCRIPT_PYTHON/DATABASE_SCRIPTING/merge_gv
 
 MGVCF=$GVCF_PATH/TMP/$tipo.merge.g.vcf
 #MGVCF="/media/jarvis/HD1/DB.gvcf/CARDIO/TMP/Cardio-Conn.merge.g.vcf"
-#MGVCF="/home/jarvis/Scrivania/DB_GENI_VAR/CANCER_20181108/TMP/Cancer.merge.g.vcf"
+#MGVCF="/media/jarvis/HD1/DB.gvcf/CANCER/TMP/Cancer.merge.g.vcf"
 
 echo "Faccio il Variant Calling"
 
@@ -309,7 +309,7 @@ $OUT_PATH/$DATA\_$PANNELLO.FILTER.FIX.vcf \
 
 echo "Annoto le varianti"
 
-/home/jarvis/NGS_TOOLS/ensembl-vep/vep -i $OUT_PATH/$DATA\_$PANNELLO.FILTER.FIX.NORM.vcf \
+/home/jarvis/NGS_TOOLS/ensembl-vep-release-95/vep -i $OUT_PATH/$DATA\_$PANNELLO.FILTER.FIX.NORM.vcf \
 -o $OUT_PATH/$DATA\_$PANNELLO.FILTER.FIX.NORM.ANN.vcf \
 --stats_file ${1%.*}.ANN.html \
 --fasta $REF \
@@ -347,6 +347,8 @@ sed -i "s/#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t//g" $OUT_PATH/
 
 COUNT=$(awk '{print NF}' $OUT_PATH/List_samples_for_split.txt | sort -nu | tail -n 1)
 
+#COUNT=$(awk '{print NF}' /home/jarvis/Scrivania/DB_GENI_VAR/CARDIO_20190319/List_samples_for_split.txt | sort -nu | tail -n 1)
+
 sed -i -e "s/\(AN=[[:digit:]]*\);\(DP=[[:digit:]]*\)/\1;;;\2/g" \
 -e "s/FS=\([[:digit:]]*\|[[:digit:]]*.[[:digit:]]*\);MLEAC=\([[:digit:]]*\|[[:digit:]]*.[[:digit:]]\)/FS=\1;;MLEAC=\2/g" \
 -e "s/MQ=\([[:digit:]]*\|[0-9]*\|[0-9]*.[0-9]*\);QD=\([[:digit:]]*\|[0-9]*\|[0-9]*.[0-9]*\)/MQ=\1;;QD=\2/g" \
@@ -364,7 +366,7 @@ for (( a=1; a<$COUNT+1; a++ ))
 
 sed -i -e "s/#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t$NAME/CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tAC\tAF\tAN\tBaseQRankSum\tClippingRankSum\tDP\tExcessHet\tFS\tInbreedingCoeff\tMLEAC\tMLEAF\tMQ\tMQRankSum\tQD\tReadPosRankSum\tSOR\tAllele\tConsequence\tIMPACT\tSYMBOL\tGene\tFeature_type\tFeature\tBIOTYPE\tEXON\tINTRON\tHGVSc\tHGVSp\tcDNA_position\tCDS_position\tProtein_position\tAmino_acids\tCodons\tExisting_variation\tDISTANCE\tSTRAND\tFLAGS\tVARIANT_CLASS\tSYMBOL_SOURCE\tHGNC_ID\tENSP\tREFSEQ_MATCH\tSOURCE\tGIVEN_REF\tUSED_REF\tBAM_EDIT\tSIFT\tPolyPhen\tHGVS_OFFSET\tAF\tCLIN_SIG\tSOMATIC\tPHENO\tGT\tAD\tDP\tGQ\tPL/g" -e "s/;\tGT/\tGT/g" -e "s/GT:AD:DP:GQ:PL\t//g" $OUT_PATH/VCF/$NAME.vcf
 sed -i -e "s/\(^chr[[:alnum:]]*\t[[:digit:]]*\t\)\.\t/\1$NAME\t/g" -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/\(|.*\):\(.*|\)/\1[]\2/g' -e 's/:/\t/g' -e 's/\[\]/:/g' -e 's/;/\t/g' -e 's/||/|-|/g' -e 's/||/|-|/g' -e 's/||/|-|/g' -e 's/|/\t/g' -e "s/AC=\|AF=\|AN=\|BaseQRankSum=\|ClippingRankSum=\|DP=\|ExcessHet=\|FS=\|InbreedingCoeff=\|MLEAC=\|MLEAF=\|MQ=\|MQRankSum=\|QD=\|ReadPosRankSum=\|SOR=\|ANN=//g" -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' $OUT_PATH/VCF/$NAME.vcf
-cut -f1,2,3,4,5,6,7,8,10,25,27,32,33,34,35,61,62,63,64,65,66 $OUT_PATH/VCF/$NAME.vcf > $OUT_PATH/TSV/$NAME.tsv
+cut -f1,2,3,4,5,6,7,8,10,25,27,32,33,34,35,58,61,62,63,64,65,66 $OUT_PATH/VCF/$NAME.vcf > $OUT_PATH/TSV/$NAME.tsv
 done
 
 
