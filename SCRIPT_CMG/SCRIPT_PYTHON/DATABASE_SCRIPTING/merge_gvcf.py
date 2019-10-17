@@ -8,6 +8,7 @@ def merge_gvcfs(gatk,reference,target,merged,gvcf,tomerge):
 
 	if not os.path.isfile(tomerge + '.idx'):
 		args = [gatk,'--java-options', '-Xmx32g','IndexFeatureFile',"-F",tomerge]
+		print args
 		success = subprocess.call(args)
 
 	if not os.path.isfile(gvcf+'.idx'):
@@ -16,6 +17,7 @@ def merge_gvcfs(gatk,reference,target,merged,gvcf,tomerge):
 
 
 	args = [gatk,'--java-options', '-Xmx32g','CombineGVCFs',"-R",reference,'-L',target,'-V',gvcf,'-V',tomerge,'-O',merged]
+	print args
 	success = subprocess.call(args)
 	if not success:
 		return merged
@@ -33,7 +35,7 @@ def main():
 	opts = parser.parse_args()
 
 	gvcf_list = open(opts.gvcf_list,'r').readlines()
-	gatk='/home/jarvis/NGS_TOOLS/GATK/v4.0.6.0/gatk'
+	gatk='/home/jarvis/NGS_TOOLS/GATK/v4.1.2.0/gatk'
 
 	j=0
 	while len(gvcf_list)!= 1:

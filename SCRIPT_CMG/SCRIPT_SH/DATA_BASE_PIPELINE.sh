@@ -272,7 +272,7 @@ fi
 mkdir $GVCF_PATH/TMP
 echo "Faccio il merge dei gvcf"
 
-python /home/jarvis/git/CMG/SCRIPT_CMG/SCRIPT_PYTHON/DATABASE_SCRIPTING/merge_gvcf.py \
+python2 /home/jarvis/git/CMG/SCRIPT_CMG/SCRIPT_PYTHON/DATABASE_SCRIPTING/merge_gvcf.py \
 -R /home/jarvis/NGS_TOOLS/hg19/ucsc.hg19.fasta \
 -V $gvcflist \
 -L $TARGET \
@@ -298,7 +298,7 @@ java -jar $GATK -T VariantFiltration \
 --filterName "FILTER" \
 -o $OUT_PATH/$DATA\_$PANNELLO.FILTER.vcf
 
-python $SCRIPT_PIPELINE/header_fix.py -v G -f $OUT_PATH/$DATA\_$PANNELLO.FILTER.vcf \
+python2 $SCRIPT_PIPELINE/header_fix.py -v G -f $OUT_PATH/$DATA\_$PANNELLO.FILTER.vcf \
 > $OUT_PATH/$DATA\_$PANNELLO.FILTER.FIX.vcf
 
 $BCFTOOLS norm -m -both \
@@ -377,7 +377,7 @@ GENE=$line
 echo $GENE
 
 #echo -e "/usr/bin/python ~/git/CMG/SCRIPT_CMG/SCRIPT_PYTHON/DB_per_Gene.py --path $PATH --gene $GENE --out $OUT/$GENE --paz_list $PAZ_LIST --tipo $TIPO"
-/usr/bin/python /home/jarvis/git/CMG/SCRIPT_CMG/SCRIPT_PYTHON/DATABASE_SCRIPTING/DB_per_Gene.py --path $OUT_PATH/TSV --gene $GENE --out $OUT_PATH/GENI/$GENE --paz_list $PAZ_LIST --tipo $PANNELLO
+/usr/bin/python2 /home/jarvis/git/CMG/SCRIPT_CMG/SCRIPT_PYTHON/DATABASE_SCRIPTING/DB_per_Gene.py --path $OUT_PATH/TSV --gene $GENE --out $OUT_PATH/GENI/$GENE --paz_list $PAZ_LIST --tipo $PANNELLO
 
 done < "$GENELIST"
 
